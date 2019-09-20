@@ -13,6 +13,10 @@ Helper for GitHub Action.
 **Table of Contents**
 
 - [Usage](#usage)
+  - [Logger](#logger)
+  - [Command](#command)
+  - [Utils](#utils)
+  - [Test](#test)
 - [Author](#author)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
