@@ -96,7 +96,7 @@ const {
 
 console.log(isRelease(context));  // e.g. true
 console.log(getWorkspace());  // e.g. /home/runner/work/RepoOwner/RepoName
-console.log(getGitUrl());  // e.g. https://token@github.com/RepoOwner/RepoName.git
+console.log(getGitUrl());  // e.g. https://octocat:token@github.com/RepoOwner/RepoName.git
 console.log(escapeRegExp('.*+?^${}()|[]\\')); // '\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\'
 console.log(getBoolValue('0'));  // false
 console.log(getBoolValue('false'));  // false
