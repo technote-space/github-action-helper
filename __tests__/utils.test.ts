@@ -6,6 +6,7 @@ import { spyOnSignale } from './util';
 const {
 	isRelease,
 	getWorkspace,
+	getActor,
 	getGitUrl,
 	escapeRegExp,
 	getBoolValue,
@@ -46,17 +47,31 @@ describe('getWorkspace', () => {
 	});
 });
 
+describe('getActor', () => {
+	testEnv();
+
+	it('should get actor', () => {
+		process.env.GITHUB_ACTOR = 'test';
+		expect(getActor()).toBe('test');
+	});
+
+	it('should not get actor', () => {
+		process.env.GITHUB_ACTOR = undefined;
+		expect(getActor()).toBe('');
+	});
+});
+
 describe('getGitUrl', () => {
 	testEnv();
 
 	it('should return git url with access token', () => {
-		process.env.INPUT_ACCESS_TOKEN = 'test';
+		process.env.INPUT_GITHUB_TOKEN = 'test';
 		expect(getGitUrl(getContext({
 			repo: {
 				owner: 'Hello',
 				repo: 'World',
 			},
-		}))).toBe('https://test@github.com/Hello/World.git');
+		}))).toBe('https://octocat:test@github.com/Hello/World.git');
 	});
 
 	it('should throw error', () => {

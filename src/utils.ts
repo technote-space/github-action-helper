@@ -23,12 +23,14 @@ export const getTagName = (context: Context): string => isRelease(context) ? con
 
 export const getRepository = (context: Context): string => `${context.repo.owner}/${context.repo.repo}`;
 
-export const getAccessToken = (required: boolean): string => getInput('ACCESS_TOKEN', {required});
+const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
+
+export const getActor = (): string => process.env.GITHUB_ACTOR || '';
 
 export const getGitUrl = (context: Context, accessTokenRequired = true): string => {
 	const token = getAccessToken(accessTokenRequired);
 	if (token) {
-		return `https://${token}@github.com/${context.repo.owner}/${context.repo.repo}.git`;
+		return `https://${getActor()}:${token}@github.com/${context.repo.owner}/${context.repo.repo}.git`;
 	} else {
 		return `https://github.com/${context.repo.owner}/${context.repo.repo}.git`;
 	}
