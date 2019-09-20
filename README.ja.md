@@ -8,7 +8,7 @@
 
 *Read this in other languages: [English](README.md), [日本語](README.ja.md).*
 
-Helper for GitHub Action.
+GitHub Action 用のヘルパー
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -23,10 +23,10 @@ Helper for GitHub Action.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Usage
-1. Install  
+## 使用方法
+1. インストール  
 `npm i @technote-space/github-action-helper`
-1. Use
+1. 使用
 ```js
 import { Logger, Command, Utils, Test } from '@technote-space/github-action-helper';
 ```
