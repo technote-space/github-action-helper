@@ -355,13 +355,6 @@
     once "^1.4.0"
     universal-user-agent "^4.0.0"
 
-"@technote-space/filter-github-action@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@technote-space/filter-github-action/-/filter-github-action-0.0.1.tgz#1c3968144d3a3f25f5077e50b5099f0a352a108a"
-  integrity sha512-NMfiU68LMLE/0EiML4+YqWnWV9CaNgEX5Wfqd++hjAAUNyATzFE73EI0BoCk3X13L34V9hHoL63iUKFa7hXhkA==
-  dependencies:
-    "@actions/github" "^1.1.0"
-
 "@types/babel__core@^7.1.0":
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.3.tgz#e441ea7df63cd080dfcd02ab199e6d16a735fc30"
