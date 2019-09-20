@@ -1,7 +1,5 @@
 /* eslint-disable no-magic-numbers */
 import path from 'path';
-import { Context } from '@actions/github/lib/context';
-import { isTargetEvent } from '@technote-space/filter-github-action';
 import Logger from '../src/logger';
 import { testEnv, getContext } from '../src/test/utils';
 import {
@@ -17,59 +15,6 @@ import {
 	showActionInfo,
 } from '../src/utils';
 import { spyOnSignale } from './util';
-
-describe('isTargetEvent', () => {
-	const TARGET_EVENTS = {
-		'release': [
-			'published',
-			'rerequested',
-		],
-		'push': [
-			(context: Context): boolean => /^refs\/tags\//.test(context.ref),
-			'rerequested',
-		],
-	};
-	it('should return true 1', () => {
-		expect(isTargetEvent(TARGET_EVENTS, getContext({
-			eventName: 'push',
-			ref: 'refs/tags/test',
-		}))).toBeTruthy();
-	});
-
-	it('should return true 2', () => {
-		expect(isTargetEvent(TARGET_EVENTS, getContext({
-			payload: {
-				action: 'rerequested',
-			},
-			eventName: 'push',
-		}))).toBeTruthy();
-	});
-
-	it('should return true 3', () => {
-		expect(isTargetEvent(TARGET_EVENTS, getContext({
-			payload: {
-				action: 'published',
-			},
-			eventName: 'release',
-		}))).toBeTruthy();
-	});
-
-	it('should return false 1', () => {
-		expect(isTargetEvent(TARGET_EVENTS, getContext({
-			eventName: 'push',
-			ref: 'refs/heads/test',
-		}))).toBeFalsy();
-	});
-
-	it('should return false 2', () => {
-		expect(isTargetEvent(TARGET_EVENTS, getContext({
-			payload: {
-				action: 'created',
-			},
-			eventName: 'release',
-		}))).toBeFalsy();
-	});
-});
 
 describe('isRelease', () => {
 	it('should return true', () => {
