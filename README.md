@@ -77,7 +77,7 @@ run();
 
 ### Utils
 ```js
-import { Utils } from '@technote-space/github-action-helper';
+import { Logger, Utils } from '@technote-space/github-action-helper';
 import { context } from '@actions/github';
 import path from 'path';
 
@@ -104,7 +104,7 @@ console.log(getRepository(context));  // e.g. 'RepoOwner/RepoName'
 console.log(getTagName(context));  // e.g. 'v1.2.3'
 console.log(uniqueArray([1, 2, 2, 3, 4, 3]));  // [1, 2, 3, 4]
 console.log(getBuildVersion(path.resolve(__dirname, 'build.json')));  // e.g. 'v1.2.3'
-showActionInfo();
+showActionInfo(path.resolve(__dirname, '..'), new Logger(), context);
 ```
 
 ### Test
