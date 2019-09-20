@@ -1,6 +1,8 @@
 /* eslint-disable no-magic-numbers */
 import path from 'path';
-import { getConfigFixture, getApiFixture, disableNetConnect, encodeContent } from '../../src/test/utils';
+import { Test } from '../../src';
+
+const {getConfigFixture, getApiFixture, disableNetConnect, encodeContent} = Test;
 
 describe('getConfigFixture', () => {
 	it('should get config fixture', () => {

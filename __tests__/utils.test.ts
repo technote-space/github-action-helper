@@ -1,8 +1,9 @@
 /* eslint-disable no-magic-numbers */
 import path from 'path';
-import Logger from '../src/logger';
-import { testEnv, getContext } from '../src/test/utils';
-import {
+import { Logger, Test, Utils } from '../src';
+import { spyOnSignale } from './util';
+
+const {
 	isRelease,
 	getWorkspace,
 	getGitUrl,
@@ -13,8 +14,9 @@ import {
 	uniqueArray,
 	getBuildVersion,
 	showActionInfo,
-} from '../src/utils';
-import { spyOnSignale } from './util';
+} = Utils;
+
+const {testEnv, getContext} = Test;
 
 describe('isRelease', () => {
 	it('should return true', () => {

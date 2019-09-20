@@ -1,10 +1,11 @@
 import { Signale } from 'signale';
+import types from 'signale/types';
 import figures from 'figures';
 
 /**
  * Logger
  */
-export default class Logger {
+export class Logger {
 
 	private readonly signale: Signale;
 	private readonly replacer: (string) => string;
@@ -35,6 +36,12 @@ export default class Logger {
 		}, signaleSettings));
 
 		this.replacer = replacer ? replacer : (text: string): string => text;
+
+		Object.keys(types).forEach(type => {
+			if (!this[type]) {
+				this[type] = this.signale[type];
+			}
+		});
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,4 +69,29 @@ export default class Logger {
 		this.signale.log();
 		this.note(message, ...args);
 	};
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LoggerFunction = (...message: any[]) => void;
+type DefaultLogger =
+	| 'await'
+	| 'complete'
+	| 'debug'
+	| 'error'
+	| 'fatal'
+	| 'fav'
+	| 'info'
+	| 'log'
+	| 'note'
+	| 'pause'
+	| 'pending'
+	| 'star'
+	| 'start'
+	| 'success'
+	| 'wait'
+	| 'warn'
+	| 'watch'
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Logger extends Record<DefaultLogger, LoggerFunction> {
 }

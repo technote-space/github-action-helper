@@ -1,7 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import global from './global';
-import Command from '../src/command';
-import Logger from '../src/logger';
+import { Logger, Command } from '../src';
 import { spyOnSignale } from './util';
 
 describe('Command', () => {

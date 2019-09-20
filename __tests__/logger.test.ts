@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import Logger from '../src/logger';
+import { Logger } from '../src';
 import { spyOnSignale } from './util';
 
 describe('Logger', () => {
@@ -66,6 +66,16 @@ describe('Logger', () => {
 			logger.startProcess('test');
 
 			expect(processMock).toBeCalledWith('[test]');
+		});
+	});
+
+	describe('log', () => {
+		it('should exists', () => {
+			const {logMock} = spyOnSignale();
+
+			logger.log('test');
+
+			expect(logMock).toBeCalledWith('test');
 		});
 	});
 });
