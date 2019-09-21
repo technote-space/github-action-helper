@@ -91,6 +91,9 @@ const {
 	getBoolValue,
 	getRepository,
 	getTagName,
+	getBranch,
+	getRefForUpdate,
+	getSender,
 	uniqueArray,
 	getBuildVersion,
 	showActionInfo,
@@ -104,6 +107,9 @@ console.log(getBoolValue('0'));  // false
 console.log(getBoolValue('false'));  // false
 console.log(getRepository(context));  // e.g. 'RepoOwner/RepoName'
 console.log(getTagName(context));  // e.g. 'v1.2.3'
+console.log(getBranch(context));  // e.g. 'master'
+console.log(getRefForUpdate(context));  // e.g. 'heads%2Fmaster'
+console.log(getSender(context));  // e.g. 'octocat'
 console.log(uniqueArray([1, 2, 2, 3, 4, 3]));  // [1, 2, 3, 4]
 console.log(getBuildVersion(path.resolve(__dirname, 'build.json')));  // e.g. 'v1.2.3'
 showActionInfo(path.resolve(__dirname, '..'), new Logger(), context);

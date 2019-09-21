@@ -21,6 +21,12 @@ export const isRelease = (context: Context): boolean => 'release' === context.ev
 
 export const getTagName = (context: Context): string => isRelease(context) ? context.payload.release.tag_name : context.ref.replace(/^refs\/tags\//, '');
 
+export const getBranch = (context: Context): string => context.ref.replace(/^refs\/heads\//, '');
+
+export const getRefForUpdate = (context: Context): string => encodeURIComponent(context.ref.replace(/^refs\//, ''));
+
+export const getSender = (context: Context): string | false => context.payload.sender && context.payload.sender.type === 'User' ? context.payload.sender.login : false;
+
 export const getRepository = (context: Context): string => `${context.repo.owner}/${context.repo.repo}`;
 
 const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});

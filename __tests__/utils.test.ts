@@ -12,6 +12,9 @@ const {
 	getBoolValue,
 	getRepository,
 	getTagName,
+	getBranch,
+	getRefForUpdate,
+	getSender,
 	uniqueArray,
 	getBuildVersion,
 	showActionInfo,
@@ -143,6 +146,53 @@ describe('getTagName', () => {
 				},
 			},
 		}))).toBe('test');
+	});
+});
+
+describe('getBranch', () => {
+	it('should get branch', () => {
+		expect(getBranch(getContext({
+			ref: 'refs/heads/test',
+		}))).toBe('test');
+	});
+});
+
+describe('getRefForUpdate', () => {
+	// https://github.com/octokit/rest.js/issues/1308#issuecomment-480532468
+	it('should get ref for update', () => {
+		expect(getRefForUpdate(getContext({
+			ref: 'refs/heads/test',
+		}))).toBe(encodeURIComponent('heads/test'));
+	});
+});
+
+describe('getSender', () => {
+	it('should get sender', () => {
+		expect(getSender(getContext({
+			payload: {
+				sender: {
+					type: 'User',
+					login: 'test',
+				},
+			},
+		}))).toBe('test');
+	});
+
+	it('should not get sender 1', () => {
+		expect(getSender(getContext({
+			payload: {},
+		}))).toBeFalsy();
+	});
+
+	it('should not get sender 2', () => {
+		expect(getSender(getContext({
+			payload: {
+				sender: {
+					type: 'test',
+					login: 'test',
+				},
+			},
+		}))).toBeFalsy();
 	});
 });
 
