@@ -21,6 +21,8 @@ export const isRelease = (context: Context): boolean => 'release' === context.ev
 
 export const getTagName = (context: Context): string => isRelease(context) ? context.payload.release.tag_name : context.ref.replace(/^refs\/tags\//, '');
 
+export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+(\.\d+)*$/i.test(tagName);
+
 export const getBranch = (context: Context): string => context.ref.replace(/^refs\/heads\//, '');
 
 export const getRefForUpdate = (context: Context): string => encodeURIComponent(context.ref.replace(/^refs\//, ''));

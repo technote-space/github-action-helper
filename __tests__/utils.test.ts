@@ -12,6 +12,7 @@ const {
 	getBoolValue,
 	getRepository,
 	getTagName,
+	isSemanticVersioningTagName,
 	getBranch,
 	getRefForUpdate,
 	getSender,
@@ -146,6 +147,21 @@ describe('getTagName', () => {
 				},
 			},
 		}))).toBe('test');
+	});
+});
+
+describe('isSemanticVersioningTagName', () => {
+	it('should return true', () => {
+		expect(isSemanticVersioningTagName('v1')).toBeTruthy();
+		expect(isSemanticVersioningTagName('v1.2')).toBeTruthy();
+		expect(isSemanticVersioningTagName('v12.23.34')).toBeTruthy();
+		expect(isSemanticVersioningTagName('1.2.3')).toBeTruthy();
+	});
+
+	it('should return false', () => {
+		expect(isSemanticVersioningTagName('')).toBeFalsy();
+		expect(isSemanticVersioningTagName('v')).toBeFalsy();
+		expect(isSemanticVersioningTagName('abc')).toBeFalsy();
 	});
 });
 
