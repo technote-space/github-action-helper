@@ -17,6 +17,7 @@ Helper for GitHub Action.
 - [Usage](#usage)
   - [Logger](#logger)
   - [Command](#command)
+  - [ApiHelper](#apihelper)
   - [Utils](#utils)
   - [Test](#test)
 - [Author](#author)
