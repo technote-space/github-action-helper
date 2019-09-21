@@ -77,6 +77,22 @@ async function run() {
 run();
 ```
 
+### ApiHelper
+```js
+import { Logger, ApiHelper } from '@technote-space/github-action-helper';
+import { context } from '@actions/github';
+import { GitHub } from '@actions/github' ;
+import { getInput } from '@actions/core';
+import path from 'path';
+
+const helper = new ApiHelper(new Logger());
+async function run() {
+    await helper.commit(path.resolve(__dirname, '..'), 'feat: commit message', ['README.md', 'package.json'], new GitHub(getInput('GITHUB_TOKEN', {required: true})), context);
+}
+
+run();
+```
+
 ### Utils
 ```js
 import { Logger, Utils } from '@technote-space/github-action-helper';
