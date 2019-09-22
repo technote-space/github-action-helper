@@ -29,7 +29,7 @@ GitHub Action 用のヘルパー
 `npm i @technote-space/github-action-helper`
 1. 使用
 ```js
-import { Logger, Command, Utils, Test } from '@technote-space/github-action-helper';
+import { Logger, Command, Utils } from '@technote-space/github-action-helper';
 ```
 
 ### Logger
@@ -130,21 +130,6 @@ console.log(getSender(context));  // e.g. 'octocat'
 console.log(uniqueArray([1, 2, 2, 3, 4, 3]));  // [1, 2, 3, 4]
 console.log(getBuildVersion(path.resolve(__dirname, 'build.json')));  // e.g. 'v1.2.3'
 showActionInfo(path.resolve(__dirname, '..'), new Logger(), context);
-```
-
-### Test
-```js
-import { Test } from '@technote-space/github-action-helper';
-import nock from 'nock';
-
-const {getContext, encodeContent, getConfigFixture, getApiFixture, disableNetConnect, testEnv} = Test;
-
-getContext({});
-encodeContent('content');
-getConfigFixture('rootDir', 'fileName');
-getApiFixture('rootDir', 'name');
-disableNetConnect(nock);
-testEnv();
 ```
 
 ## Author

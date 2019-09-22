@@ -355,6 +355,13 @@
     once "^1.4.0"
     universal-user-agent "^4.0.0"
 
+"@technote-space/github-action-test-helper@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.0.1.tgz#3245dffb9b8fc6969b005fe4b1c1413d712fe2fe"
+  integrity sha512-ocEYACl1lqRsF6S5QZEyh5i4ONT0o/lp9jowOAmFgC9Gl9T6lHc4ZlWLzglir0s7weR/TCR7JOFb1zDFglY3Hg==
+  dependencies:
+    "@actions/github" "^1.1.0"
+
 "@types/babel__core@^7.1.0":
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.3.tgz#e441ea7df63cd080dfcd02ab199e6d16a735fc30"

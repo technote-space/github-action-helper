@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import path from 'path';
-import { Logger, Test, Utils } from '../src';
+import { testEnv, getContext } from '@technote-space/github-action-test-helper';
+import { Logger, Utils } from '../src';
 import { spyOnSignale } from './util';
 
 const {
@@ -20,8 +21,6 @@ const {
 	getBuildVersion,
 	showActionInfo,
 } = Utils;
-
-const {testEnv, getContext} = Test;
 
 describe('isRelease', () => {
 	it('should return true', () => {

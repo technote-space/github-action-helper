@@ -5,7 +5,7 @@ import { GitHub } from '@actions/github' ;
 import { Response, GitCreateTreeResponse, GitCreateCommitResponse } from '@octokit/rest';
 import { spyOnSignale } from './util';
 import { ApiHelper, Logger } from '../src';
-import { disableNetConnect, testEnv, getContext, getApiFixture } from '../src/test/utils';
+import { disableNetConnect, testEnv, getContext, getApiFixture } from '@technote-space/github-action-test-helper';
 
 describe('ApiHelper', () => {
 	disableNetConnect(nock);
@@ -81,7 +81,7 @@ describe('ApiHelper', () => {
 					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.blobs');
 				});
 
-			const blobs = await helper.filesToBlobs(path.resolve(__dirname, 'fixtures'), ['config.yml', 'build.json'], octokit, context);
+			const blobs = await helper.filesToBlobs(path.resolve(__dirname, 'fixtures'), ['build1.json', 'build2.json'], octokit, context);
 			expect(blobs).toHaveLength(2);
 			expect(fn1).toBeCalledTimes(2);
 			expect(fn2).toBeCalledTimes(2);
@@ -259,7 +259,7 @@ describe('ApiHelper', () => {
 				.get('/repos/hello/world/branches/test/protection')
 				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.branches.protection'));
 
-			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['config.yml', 'build.json'], octokit, context)).toBeFalsy();
+			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeFalsy();
 
 			expect(warnMock).toBeCalledWith('Branch [%s] is protected', 'test');
 		});
@@ -282,7 +282,7 @@ describe('ApiHelper', () => {
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'))
 				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs'));
 
-			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['config.yml', 'build.json'], octokit, context)).toBeTruthy();
+			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
 		});
 	});
 
