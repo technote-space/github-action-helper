@@ -264,6 +264,8 @@ describe('showActionInfo', () => {
 			['> Version: v1.2.3' + EOL],
 			['> Event: push' + EOL],
 			['> Action: rerequested' + EOL],
+			['> sha: test-sha' + EOL],
+			['> ref: refs/tags/test' + EOL],
 			['> Tag name: test' + EOL],
 		]);
 	});
@@ -284,7 +286,8 @@ describe('showActionInfo', () => {
 		expect(mockStdout.mock.calls).toEqual([
 			['> Event: push' + EOL],
 			['> Action: rerequested' + EOL],
-			['> Tag name: test' + EOL],
+			['> sha: test-sha' + EOL],
+			['> ref: refs/heads/test' + EOL],
 		]);
 	});
 });
