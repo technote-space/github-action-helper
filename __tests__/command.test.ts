@@ -1,7 +1,8 @@
 /* eslint-disable no-magic-numbers */
+import { EOL } from 'os';
 import global from './global';
 import { Logger, Command } from '../src';
-import { spyOnSignale, testLogger } from './util';
+import { testLogger } from './util';
 
 describe('Command', () => {
 	testLogger();
@@ -15,32 +16,31 @@ describe('Command', () => {
 
 	it('should run command', async() => {
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {logMock} = spyOnSignale();
+		const mockStdout = jest.spyOn(global.mockStdout, 'write');
 
 		expect(await command.execAsync({command: 'test'})).toBe('stdout');
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(logMock).toBeCalledTimes(2);
-		expect(logMock.mock.calls[0][0]).toBe('[command]test');
-		expect(logMock.mock.calls[1][0]).toBe('  >> stdout');
+		expect(mockStdout).toBeCalledTimes(2);
+		expect(mockStdout.mock.calls[0][0]).toBe('[command]test' + EOL);
+		expect(mockStdout.mock.calls[1][0]).toBe('  >> stdout' + EOL);
 	});
 
 	it('should run command with cwd, altCommand', async() => {
 		global.mockChildProcess.stderr = 'stderr';
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {logMock, warnMock} = spyOnSignale();
+		const mockStdout = jest.spyOn(global.mockStdout, 'write');
 
 		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toBe('stdout');
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
 		expect(execMock.mock.calls[0][1]).toEqual({'cwd': 'dir'});
-		expect(logMock).toBeCalledTimes(2);
-		expect(logMock.mock.calls[0][0]).toBe('[command]alt');
-		expect(logMock.mock.calls[1][0]).toBe('  >> stdout');
-		expect(warnMock).toBeCalledTimes(1);
-		expect(warnMock.mock.calls[0][0]).toBe('  >> stderr');
+		expect(mockStdout).toBeCalledTimes(3);
+		expect(mockStdout.mock.calls[0][0]).toBe('[command]alt' + EOL);
+		expect(mockStdout.mock.calls[1][0]).toBe('  >> stdout' + EOL);
+		expect(mockStdout.mock.calls[2][0]).toBe('##[warning]  >> stderr' + EOL);
 	});
 
 	it('should catch error 1', async() => {
@@ -85,7 +85,7 @@ describe('Command', () => {
 
 	it('should suppress stdout', async() => {
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {logMock} = spyOnSignale();
+		const mockStdout = jest.spyOn(global.mockStdout, 'write');
 
 		await command.execAsync({
 			command: 'test',
@@ -94,14 +94,14 @@ describe('Command', () => {
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(logMock).toBeCalledTimes(1);
-		expect(logMock.mock.calls[0][0]).toBe('[command]test');
+		expect(mockStdout).toBeCalledTimes(1);
+		expect(mockStdout.mock.calls[0][0]).toBe('[command]test' + EOL);
 	});
 
 	it('should not output stdout', async() => {
 		global.mockChildProcess.stdout = '';
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {logMock} = spyOnSignale();
+		const mockStdout = jest.spyOn(global.mockStdout, 'write');
 
 		await command.execAsync({
 			command: 'test',
@@ -109,13 +109,13 @@ describe('Command', () => {
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(logMock).toBeCalledTimes(1);
-		expect(logMock.mock.calls[0][0]).toBe('[command]test');
+		expect(mockStdout).toBeCalledTimes(1);
+		expect(mockStdout.mock.calls[0][0]).toBe('[command]test' + EOL);
 	});
 
 	it('should run suppress error command', async() => {
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {logMock} = spyOnSignale();
+		const mockStdout = jest.spyOn(global.mockStdout, 'write');
 
 		await command.execAsync({
 			command: 'test',
@@ -124,8 +124,8 @@ describe('Command', () => {
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test || :');
-		expect(logMock).toBeCalledTimes(2);
-		expect(logMock.mock.calls[0][0]).toBe('[command]test');
-		expect(logMock.mock.calls[1][0]).toBe('  >> stdout');
+		expect(mockStdout).toBeCalledTimes(2);
+		expect(mockStdout.mock.calls[0][0]).toBe('[command]test' + EOL);
+		expect(mockStdout.mock.calls[1][0]).toBe('  >> stdout' + EOL);
 	});
 });
