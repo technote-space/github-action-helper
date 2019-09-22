@@ -1,11 +1,13 @@
 /* eslint-disable no-magic-numbers */
 import nock from 'nock';
 import path from 'path';
+import { EOL } from 'os';
 import { GitHub } from '@actions/github' ;
 import { Response, GitCreateTreeResponse, GitCreateCommitResponse } from '@octokit/rest';
-import { spyOnSignale, testLogger } from './util';
-import { ApiHelper, Logger } from '../src';
 import { disableNetConnect, testEnv, getContext, getApiFixture } from '@technote-space/github-action-test-helper';
+import { testLogger } from './util';
+import { ApiHelper, Logger } from '../src';
+import global from './global';
 
 describe('ApiHelper', () => {
 	disableNetConnect(nock);
@@ -247,15 +249,15 @@ describe('ApiHelper', () => {
 
 	describe('commit', () => {
 		it('should not commit 1', async() => {
-			const {infoMock} = spyOnSignale();
+			const mockStdout = jest.spyOn(global.mockStdout, 'write');
 
 			expect(await helper.commit(path.resolve(__dirname, '..'), 'test commit message', [], octokit, context)).toBeFalsy();
 
-			expect(infoMock).toBeCalledWith('There is no diff.');
+			expect(mockStdout).toBeCalledWith('> There is no diff.' + EOL);
 		});
 
 		it('should not commit 2', async() => {
-			const {warnMock} = spyOnSignale();
+			const mockStdout = jest.spyOn(global.mockStdout, 'write');
 			nock('https://api.github.com')
 				.persist()
 				.get('/repos/hello/world/branches/test/protection')
@@ -263,7 +265,7 @@ describe('ApiHelper', () => {
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeFalsy();
 
-			expect(warnMock).toBeCalledWith('Branch [%s] is protected', 'test');
+			expect(mockStdout).toBeCalledWith('##[warning]Branch [test] is protected' + EOL);
 		});
 
 		it('should commit', async() => {

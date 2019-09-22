@@ -1,8 +1,10 @@
 /* eslint-disable no-magic-numbers */
 import path from 'path';
+import { EOL } from 'os';
 import { testEnv, getContext } from '@technote-space/github-action-test-helper';
 import { Logger, Utils } from '../src';
-import { spyOnSignale, testLogger } from './util';
+import { testLogger } from './util';
+import global from './global';
 
 const {
 	isRelease,
@@ -147,6 +149,13 @@ describe('getTagName', () => {
 			},
 		}))).toBe('test');
 	});
+
+	it('should be empty', () => {
+		expect(getTagName(getContext({
+			eventName: 'push',
+			ref: 'refs/heads/test',
+		}))).toBe('');
+	});
 });
 
 describe('isSemanticVersioningTagName', () => {
@@ -239,7 +248,7 @@ describe('showActionInfo', () => {
 	testLogger();
 
 	it('should show action info', () => {
-		const {infoMock} = spyOnSignale();
+		const mockStdout = jest.spyOn(global.mockStdout, 'write');
 
 		showActionInfo(path.resolve(__dirname, 'fixtures'), new Logger(), getContext({
 			eventName: 'push',
@@ -247,33 +256,35 @@ describe('showActionInfo', () => {
 			payload: {
 				action: 'rerequested',
 			},
+			sha: 'test-sha',
 		}));
 
-		expect(infoMock).toBeCalledTimes(4);
-		expect(infoMock.mock.calls).toEqual([
-			['Version: %s', 'v1.2.3'],
-			['Event: %s', 'push'],
-			['Action: %s', 'rerequested'],
-			['Tag name: %s', 'test'],
+		expect(mockStdout).toBeCalledTimes(6);
+		expect(mockStdout.mock.calls).toEqual([
+			['> Version: v1.2.3' + EOL],
+			['> Event: push' + EOL],
+			['> Action: rerequested' + EOL],
+			['> Tag name: test' + EOL],
 		]);
 	});
 
-	it('should show action info without version', () => {
-		const {infoMock} = spyOnSignale();
+	it('should show action info without version and tag', () => {
+		const mockStdout = jest.spyOn(global.mockStdout, 'write');
 
 		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), getContext({
 			eventName: 'push',
-			ref: 'refs/tags/test',
+			ref: 'refs/heads/test',
 			payload: {
 				action: 'rerequested',
 			},
+			sha: 'test-sha',
 		}));
 
-		expect(infoMock).toBeCalledTimes(3);
-		expect(infoMock.mock.calls).toEqual([
-			['Event: %s', 'push'],
-			['Action: %s', 'rerequested'],
-			['Tag name: %s', 'test'],
+		expect(mockStdout).toBeCalledTimes(4);
+		expect(mockStdout.mock.calls).toEqual([
+			['> Event: push' + EOL],
+			['> Action: rerequested' + EOL],
+			['> Tag name: test' + EOL],
 		]);
 	});
 });

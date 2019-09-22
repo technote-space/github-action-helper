@@ -1,10 +1,8 @@
 import { ExecException } from 'child_process';
 
 interface Global extends NodeJS.Global {
-	mockSignale: {
-		info: jest.Mock;
-		log: jest.Mock;
-		warn: jest.Mock;
+	mockStdout: {
+		write: jest.Mock;
 	};
 	mockChildProcess: {
 		exec: jest.Mock;

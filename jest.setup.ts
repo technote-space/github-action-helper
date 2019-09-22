@@ -1,23 +1,10 @@
 /* eslint-disable no-magic-numbers */
 import global from './__tests__/global';
 
-global.mockSignale = {
-	info: jest.fn(),
-	log: jest.fn(),
-	warn: jest.fn(),
+global.mockStdout = {
+	write: jest.fn(),
 };
-jest.mock('signale', () => ({
-	...jest.requireActual('signale'),
-	Signale: class {
-		constructor() {
-			return {
-				info: global.mockSignale.info,
-				log: global.mockSignale.log,
-				warn: global.mockSignale.warn,
-			};
-		}
-	},
-}));
+process.stdout.write = global.mockStdout.write;
 
 global.mockChildProcess = {
 	stdout: 'stdout',
