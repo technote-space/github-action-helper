@@ -51,11 +51,16 @@ export class Logger {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	public startProcess = (message: string, ...args: any[]): void => {
-		if (Logger.isRequiredEndGroup) {
-			this.output('log', '##[endgroup]');
-		}
+		this.endProcess();
 		this.output('log', `##[group]${message}`, ...args);
 		Logger.isRequiredEndGroup = true;
+	};
+
+	public endProcess = (): void => {
+		if (Logger.isRequiredEndGroup) {
+			this.output('log', '##[endgroup]');
+			Logger.isRequiredEndGroup = false;
+		}
 	};
 
 	public static resetForTesting = (): void => {
