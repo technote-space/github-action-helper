@@ -1,8 +1,10 @@
 /* eslint-disable no-magic-numbers */
 import { Logger } from '../src';
-import { spyOnSignale } from './util';
+import { spyOnSignale, testLogger } from './util';
 
 describe('Logger', () => {
+	testLogger();
+
 	const logger = new Logger();
 
 	describe('info', () => {
@@ -15,23 +17,13 @@ describe('Logger', () => {
 		});
 	});
 
-	describe('note', () => {
-		it('should output info', () => {
-			const {processMock} = spyOnSignale();
-
-			logger.note('test');
-
-			expect(processMock).toBeCalledWith('[test]');
-		});
-	});
-
 	describe('displayCommand', () => {
 		it('should output command', () => {
 			const {commandMock} = spyOnSignale();
 
 			logger.displayCommand('test');
 
-			expect(commandMock).toBeCalledWith('  > test');
+			expect(commandMock).toBeCalledWith('[command]test');
 		});
 	});
 
@@ -42,8 +34,8 @@ describe('Logger', () => {
 			logger.displayStdout('test1\ntest2\n');
 
 			expect(commandMock).toBeCalledTimes(2);
-			expect(commandMock.mock.calls[0][0]).toBe('    >> test1');
-			expect(commandMock.mock.calls[1][0]).toBe('    >> test2');
+			expect(commandMock.mock.calls[0][0]).toBe('  >> test1');
+			expect(commandMock.mock.calls[1][0]).toBe('  >> test2');
 		});
 	});
 
@@ -54,18 +46,18 @@ describe('Logger', () => {
 			logger.displayStderr('test1\ntest2\n');
 
 			expect(warnMock).toBeCalledTimes(2);
-			expect(warnMock.mock.calls[0][0]).toBe('    >> test1');
-			expect(warnMock.mock.calls[1][0]).toBe('    >> test2');
+			expect(warnMock.mock.calls[0][0]).toBe('  >> test1');
+			expect(warnMock.mock.calls[1][0]).toBe('  >> test2');
 		});
 	});
 
 	describe('startProcess', () => {
 		it('should output process', () => {
-			const {processMock} = spyOnSignale();
+			const {logMock} = spyOnSignale();
 
 			logger.startProcess('test');
 
-			expect(processMock).toBeCalledWith('[test]');
+			expect(logMock).toBeCalledWith('##[group]test');
 		});
 	});
 
@@ -91,29 +83,21 @@ describe('Logger with replacer', () => {
 		expect(infoMock).toBeCalledWith('message with args %s %d: <replaced>', '<replaced>', 2);
 	});
 
-	describe('note output process with args', () => {
-		const {processMock} = spyOnSignale();
-
-		logger.note('message with args %s %d: <replace target>', '<replace target>', 2);
-
-		expect(processMock).toBeCalledWith('[message with args %s %d: <replaced>]', '<replaced>', 2);
-	});
-
 	describe('displayCommand output command with args', () => {
 		const {commandMock} = spyOnSignale();
 
 		logger.displayCommand('message with args %s %d: <replace target>', '<replace target>', 2);
 
-		expect(commandMock).toBeCalledWith('  > message with args %s %d: <replaced>', '<replaced>', 2);
+		expect(commandMock).toBeCalledWith('[command]message with args %s %d: <replaced>', '<replaced>', 2);
 	});
 
 	describe('startProcess', () => {
 		it('should output process with args', () => {
-			const {processMock} = spyOnSignale();
+			const {logMock} = spyOnSignale();
 
 			logger.startProcess('message with args %s %d: <replace target>', '<replace target>', 2);
 
-			expect(processMock).toBeCalledWith('[message with args %s %d: <replaced>]', '<replaced>', 2);
+			expect(logMock).toBeCalledWith('##[group]message with args %s %d: <replaced>', '<replaced>', 2);
 		});
 	});
 });

@@ -3,13 +3,15 @@ import nock from 'nock';
 import path from 'path';
 import { GitHub } from '@actions/github' ;
 import { Response, GitCreateTreeResponse, GitCreateCommitResponse } from '@octokit/rest';
-import { spyOnSignale } from './util';
+import { spyOnSignale, testLogger } from './util';
 import { ApiHelper, Logger } from '../src';
 import { disableNetConnect, testEnv, getContext, getApiFixture } from '@technote-space/github-action-test-helper';
 
 describe('ApiHelper', () => {
 	disableNetConnect(nock);
 	testEnv();
+	testLogger();
+
 	const helper = new ApiHelper(new Logger());
 	const context = getContext({
 		ref: 'refs/heads/test',

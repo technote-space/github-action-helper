@@ -1,16 +1,17 @@
 /* eslint-disable no-magic-numbers */
 import global from './global';
 import { Logger, Command } from '../src';
-import { spyOnSignale } from './util';
+import { spyOnSignale, testLogger } from './util';
 
 describe('Command', () => {
-	const command = new Command(new Logger());
-
+	testLogger();
 	afterEach(() => {
 		global.mockChildProcess.stdout = 'stdout';
 		global.mockChildProcess.stderr = '';
 		global.mockChildProcess.error = null;
 	});
+
+	const command = new Command(new Logger());
 
 	it('should run command', async() => {
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
@@ -21,8 +22,8 @@ describe('Command', () => {
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
 		expect(commandMock).toBeCalledTimes(2);
-		expect(commandMock.mock.calls[0][0]).toBe('  > test');
-		expect(commandMock.mock.calls[1][0]).toBe('    >> stdout');
+		expect(commandMock.mock.calls[0][0]).toBe('[command]test');
+		expect(commandMock.mock.calls[1][0]).toBe('  >> stdout');
 	});
 
 	it('should run command with cwd, altCommand', async() => {
@@ -36,10 +37,10 @@ describe('Command', () => {
 		expect(execMock.mock.calls[0][0]).toBe('test');
 		expect(execMock.mock.calls[0][1]).toEqual({'cwd': 'dir'});
 		expect(commandMock).toBeCalledTimes(2);
-		expect(commandMock.mock.calls[0][0]).toBe('  > alt');
-		expect(commandMock.mock.calls[1][0]).toBe('    >> stdout');
+		expect(commandMock.mock.calls[0][0]).toBe('[command]alt');
+		expect(commandMock.mock.calls[1][0]).toBe('  >> stdout');
 		expect(warnMock).toBeCalledTimes(1);
-		expect(warnMock.mock.calls[0][0]).toBe('    >> stderr');
+		expect(warnMock.mock.calls[0][0]).toBe('  >> stderr');
 	});
 
 	it('should catch error 1', async() => {
@@ -94,7 +95,7 @@ describe('Command', () => {
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
 		expect(commandMock).toBeCalledTimes(1);
-		expect(commandMock.mock.calls[0][0]).toBe('  > test');
+		expect(commandMock.mock.calls[0][0]).toBe('[command]test');
 	});
 
 	it('should not output stdout', async() => {
@@ -109,7 +110,7 @@ describe('Command', () => {
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
 		expect(commandMock).toBeCalledTimes(1);
-		expect(commandMock.mock.calls[0][0]).toBe('  > test');
+		expect(commandMock.mock.calls[0][0]).toBe('[command]test');
 	});
 
 	it('should run suppress error command', async() => {
@@ -124,7 +125,7 @@ describe('Command', () => {
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test || :');
 		expect(commandMock).toBeCalledTimes(2);
-		expect(commandMock.mock.calls[0][0]).toBe('  > test');
-		expect(commandMock.mock.calls[1][0]).toBe('    >> stdout');
+		expect(commandMock.mock.calls[0][0]).toBe('[command]test');
+		expect(commandMock.mock.calls[1][0]).toBe('  >> stdout');
 	});
 });

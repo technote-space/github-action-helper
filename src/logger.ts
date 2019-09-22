@@ -1,6 +1,5 @@
 import { Signale } from 'signale';
 import types from 'signale/types';
-import figures from 'figures';
 
 /**
  * Logger
@@ -9,6 +8,7 @@ export class Logger {
 
 	private readonly signale: Signale;
 	private readonly replacer: (string) => string;
+	private static isRequiredEndGroup = false;
 
 	/**
 	 * @param {function|undefined} replacer replacer
@@ -17,12 +17,6 @@ export class Logger {
 	constructor(replacer?: (string) => string, signaleSettings?: object) {
 		this.signale = new Signale(Object.assign({}, {
 			types: {
-				process: {
-					badge: figures.tick,
-					color: 'green',
-					label: 'process',
-					logLevel: 'info',
-				},
 				command: {
 					badge: '  ',
 					color: 'white',
@@ -45,7 +39,7 @@ export class Logger {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private output = (type: 'info' | 'process' | 'command' | 'warn', message: string, ...args: any[]): void => {
+	private output = (type: 'log' | 'info' | 'command' | 'warn', message: string, ...args: any[]): void => {
 		this.signale[type](this.replacer(message), ...args.map(arg => 'string' === typeof arg ? this.replacer(arg) : arg));
 	};
 
@@ -53,21 +47,25 @@ export class Logger {
 	public info = (message: string, ...args: any[]): void => this.output('info', message, ...args);
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public note = (message: string, ...args: any[]): void => this.output('process', `[${message}]`, ...args);
+	public displayCommand = (message: string, ...args: any[]): void => this.output('command', `[command]${message}`, ...args);
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public displayCommand = (message: string, ...args: any[]): void => this.output('command', `  > ${message}`, ...args);
+	public displayStdout = (message: string): void => message.replace(/\r?\n$/, '').split(/\r?\n/).forEach(line => this.output('command', `  >> ${line}`));
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public displayStdout = (message: string): void => message.replace(/\r?\n$/, '').split(/\r?\n/).forEach(line => this.output('command', `    >> ${line}`));
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public displayStderr = (message: string): void => message.replace(/\r?\n$/, '').split(/\r?\n/).forEach(line => this.output('warn', `    >> ${line}`));
+	public displayStderr = (message: string): void => message.replace(/\r?\n$/, '').split(/\r?\n/).forEach(line => this.output('warn', `  >> ${line}`));
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	public startProcess = (message: string, ...args: any[]): void => {
-		this.signale.log();
-		this.note(message, ...args);
+		if (Logger.isRequiredEndGroup) {
+			this.output('log', '##[endgroup]');
+		}
+		this.output('log', `##[group]${message}`, ...args);
+		Logger.isRequiredEndGroup = true;
+	};
+
+	public static resetForTesting = (): void => {
+		Logger.isRequiredEndGroup = false;
 	};
 }
 

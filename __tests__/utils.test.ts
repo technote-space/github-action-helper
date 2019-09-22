@@ -2,7 +2,7 @@
 import path from 'path';
 import { testEnv, getContext } from '@technote-space/github-action-test-helper';
 import { Logger, Utils } from '../src';
-import { spyOnSignale } from './util';
+import { spyOnSignale, testLogger } from './util';
 
 const {
 	isRelease,
@@ -236,6 +236,8 @@ describe('getBuildVersion', () => {
 });
 
 describe('showActionInfo', () => {
+	testLogger();
+
 	it('should show action info', () => {
 		const {infoMock} = spyOnSignale();
 
