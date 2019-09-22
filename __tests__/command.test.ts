@@ -15,30 +15,30 @@ describe('Command', () => {
 
 	it('should run command', async() => {
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {commandMock} = spyOnSignale();
+		const {logMock} = spyOnSignale();
 
 		expect(await command.execAsync({command: 'test'})).toBe('stdout');
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(commandMock).toBeCalledTimes(2);
-		expect(commandMock.mock.calls[0][0]).toBe('[command]test');
-		expect(commandMock.mock.calls[1][0]).toBe('  >> stdout');
+		expect(logMock).toBeCalledTimes(2);
+		expect(logMock.mock.calls[0][0]).toBe('[command]test');
+		expect(logMock.mock.calls[1][0]).toBe('  >> stdout');
 	});
 
 	it('should run command with cwd, altCommand', async() => {
 		global.mockChildProcess.stderr = 'stderr';
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {commandMock, warnMock} = spyOnSignale();
+		const {logMock, warnMock} = spyOnSignale();
 
 		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toBe('stdout');
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
 		expect(execMock.mock.calls[0][1]).toEqual({'cwd': 'dir'});
-		expect(commandMock).toBeCalledTimes(2);
-		expect(commandMock.mock.calls[0][0]).toBe('[command]alt');
-		expect(commandMock.mock.calls[1][0]).toBe('  >> stdout');
+		expect(logMock).toBeCalledTimes(2);
+		expect(logMock.mock.calls[0][0]).toBe('[command]alt');
+		expect(logMock.mock.calls[1][0]).toBe('  >> stdout');
 		expect(warnMock).toBeCalledTimes(1);
 		expect(warnMock.mock.calls[0][0]).toBe('  >> stderr');
 	});
@@ -85,7 +85,7 @@ describe('Command', () => {
 
 	it('should suppress stdout', async() => {
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {commandMock} = spyOnSignale();
+		const {logMock} = spyOnSignale();
 
 		await command.execAsync({
 			command: 'test',
@@ -94,14 +94,14 @@ describe('Command', () => {
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(commandMock).toBeCalledTimes(1);
-		expect(commandMock.mock.calls[0][0]).toBe('[command]test');
+		expect(logMock).toBeCalledTimes(1);
+		expect(logMock.mock.calls[0][0]).toBe('[command]test');
 	});
 
 	it('should not output stdout', async() => {
 		global.mockChildProcess.stdout = '';
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {commandMock} = spyOnSignale();
+		const {logMock} = spyOnSignale();
 
 		await command.execAsync({
 			command: 'test',
@@ -109,13 +109,13 @@ describe('Command', () => {
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(commandMock).toBeCalledTimes(1);
-		expect(commandMock.mock.calls[0][0]).toBe('[command]test');
+		expect(logMock).toBeCalledTimes(1);
+		expect(logMock.mock.calls[0][0]).toBe('[command]test');
 	});
 
 	it('should run suppress error command', async() => {
 		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const {commandMock} = spyOnSignale();
+		const {logMock} = spyOnSignale();
 
 		await command.execAsync({
 			command: 'test',
@@ -124,8 +124,8 @@ describe('Command', () => {
 
 		expect(execMock).toBeCalledTimes(1);
 		expect(execMock.mock.calls[0][0]).toBe('test || :');
-		expect(commandMock).toBeCalledTimes(2);
-		expect(commandMock.mock.calls[0][0]).toBe('[command]test');
-		expect(commandMock.mock.calls[1][0]).toBe('  >> stdout');
+		expect(logMock).toBeCalledTimes(2);
+		expect(logMock.mock.calls[0][0]).toBe('[command]test');
+		expect(logMock.mock.calls[1][0]).toBe('  >> stdout');
 	});
 });

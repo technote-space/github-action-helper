@@ -17,12 +17,6 @@ export class Logger {
 	constructor(replacer?: (string) => string, signaleSettings?: object) {
 		this.signale = new Signale(Object.assign({}, {
 			types: {
-				command: {
-					badge: '  ',
-					color: 'white',
-					label: '        ',
-					logLevel: 'info',
-				},
 				info: {
 					color: 'cyan',
 				},
@@ -39,7 +33,7 @@ export class Logger {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private output = (type: 'log' | 'info' | 'command' | 'warn', message: string, ...args: any[]): void => {
+	private output = (type: 'log' | 'info' | 'warn', message: string, ...args: any[]): void => {
 		this.signale[type](this.replacer(message), ...args.map(arg => 'string' === typeof arg ? this.replacer(arg) : arg));
 	};
 
@@ -47,10 +41,10 @@ export class Logger {
 	public info = (message: string, ...args: any[]): void => this.output('info', message, ...args);
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public displayCommand = (message: string, ...args: any[]): void => this.output('command', `[command]${message}`, ...args);
+	public displayCommand = (message: string, ...args: any[]): void => this.output('log', `[command]${message}`, ...args);
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public displayStdout = (message: string): void => message.replace(/\r?\n$/, '').split(/\r?\n/).forEach(line => this.output('command', `  >> ${line}`));
+	public displayStdout = (message: string): void => message.replace(/\r?\n$/, '').split(/\r?\n/).forEach(line => this.output('log', `  >> ${line}`));
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	public displayStderr = (message: string): void => message.replace(/\r?\n$/, '').split(/\r?\n/).forEach(line => this.output('warn', `  >> ${line}`));

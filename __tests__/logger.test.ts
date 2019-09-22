@@ -19,23 +19,23 @@ describe('Logger', () => {
 
 	describe('displayCommand', () => {
 		it('should output command', () => {
-			const {commandMock} = spyOnSignale();
+			const {logMock} = spyOnSignale();
 
 			logger.displayCommand('test');
 
-			expect(commandMock).toBeCalledWith('[command]test');
+			expect(logMock).toBeCalledWith('[command]test');
 		});
 	});
 
 	describe('displayStdout', () => {
 		it('should output command', () => {
-			const {commandMock} = spyOnSignale();
+			const {logMock} = spyOnSignale();
 
 			logger.displayStdout('test1\ntest2\n');
 
-			expect(commandMock).toBeCalledTimes(2);
-			expect(commandMock.mock.calls[0][0]).toBe('  >> test1');
-			expect(commandMock.mock.calls[1][0]).toBe('  >> test2');
+			expect(logMock).toBeCalledTimes(2);
+			expect(logMock.mock.calls[0][0]).toBe('  >> test1');
+			expect(logMock.mock.calls[1][0]).toBe('  >> test2');
 		});
 	});
 
@@ -84,11 +84,11 @@ describe('Logger with replacer', () => {
 	});
 
 	describe('displayCommand output command with args', () => {
-		const {commandMock} = spyOnSignale();
+		const {logMock} = spyOnSignale();
 
 		logger.displayCommand('message with args %s %d: <replace target>', '<replace target>', 2);
 
-		expect(commandMock).toBeCalledWith('[command]message with args %s %d: <replaced>', '<replaced>', 2);
+		expect(logMock).toBeCalledWith('[command]message with args %s %d: <replaced>', '<replaced>', 2);
 	});
 
 	describe('startProcess', () => {
