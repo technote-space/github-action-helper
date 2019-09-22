@@ -19,7 +19,7 @@ export const getBuildVersion = (filepath: string): string | boolean => {
 
 export const isRelease = (context: Context): boolean => 'release' === context.eventName;
 
-export const getTagName = (context: Context): string => isRelease(context) ? context.payload.release.tag_name : context.ref.replace(/^refs\/tags\//, '');
+export const getTagName = (context: Context): string => isRelease(context) ? context.payload.release.tag_name : (/^refs\/tags\//.test(context.ref) ? context.ref.replace(/^refs\/tags\//, '') : '');
 
 export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+(\.\d+)*$/i.test(tagName);
 
@@ -60,5 +60,9 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	}
 	logger.info('Event: %s', context.eventName);
 	logger.info('Action: %s', context.payload.action);
-	logger.info('Tag name: %s', tagName);
+	logger.info('sha: %s', context.sha);
+	logger.info('ref: %s', context.ref);
+	if (tagName) {
+		logger.info('Tag name: %s', tagName);
+	}
 };
