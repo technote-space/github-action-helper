@@ -19,7 +19,6 @@ Helper for GitHub Action.
   - [Command](#command)
   - [ApiHelper](#apihelper)
   - [Utils](#utils)
-  - [Test](#test)
 - [Author](#author)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
