@@ -7,7 +7,7 @@ import { spyOnSignale } from './util';
 import { ApiHelper, Logger } from '../src';
 import { disableNetConnect, testEnv, getContext, getApiFixture } from '../src/test/utils';
 
-describe('Commit', () => {
+describe('ApiHelper', () => {
 	disableNetConnect(nock);
 	testEnv();
 	const helper = new ApiHelper(new Logger());
@@ -18,6 +18,12 @@ describe('Commit', () => {
 			repo: 'world',
 		},
 		sha: '7638417db6d59f3c431d3e1f261cc637155684cd',
+		payload: {
+			sender: {
+				type: 'User',
+				login: 'octocat',
+			},
+		},
 	});
 	const octokit = new GitHub('');
 
@@ -56,7 +62,7 @@ describe('Commit', () => {
 
 	describe('filesToBlobs', () => {
 		it('should return empty', async() => {
-			expect(await helper.filesToBlobs(path.resolve(__dirname, 'fixtures'), [], new GitHub(''), getContext({}))).toHaveLength(0);
+			expect(await helper.filesToBlobs(path.resolve(__dirname, 'fixtures'), [], new GitHub(''), context)).toHaveLength(0);
 		});
 
 		it('should return blobs', async() => {
@@ -277,6 +283,54 @@ describe('Commit', () => {
 				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs'));
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['config.yml', 'build.json'], octokit, context)).toBeTruthy();
+		});
+	});
+
+	describe('getUser', () => {
+		it('should throw error 1', async() => {
+			const fn1 = jest.fn();
+			nock('https://api.github.com')
+				.persist()
+				.get('/users/octocat')
+				.reply(200, () => {
+					fn1();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'users.get');
+				});
+
+			await expect(helper.getUser(octokit, getContext({}))).rejects.toThrow('Sender is not valid.');
+			expect(fn1).not.toBeCalled();
+		});
+
+		it('should throw error 2', async() => {
+			const fn1 = jest.fn();
+			nock('https://api.github.com')
+				.persist()
+				.get('/users/octocat')
+				.reply(404, () => {
+					fn1();
+					return JSON.parse('{"message": "Not Found", "documentation_url": "https://developer.github.com/v3/users/#get-a-single-user"}');
+				});
+
+			await expect(helper.getUser(octokit, context)).rejects.toThrow('Not Found');
+			expect(fn1).toBeCalledTimes(1);
+		});
+
+		it('should get user', async() => {
+			const fn1 = jest.fn();
+			nock('https://api.github.com')
+				.persist()
+				.get('/users/octocat')
+				.reply(200, () => {
+					fn1();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'users.get');
+				});
+
+			const user = await helper.getUser(octokit, context);
+			expect(fn1).toBeCalledTimes(1);
+			expect(user.login).toBe('octocat');
+			expect(user.email).toBe('octocat@github.com');
+			expect(user.name).toBe('monalisa octocat');
+			expect(user.id).toBe(1);
 		});
 	});
 });

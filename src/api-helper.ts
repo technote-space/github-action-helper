@@ -4,7 +4,7 @@ import { GitHub } from '@actions/github/lib/github';
 import { Context } from '@actions/github/lib/context';
 import { Response, GitCreateTreeResponse, GitCreateCommitResponse, GitGetCommitResponse } from '@octokit/rest';
 import { Logger } from './logger';
-import { getBranch, getRefForUpdate } from './utils';
+import { getBranch, getRefForUpdate, getSender } from './utils';
 
 /**
  * Commit
@@ -167,5 +167,28 @@ export default class ApiHelper {
 		await this.updateRef(commit, octokit, context);
 
 		return true;
+	};
+
+	/**
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<{ login: string, email: string, name: string, id: number }>} user
+	 */
+	public getUser = async(octokit: GitHub, context: Context): Promise<{ login: string; email: string; name: string; id: number }> => {
+		const sender = getSender(context);
+		if (false === sender) {
+			throw new Error('Sender is not valid.');
+		}
+
+		const {data: user} = await octokit.users.getByUsername({
+			username: sender,
+		});
+
+		return {
+			login: user.login,
+			email: user.email,
+			name: user.name,
+			id: user.id,
+		};
 	};
 }
