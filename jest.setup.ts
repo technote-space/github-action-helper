@@ -21,8 +21,4 @@ jest.mock('child_process', () => ({
 	exec: global.mockChildProcess.exec,
 }));
 
-global.console.log = jest.fn();
-global.console.warn = jest.fn();
-global.console.error = jest.fn();
-
 process.env.GITHUB_ACTOR = 'octocat';
