@@ -4,19 +4,49 @@ import { GitHub } from '@actions/github/lib/github';
 import { Context } from '@actions/github/lib/context';
 import { Response, GitCreateTreeResponse, GitCreateCommitResponse, GitGetCommitResponse } from '@octokit/rest';
 import { Logger } from './logger';
-import { getBranch, getRefForUpdate, getSender } from './utils';
+import { getBranch, getSender, getRefForUpdate } from './utils';
 
 /**
  * Commit
  */
 export default class ApiHelper {
 
+	private readonly branch?: string | undefined = undefined;
+	private readonly sender?: string | undefined = undefined;
+	private readonly refForUpdate?: string | undefined = undefined;
+
 	/**
 	 * @param {Logger} logger logger
+	 * @param {object} options options
+	 * @param {string|undefined} options.branch branch
+	 * @param {string|undefined} options.sender sender
+	 * @param {string|undefined} options.refForUpdate ref for update
 	 */
-	constructor(private logger: Logger) {
-
+	constructor(private readonly logger: Logger, options?: { branch?: string; sender?: string; refForUpdate?: string }) {
+		if (options) {
+			this.branch = options.branch;
+			this.sender = options.sender;
+			this.refForUpdate = options.refForUpdate;
+		}
 	}
+
+	/**
+	 * @param {Context} context context
+	 * @return {string} branch
+	 */
+	private getBranch = (context: Context): string => this.branch ? this.branch : getBranch(context);
+
+	/**
+	 * @param {Context} context context
+	 * @return {string|boolean} sender
+	 */
+	private getSender = (context: Context): string | false => this.sender ? this.sender : getSender(context);
+
+	/**
+	 * @param {Context} context context
+	 * @return {string} ref for update
+	 */
+	private getRefForUpdate = (context: Context): string => this.refForUpdate ? this.refForUpdate : getRefForUpdate(context);
 
 	/**
 	 * @param {string} rootDir root dir
@@ -108,7 +138,7 @@ export default class ApiHelper {
 		await octokit.git.updateRef({
 			owner: context.repo.owner,
 			repo: context.repo.repo,
-			ref: getRefForUpdate(context),
+			ref: this.getRefForUpdate(context),
 			sha: commit.data.sha,
 		});
 	};
@@ -119,14 +149,12 @@ export default class ApiHelper {
 	 * @return {Promise<boolean>} result
 	 */
 	public checkProtected = async(octokit: GitHub, context: Context): Promise<boolean> => {
-		const branch = getBranch(context);
-
 		try {
 			// eslint-disable-next-line no-magic-numbers
 			return 200 === (await octokit.repos.getBranchProtection({
 				owner: context.repo.owner,
 				repo: context.repo.repo,
-				branch,
+				branch: this.getBranch(context),
 			})).status;
 		} catch (error) {
 			return false;
@@ -148,11 +176,11 @@ export default class ApiHelper {
 		}
 
 		if (await this.checkProtected(octokit, context)) {
-			this.logger.warn('Branch [%s] is protected', getBranch(context));
+			this.logger.warn('Branch [%s] is protected', this.getBranch(context));
 			return false;
 		}
 
-		this.logger.startProcess('Start push to branch [%s]', getBranch(context));
+		this.logger.startProcess('Start push to branch [%s]', this.getBranch(context));
 
 		this.logger.startProcess('Creating blobs');
 		const blobs = await this.filesToBlobs(rootDir, files, octokit, context);
@@ -163,9 +191,10 @@ export default class ApiHelper {
 		this.logger.startProcess('Creating commit [%s]', tree.data.sha);
 		const commit = await this.createCommit(commitMessage, tree, octokit, context);
 
-		this.logger.startProcess('Updating ref [%s] [%s]', getRefForUpdate(context), commit.data.sha);
+		this.logger.startProcess('Updating ref [%s] [%s]', this.getRefForUpdate(context), commit.data.sha);
 		await this.updateRef(commit, octokit, context);
 
+		this.logger.endProcess();
 		return true;
 	};
 
@@ -175,7 +204,7 @@ export default class ApiHelper {
 	 * @return {Promise<{ login: string, email: string, name: string, id: number }>} user
 	 */
 	public getUser = async(octokit: GitHub, context: Context): Promise<{ login: string; email: string; name: string; id: number }> => {
-		const sender = getSender(context);
+		const sender = this.getSender(context);
 		if (false === sender) {
 			throw new Error('Sender is not valid.');
 		}
