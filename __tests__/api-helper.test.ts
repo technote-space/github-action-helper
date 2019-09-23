@@ -9,27 +9,28 @@ import { testLogger } from './util';
 import { ApiHelper, Logger } from '../src';
 import global from './global';
 
+const context = getContext({
+	ref: 'refs/heads/test',
+	repo: {
+		owner: 'hello',
+		repo: 'world',
+	},
+	sha: '7638417db6d59f3c431d3e1f261cc637155684cd',
+	payload: {
+		sender: {
+			type: 'User',
+			login: 'octocat',
+		},
+	},
+});
+const octokit = new GitHub('');
+
 describe('ApiHelper', () => {
 	disableNetConnect(nock);
 	testEnv();
 	testLogger();
 
 	const helper = new ApiHelper(new Logger());
-	const context = getContext({
-		ref: 'refs/heads/test',
-		repo: {
-			owner: 'hello',
-			repo: 'world',
-		},
-		sha: '7638417db6d59f3c431d3e1f261cc637155684cd',
-		payload: {
-			sender: {
-				type: 'User',
-				login: 'octocat',
-			},
-		},
-	});
-	const octokit = new GitHub('');
 
 	/**
 	 * @param {T} data data
@@ -269,6 +270,7 @@ describe('ApiHelper', () => {
 		});
 
 		it('should commit', async() => {
+			const mockStdout = jest.spyOn(global.mockStdout, 'write');
 			nock('https://api.github.com')
 				.persist()
 				.get('/repos/hello/world/branches/test/protection')
@@ -287,6 +289,17 @@ describe('ApiHelper', () => {
 				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs'));
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
+			expect(mockStdout).toBeCalledTimes(10);
+			expect(mockStdout.mock.calls[0][0]).toBe('##[group]Start push to branch [test]' + EOL);
+			expect(mockStdout.mock.calls[1][0]).toBe('##[endgroup]' + EOL);
+			expect(mockStdout.mock.calls[2][0]).toBe('##[group]Creating blobs' + EOL);
+			expect(mockStdout.mock.calls[3][0]).toBe('##[endgroup]' + EOL);
+			expect(mockStdout.mock.calls[4][0]).toBe('##[group]Creating tree' + EOL);
+			expect(mockStdout.mock.calls[5][0]).toBe('##[endgroup]' + EOL);
+			expect(mockStdout.mock.calls[6][0]).toBe('##[group]Creating commit [cd8274d15fa3ae2ab983129fb037999f264ba9a7]' + EOL);
+			expect(mockStdout.mock.calls[7][0]).toBe('##[endgroup]' + EOL);
+			expect(mockStdout.mock.calls[8][0]).toBe('##[group]Updating ref [heads%2Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]' + EOL);
+			expect(mockStdout.mock.calls[9][0]).toBe('##[endgroup]' + EOL);
 		});
 	});
 
@@ -331,6 +344,88 @@ describe('ApiHelper', () => {
 
 			const user = await helper.getUser(octokit, context);
 			expect(fn1).toBeCalledTimes(1);
+			expect(user.login).toBe('octocat');
+			expect(user.email).toBe('octocat@github.com');
+			expect(user.name).toBe('monalisa octocat');
+			expect(user.id).toBe(1);
+		});
+	});
+});
+
+describe('ApiHelper with params', () => {
+	disableNetConnect(nock);
+	testEnv();
+	testLogger();
+
+	const helper = new ApiHelper(new Logger(), {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref'});
+
+	describe('commit', () => {
+		it('should commit', async() => {
+			const fn1 = jest.fn();
+			const fn2 = jest.fn();
+			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/branches/test/protection')
+				.reply(404)
+				.post('/repos/hello/world/git/blobs')
+				.reply(201, () => {
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.blobs');
+				})
+				.get('/repos/hello/world/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd')
+				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits.get'))
+				.post('/repos/hello/world/git/trees')
+				.reply(201, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.trees'))
+				.post('/repos/hello/world/git/commits')
+				.reply(201, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits'))
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'))
+				.reply(200, () => {
+					fn1();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+				})
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'))
+				.reply(200, () => {
+					fn2();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+				});
+
+			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
+			expect(fn1).not.toBeCalled();
+			expect(fn2).toBeCalledTimes(1);
+			expect(mockStdout).toBeCalledTimes(10);
+			expect(mockStdout.mock.calls[0][0]).toBe('##[group]Start push to branch [test-branch]' + EOL);
+			expect(mockStdout.mock.calls[1][0]).toBe('##[endgroup]' + EOL);
+			expect(mockStdout.mock.calls[2][0]).toBe('##[group]Creating blobs' + EOL);
+			expect(mockStdout.mock.calls[3][0]).toBe('##[endgroup]' + EOL);
+			expect(mockStdout.mock.calls[4][0]).toBe('##[group]Creating tree' + EOL);
+			expect(mockStdout.mock.calls[5][0]).toBe('##[endgroup]' + EOL);
+			expect(mockStdout.mock.calls[6][0]).toBe('##[group]Creating commit [cd8274d15fa3ae2ab983129fb037999f264ba9a7]' + EOL);
+			expect(mockStdout.mock.calls[7][0]).toBe('##[endgroup]' + EOL);
+			expect(mockStdout.mock.calls[8][0]).toBe('##[group]Updating ref [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]' + EOL);
+			expect(mockStdout.mock.calls[9][0]).toBe('##[endgroup]' + EOL);
+		});
+	});
+
+	describe('getUser', () => {
+		it('should get user', async() => {
+			const fn1 = jest.fn();
+			const fn2 = jest.fn();
+			nock('https://api.github.com')
+				.persist()
+				.get('/users/octocat')
+				.reply(200, () => {
+					fn1();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'users.get');
+				})
+				.get('/users/test-sender')
+				.reply(200, () => {
+					fn2();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'users.get');
+				});
+
+			const user = await helper.getUser(octokit, context);
+			expect(fn1).not.toBeCalled();
+			expect(fn2).toBeCalledTimes(1);
 			expect(user.login).toBe('octocat');
 			expect(user.email).toBe('octocat@github.com');
 			expect(user.name).toBe('monalisa octocat');
