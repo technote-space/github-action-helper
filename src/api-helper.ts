@@ -176,22 +176,22 @@ export default class ApiHelper {
 		}
 
 		if (await this.checkProtected(octokit, context)) {
-			this.logger.warn('Branch [%s] is protected', this.getBranch(context));
+			this.logger.warn('Branch [%s] is protected.', this.getBranch(context));
 			return false;
 		}
 
 		this.logger.startProcess('Start push to branch [%s]', this.getBranch(context));
 
-		this.logger.startProcess('Creating blobs');
+		this.logger.startProcess('Creating blobs...');
 		const blobs = await this.filesToBlobs(rootDir, files, octokit, context);
 
-		this.logger.startProcess('Creating tree');
+		this.logger.startProcess('Creating tree...');
 		const tree = await this.createTree(blobs, octokit, context);
 
-		this.logger.startProcess('Creating commit [%s]', tree.data.sha);
+		this.logger.startProcess('Creating commit... [%s]', tree.data.sha);
 		const commit = await this.createCommit(commitMessage, tree, octokit, context);
 
-		this.logger.startProcess('Updating ref [%s] [%s]', this.getRefForUpdate(context), commit.data.sha);
+		this.logger.startProcess('Updating ref... [%s] [%s]', this.getRefForUpdate(context), commit.data.sha);
 		await this.updateRef(commit, octokit, context);
 
 		this.logger.endProcess();

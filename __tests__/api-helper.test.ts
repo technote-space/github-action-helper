@@ -266,7 +266,7 @@ describe('ApiHelper', () => {
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeFalsy();
 
-			expect(mockStdout).toBeCalledWith('##[warning]Branch [test] is protected' + EOL);
+			expect(mockStdout).toBeCalledWith('##[warning]Branch [test] is protected.' + EOL);
 		});
 
 		it('should commit', async() => {
@@ -292,13 +292,13 @@ describe('ApiHelper', () => {
 			expect(mockStdout).toBeCalledTimes(10);
 			expect(mockStdout.mock.calls[0][0]).toBe('##[group]Start push to branch [test]' + EOL);
 			expect(mockStdout.mock.calls[1][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[2][0]).toBe('##[group]Creating blobs' + EOL);
+			expect(mockStdout.mock.calls[2][0]).toBe('##[group]Creating blobs...' + EOL);
 			expect(mockStdout.mock.calls[3][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[4][0]).toBe('##[group]Creating tree' + EOL);
+			expect(mockStdout.mock.calls[4][0]).toBe('##[group]Creating tree...' + EOL);
 			expect(mockStdout.mock.calls[5][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[6][0]).toBe('##[group]Creating commit [cd8274d15fa3ae2ab983129fb037999f264ba9a7]' + EOL);
+			expect(mockStdout.mock.calls[6][0]).toBe('##[group]Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]' + EOL);
 			expect(mockStdout.mock.calls[7][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[8][0]).toBe('##[group]Updating ref [heads%2Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]' + EOL);
+			expect(mockStdout.mock.calls[8][0]).toBe('##[group]Updating ref... [heads%2Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]' + EOL);
 			expect(mockStdout.mock.calls[9][0]).toBe('##[endgroup]' + EOL);
 		});
 	});
@@ -395,13 +395,13 @@ describe('ApiHelper with params', () => {
 			expect(mockStdout).toBeCalledTimes(10);
 			expect(mockStdout.mock.calls[0][0]).toBe('##[group]Start push to branch [test-branch]' + EOL);
 			expect(mockStdout.mock.calls[1][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[2][0]).toBe('##[group]Creating blobs' + EOL);
+			expect(mockStdout.mock.calls[2][0]).toBe('##[group]Creating blobs...' + EOL);
 			expect(mockStdout.mock.calls[3][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[4][0]).toBe('##[group]Creating tree' + EOL);
+			expect(mockStdout.mock.calls[4][0]).toBe('##[group]Creating tree...' + EOL);
 			expect(mockStdout.mock.calls[5][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[6][0]).toBe('##[group]Creating commit [cd8274d15fa3ae2ab983129fb037999f264ba9a7]' + EOL);
+			expect(mockStdout.mock.calls[6][0]).toBe('##[group]Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]' + EOL);
 			expect(mockStdout.mock.calls[7][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[8][0]).toBe('##[group]Updating ref [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]' + EOL);
+			expect(mockStdout.mock.calls[8][0]).toBe('##[group]Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]' + EOL);
 			expect(mockStdout.mock.calls[9][0]).toBe('##[endgroup]' + EOL);
 		});
 	});
