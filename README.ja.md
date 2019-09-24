@@ -18,6 +18,7 @@ GitHub Action 用のヘルパー
   - [Logger](#logger)
   - [Command](#command)
   - [ApiHelper](#apihelper)
+  - [GitHelper](#githelper)
   - [Utils](#utils)
 - [Author](#author)
 
