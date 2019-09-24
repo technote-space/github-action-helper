@@ -192,8 +192,7 @@ describe('ApiHelper', () => {
 			expect(fn2).toBeCalledTimes(1);
 		});
 
-		it('should output warning 1', async() => {
-			const mockStdout = spyOnStdout();
+		it('should output warning', async() => {
 			nock('https://api.github.com')
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
 					expect(body).toHaveProperty('sha');
@@ -203,42 +202,7 @@ describe('ApiHelper', () => {
 					'message': 'Required status check "Test" is expected.',
 				});
 
-			await helper.updateRef(response, octokit, context);
-
-			stdoutCalledWith(mockStdout, [
-				'##[warning]Branch [test] is protected.',
-			]);
-		});
-
-		it('should output warning 2', async() => {
-			const mockStdout = spyOnStdout();
-			nock('https://api.github.com')
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
-					expect(body).toHaveProperty('sha');
-					return body;
-				})
-				.reply(403, {
-					'message': '5 of 5 required status checks are expected.',
-				});
-
-			await helper.updateRef(response, octokit, context);
-
-			stdoutCalledWith(mockStdout, [
-				'##[warning]Branch [test] is protected.',
-			]);
-		});
-
-		it('should throw error', async() => {
-			nock('https://api.github.com')
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
-					expect(body).toHaveProperty('sha');
-					return body;
-				})
-				.reply(404, {
-					'message': 'Not Found',
-				});
-
-			await expect(helper.updateRef(response, octokit, context)).rejects.toThrow('Not Found');
+			await expect(helper.updateRef(response, octokit, context)).rejects.toThrow('Required status check "Test" is expected.');
 		});
 	});
 
@@ -342,7 +306,86 @@ describe('ApiHelper with params', () => {
 	testEnv();
 	testLogger();
 
-	const helper = new ApiHelper(new Logger(), {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref'});
+	const helper = new ApiHelper(new Logger(), {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
+
+	describe('updateRef', () => {
+		const response = createResponse<GitCreateCommitResponse>({
+			author: {
+				date: '',
+				email: '',
+				name: '',
+			},
+			committer: {
+				date: '',
+				email: '',
+				name: '',
+			},
+			message: '',
+			'node_id': '',
+			parents: [],
+			sha: '',
+			tree: {
+				sha: '',
+				url: '',
+			},
+			url: '',
+			verification: {
+				payload: null,
+				reason: '',
+				signature: null,
+				verified: true,
+			},
+		});
+
+		it('should output warning 1', async() => {
+			const mockStdout = spyOnStdout();
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'), body => {
+					expect(body).toHaveProperty('sha');
+					return body;
+				})
+				.reply(403, {
+					'message': 'Required status check "Test" is expected.',
+				});
+
+			await helper.updateRef(response, octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'##[warning]Branch [test-branch] is protected.',
+			]);
+		});
+
+		it('should output warning 2', async() => {
+			const mockStdout = spyOnStdout();
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'), body => {
+					expect(body).toHaveProperty('sha');
+					return body;
+				})
+				.reply(403, {
+					'message': '5 of 5 required status checks are expected.',
+				});
+
+			await helper.updateRef(response, octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'##[warning]Branch [test-branch] is protected.',
+			]);
+		});
+
+		it('should throw error', async() => {
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'), body => {
+					expect(body).toHaveProperty('sha');
+					return body;
+				})
+				.reply(404, {
+					'message': 'Not Found',
+				});
+
+			await expect(helper.updateRef(response, octokit, context)).rejects.toThrow('Not Found');
+		});
+	});
 
 	describe('commit', () => {
 		it('should commit', async() => {

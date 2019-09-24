@@ -14,6 +14,7 @@ export default class ApiHelper {
 	private readonly branch?: string | undefined = undefined;
 	private readonly sender?: string | undefined = undefined;
 	private readonly refForUpdate?: string | undefined = undefined;
+	private readonly suppressBPError?: boolean | undefined = undefined;
 
 	/**
 	 * @param {Logger} logger logger
@@ -21,12 +22,14 @@ export default class ApiHelper {
 	 * @param {string|undefined} options.branch branch
 	 * @param {string|undefined} options.sender sender
 	 * @param {string|undefined} options.refForUpdate ref for update
+	 * @param {boolean|undefined} options.suppressBPError suppress branch protection error?
 	 */
-	constructor(private readonly logger: Logger, options?: { branch?: string; sender?: string; refForUpdate?: string }) {
+	constructor(private readonly logger: Logger, options?: { branch?: string; sender?: string; refForUpdate?: string; suppressBPError?: boolean }) {
 		if (options) {
 			this.branch = options.branch;
 			this.sender = options.sender;
 			this.refForUpdate = options.refForUpdate;
+			this.suppressBPError = options.suppressBPError;
 		}
 	}
 
@@ -143,7 +146,7 @@ export default class ApiHelper {
 				sha: commit.data.sha,
 			});
 		} catch (error) {
-			if (this.isProtectedBranchError(error)) {
+			if (this.suppressBPError === true && this.isProtectedBranchError(error)) {
 				this.logger.warn('Branch [%s] is protected.', this.getBranch(context));
 			} else {
 				throw error;
