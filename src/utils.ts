@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { getInput } from '@actions/core' ;
 import { Context } from '@actions/github/lib/context';
-import { Logger } from './logger';
+import { Logger } from './index';
 
 export const getBuildVersion = (filepath: string): string | boolean => {
 	if (!fs.existsSync(filepath)) {

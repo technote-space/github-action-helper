@@ -3,11 +3,11 @@ import path from 'path';
 import { GitHub } from '@actions/github/lib/github';
 import { Context } from '@actions/github/lib/context';
 import { Response, GitCreateTreeResponse, GitCreateCommitResponse, GitGetCommitResponse } from '@octokit/rest';
-import { Logger } from './logger';
+import { Logger } from './index';
 import { getBranch, getSender, getRefForUpdate } from './utils';
 
 /**
- * Commit
+ * API Helper
  */
 export default class ApiHelper {
 
@@ -193,6 +193,8 @@ export default class ApiHelper {
 
 		this.logger.startProcess('Updating ref... [%s] [%s]', this.getRefForUpdate(context), commit.data.sha);
 		await this.updateRef(commit, octokit, context);
+
+		process.env.GITHUB_SHA = commit.data.sha;
 
 		this.logger.endProcess();
 		return true;

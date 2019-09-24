@@ -1,51 +1,57 @@
 /* eslint-disable no-magic-numbers */
-import { EOL } from 'os';
-import global from './global';
+import {
+	testChildProcess,
+	setChildProcessParams,
+	spyOnExec,
+	execCalledWith,
+	spyOnStdout,
+	stdoutCalledWith,
+} from '@technote-space/github-action-test-helper';
 import { Logger, Command } from '../src';
 import { testLogger } from './util';
 
 describe('Command', () => {
 	testLogger();
-	afterEach(() => {
-		global.mockChildProcess.stdout = 'stdout';
-		global.mockChildProcess.stderr = '';
-		global.mockChildProcess.error = null;
-	});
+	testChildProcess();
 
 	const command = new Command(new Logger());
 
 	it('should run command', async() => {
-		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+		const mockExec = spyOnExec();
+		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test'})).toBe('stdout');
 
-		expect(execMock).toBeCalledTimes(1);
-		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(mockStdout).toBeCalledTimes(2);
-		expect(mockStdout.mock.calls[0][0]).toBe('[command]test' + EOL);
-		expect(mockStdout.mock.calls[1][0]).toBe('  >> stdout' + EOL);
+		execCalledWith(mockExec, [
+			'test',
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]test',
+			'  >> stdout',
+		]);
 	});
 
 	it('should run command with cwd, altCommand', async() => {
-		global.mockChildProcess.stderr = 'stderr';
-		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+		setChildProcessParams({stderr: 'stderr'});
+		const mockExec = spyOnExec();
+		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toBe('stdout');
 
-		expect(execMock).toBeCalledTimes(1);
-		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(execMock.mock.calls[0][1]).toEqual({'cwd': 'dir'});
-		expect(mockStdout).toBeCalledTimes(3);
-		expect(mockStdout.mock.calls[0][0]).toBe('[command]alt' + EOL);
-		expect(mockStdout.mock.calls[1][0]).toBe('  >> stdout' + EOL);
-		expect(mockStdout.mock.calls[2][0]).toBe('##[warning]  >> stderr' + EOL);
+		execCalledWith(mockExec, [
+			['test', {'cwd': 'dir'}],
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]alt',
+			'  >> stdout',
+			'##[warning]  >> stderr',
+		]);
 	});
 
 	it('should catch error 1', async() => {
-		global.mockChildProcess.error = new Error('test message');
-		global.mockChildProcess.error.code = 123;
+		const error = new Error('test message');
+		error['code'] = 123;
+		setChildProcessParams({error: error});
 
 		await expect(command.execAsync({
 			command: 'test',
@@ -53,8 +59,9 @@ describe('Command', () => {
 	});
 
 	it('should catch error 2', async() => {
-		global.mockChildProcess.error = new Error('test message');
-		global.mockChildProcess.error.code = 123;
+		const error = new Error('test message');
+		error['code'] = 123;
+		setChildProcessParams({error: error});
 
 		await expect(command.execAsync({
 			command: 'test',
@@ -63,8 +70,9 @@ describe('Command', () => {
 	});
 
 	it('should catch error 3', async() => {
-		global.mockChildProcess.error = new Error('test message');
-		global.mockChildProcess.error.code = 123;
+		const error = new Error('test message');
+		error['code'] = 123;
+		setChildProcessParams({error: error});
 
 		await expect(command.execAsync({
 			command: 'test',
@@ -74,8 +82,9 @@ describe('Command', () => {
 	});
 
 	it('should catch error 4', async() => {
-		global.mockChildProcess.error = new Error('test message');
-		global.mockChildProcess.error.code = 123;
+		const error = new Error('test message');
+		error['code'] = 123;
+		setChildProcessParams({error: error});
 
 		await expect(command.execAsync({
 			command: 'test',
@@ -84,48 +93,54 @@ describe('Command', () => {
 	});
 
 	it('should suppress stdout', async() => {
-		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+		const mockExec = spyOnExec();
+		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
 			command: 'test',
 			suppressOutput: true,
 		});
 
-		expect(execMock).toBeCalledTimes(1);
-		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(mockStdout).toBeCalledTimes(1);
-		expect(mockStdout.mock.calls[0][0]).toBe('[command]test' + EOL);
+		execCalledWith(mockExec, [
+			'test',
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]test',
+		]);
 	});
 
 	it('should not output stdout', async() => {
-		global.mockChildProcess.stdout = '';
-		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+		setChildProcessParams({stdout: ''});
+		const mockExec = spyOnExec();
+		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
 			command: 'test',
 		});
 
-		expect(execMock).toBeCalledTimes(1);
-		expect(execMock.mock.calls[0][0]).toBe('test');
-		expect(mockStdout).toBeCalledTimes(1);
-		expect(mockStdout.mock.calls[0][0]).toBe('[command]test' + EOL);
+		execCalledWith(mockExec, [
+			'test',
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]test',
+		]);
 	});
 
 	it('should run suppress error command', async() => {
-		const execMock = jest.spyOn(global.mockChildProcess, 'exec');
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+		const mockExec = spyOnExec();
+		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
 			command: 'test',
 			suppressError: true,
 		});
 
-		expect(execMock).toBeCalledTimes(1);
-		expect(execMock.mock.calls[0][0]).toBe('test || :');
-		expect(mockStdout).toBeCalledTimes(2);
-		expect(mockStdout.mock.calls[0][0]).toBe('[command]test' + EOL);
-		expect(mockStdout.mock.calls[1][0]).toBe('  >> stdout' + EOL);
+		execCalledWith(mockExec, [
+			'test || :',
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]test',
+			'  >> stdout',
+		]);
 	});
 });
