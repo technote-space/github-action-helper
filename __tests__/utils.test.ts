@@ -1,10 +1,12 @@
 /* eslint-disable no-magic-numbers */
 import path from 'path';
-import { EOL } from 'os';
+import {
+	spyOnStdout,
+	stdoutCalledWith,
+} from '@technote-space/github-action-test-helper';
 import { testEnv, getContext } from '@technote-space/github-action-test-helper';
 import { Logger, Utils } from '../src';
 import { testLogger } from './util';
-import global from './global';
 
 const {
 	isRelease,
@@ -248,7 +250,7 @@ describe('showActionInfo', () => {
 	testLogger();
 
 	it('should show action info', () => {
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+		const mockStdout = spyOnStdout();
 
 		showActionInfo(path.resolve(__dirname, 'fixtures'), new Logger(), getContext({
 			eventName: 'push',
@@ -259,19 +261,18 @@ describe('showActionInfo', () => {
 			sha: 'test-sha',
 		}));
 
-		expect(mockStdout).toBeCalledTimes(6);
-		expect(mockStdout.mock.calls).toEqual([
-			['> Version: v1.2.3' + EOL],
-			['> Event: push' + EOL],
-			['> Action: rerequested' + EOL],
-			['> sha: test-sha' + EOL],
-			['> ref: refs/tags/test' + EOL],
-			['> Tag name: test' + EOL],
+		stdoutCalledWith(mockStdout, [
+			'> Version: v1.2.3',
+			'> Event: push',
+			'> Action: rerequested',
+			'> sha: test-sha',
+			'> ref: refs/tags/test',
+			'> Tag name: test',
 		]);
 	});
 
 	it('should show action info without version and tag', () => {
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+		const mockStdout = spyOnStdout();
 
 		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), getContext({
 			eventName: 'push',
@@ -282,12 +283,11 @@ describe('showActionInfo', () => {
 			sha: 'test-sha',
 		}));
 
-		expect(mockStdout).toBeCalledTimes(4);
-		expect(mockStdout.mock.calls).toEqual([
-			['> Event: push' + EOL],
-			['> Action: rerequested' + EOL],
-			['> sha: test-sha' + EOL],
-			['> ref: refs/heads/test' + EOL],
+		stdoutCalledWith(mockStdout, [
+			'> Event: push',
+			'> Action: rerequested',
+			'> sha: test-sha',
+			'> ref: refs/heads/test',
 		]);
 	});
 });

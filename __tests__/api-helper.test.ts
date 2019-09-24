@@ -1,13 +1,19 @@
 /* eslint-disable no-magic-numbers */
 import nock from 'nock';
 import path from 'path';
-import { EOL } from 'os';
 import { GitHub } from '@actions/github' ;
-import { Response, GitCreateTreeResponse, GitCreateCommitResponse } from '@octokit/rest';
-import { disableNetConnect, testEnv, getContext, getApiFixture } from '@technote-space/github-action-test-helper';
+import { GitCreateTreeResponse, GitCreateCommitResponse } from '@octokit/rest';
+import {
+	disableNetConnect,
+	testEnv,
+	getContext,
+	getApiFixture,
+	createResponse,
+	spyOnStdout,
+	stdoutCalledWith,
+} from '@technote-space/github-action-test-helper';
 import { testLogger } from './util';
 import { ApiHelper, Logger } from '../src';
-import global from './global';
 
 const context = getContext({
 	ref: 'refs/heads/test',
@@ -31,39 +37,6 @@ describe('ApiHelper', () => {
 	testLogger();
 
 	const helper = new ApiHelper(new Logger());
-
-	/**
-	 * @param {T} data data
-	 * @return {Response<T>} response
-	 */
-	function createResponse<T>(data: T): Response<T> {
-		return {
-			data,
-			status: 0,
-			headers: {
-				date: '',
-				'x-ratelimit-limit': '',
-				'x-ratelimit-remaining': '',
-				'x-ratelimit-reset': '',
-				'x-Octokit-request-id': '',
-				'x-Octokit-media-type': '',
-				link: '',
-				'last-modified': '',
-				etag: '',
-				status: '',
-			},
-			[Symbol.iterator](): Iterator<boolean> {
-				return {
-					next(): IteratorResult<boolean> {
-						return {
-							done: true,
-							value: true,
-						};
-					},
-				};
-			},
-		};
-	}
 
 	describe('filesToBlobs', () => {
 		it('should return empty', async() => {
@@ -250,15 +223,17 @@ describe('ApiHelper', () => {
 
 	describe('commit', () => {
 		it('should not commit 1', async() => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			expect(await helper.commit(path.resolve(__dirname, '..'), 'test commit message', [], octokit, context)).toBeFalsy();
 
-			expect(mockStdout).toBeCalledWith('> There is no diff.' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'> There is no diff.',
+			]);
 		});
 
 		it('should not commit 2', async() => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
 				.get('/repos/hello/world/branches/test/protection')
@@ -266,11 +241,14 @@ describe('ApiHelper', () => {
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeFalsy();
 
-			expect(mockStdout).toBeCalledWith('##[warning]Branch [test] is protected.' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'##[warning]Branch [test] is protected.',
+			]);
 		});
 
 		it('should commit', async() => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
+			process.env.GITHUB_SHA = 'sha';
 			nock('https://api.github.com')
 				.persist()
 				.get('/repos/hello/world/branches/test/protection')
@@ -289,17 +267,19 @@ describe('ApiHelper', () => {
 				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs'));
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
-			expect(mockStdout).toBeCalledTimes(10);
-			expect(mockStdout.mock.calls[0][0]).toBe('##[group]Start push to branch [test]' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[2][0]).toBe('##[group]Creating blobs...' + EOL);
-			expect(mockStdout.mock.calls[3][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[4][0]).toBe('##[group]Creating tree...' + EOL);
-			expect(mockStdout.mock.calls[5][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[6][0]).toBe('##[group]Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]' + EOL);
-			expect(mockStdout.mock.calls[7][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[8][0]).toBe('##[group]Updating ref... [heads%2Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]' + EOL);
-			expect(mockStdout.mock.calls[9][0]).toBe('##[endgroup]' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'##[group]Start push to branch [test]',
+				'##[endgroup]',
+				'##[group]Creating blobs...',
+				'##[endgroup]',
+				'##[group]Creating tree...',
+				'##[endgroup]',
+				'##[group]Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
+				'##[endgroup]',
+				'##[group]Updating ref... [heads%2Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'##[endgroup]',
+			]);
+			expect(process.env.GITHUB_SHA).toBe('7638417db6d59f3c431d3e1f261cc637155684cd');
 		});
 	});
 
@@ -363,7 +343,7 @@ describe('ApiHelper with params', () => {
 		it('should commit', async() => {
 			const fn1 = jest.fn();
 			const fn2 = jest.fn();
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
 				.get('/repos/hello/world/branches/test/protection')
@@ -392,17 +372,18 @@ describe('ApiHelper with params', () => {
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
 			expect(fn1).not.toBeCalled();
 			expect(fn2).toBeCalledTimes(1);
-			expect(mockStdout).toBeCalledTimes(10);
-			expect(mockStdout.mock.calls[0][0]).toBe('##[group]Start push to branch [test-branch]' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[2][0]).toBe('##[group]Creating blobs...' + EOL);
-			expect(mockStdout.mock.calls[3][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[4][0]).toBe('##[group]Creating tree...' + EOL);
-			expect(mockStdout.mock.calls[5][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[6][0]).toBe('##[group]Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]' + EOL);
-			expect(mockStdout.mock.calls[7][0]).toBe('##[endgroup]' + EOL);
-			expect(mockStdout.mock.calls[8][0]).toBe('##[group]Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]' + EOL);
-			expect(mockStdout.mock.calls[9][0]).toBe('##[endgroup]' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'##[group]Start push to branch [test-branch]',
+				'##[endgroup]',
+				'##[group]Creating blobs...',
+				'##[endgroup]',
+				'##[group]Creating tree...',
+				'##[endgroup]',
+				'##[group]Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
+				'##[endgroup]',
+				'##[group]Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'##[endgroup]',
+			]);
 		});
 	});
 

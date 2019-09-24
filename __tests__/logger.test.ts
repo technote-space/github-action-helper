@@ -1,8 +1,10 @@
 /* eslint-disable no-magic-numbers */
-import { EOL } from 'os';
+import {
+	spyOnStdout,
+	stdoutCalledWith,
+} from '@technote-space/github-action-test-helper';
 import { Logger } from '../src';
 import { testLogger } from './util';
-import global from './global';
 
 describe('Logger', () => {
 	testLogger();
@@ -11,95 +13,97 @@ describe('Logger', () => {
 
 	describe('log', () => {
 		it('should output log', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.info('test');
 
-			expect(mockStdout).toBeCalledWith('> test' + EOL);
+			stdoutCalledWith(mockStdout, ['> test']);
 		});
 	});
 
 	describe('info', () => {
 		it('should output info', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.info('test');
 
-			expect(mockStdout).toBeCalledWith('> test' + EOL);
+			stdoutCalledWith(mockStdout, ['> test']);
 		});
 	});
 
 	describe('debug', () => {
 		it('should output debug', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.debug('test');
 
-			expect(mockStdout).toBeCalledWith('##[debug]test' + EOL);
+			stdoutCalledWith(mockStdout, ['##[debug]test']);
 		});
 	});
 
 	describe('error', () => {
 		it('should output debug', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.error('test');
 
-			expect(mockStdout).toBeCalledWith('##[error]test' + EOL);
+			stdoutCalledWith(mockStdout, ['##[error]test']);
 		});
 	});
 
 	describe('warn', () => {
 		it('should output debug', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.warn('test');
 
-			expect(mockStdout).toBeCalledWith('##[warning]test' + EOL);
+			stdoutCalledWith(mockStdout, ['##[warning]test']);
 		});
 	});
 
 	describe('displayCommand', () => {
 		it('should output command', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.displayCommand('test');
 
-			expect(mockStdout).toBeCalledWith('[command]test' + EOL);
+			stdoutCalledWith(mockStdout, ['[command]test']);
 		});
 	});
 
 	describe('displayStdout', () => {
 		it('should output command', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.displayStdout('test1\ntest2\n');
 
-			expect(mockStdout).toBeCalledTimes(2);
-			expect(mockStdout.mock.calls[0][0]).toBe('  >> test1' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('  >> test2' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'  >> test1',
+				'  >> test2',
+			]);
 		});
 	});
 
 	describe('displayStderr', () => {
 		it('should output warn', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.displayStderr('test1\ntest2\n');
 
-			expect(mockStdout).toBeCalledTimes(2);
-			expect(mockStdout.mock.calls[0][0]).toBe('##[warning]  >> test1' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('##[warning]  >> test2' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'##[warning]  >> test1',
+				'##[warning]  >> test2',
+			]);
 		});
 	});
 
 	describe('startProcess', () => {
 		it('should output process', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.startProcess('test');
 
-			expect(mockStdout).toBeCalledWith('##[group]test' + EOL);
+			stdoutCalledWith(mockStdout, ['##[group]test']);
 		});
 	});
 });
@@ -111,97 +115,106 @@ describe('Logger with string array', () => {
 
 	describe('info', () => {
 		it('should output info', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.info(['test1', 'test2']);
 
-			expect(mockStdout).toBeCalledTimes(2);
-			expect(mockStdout.mock.calls[0][0]).toBe('> test1' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('> test2' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'> test1',
+				'> test2',
+			]);
 		});
 	});
 
 	describe('displayCommand', () => {
 		it('should output command', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.displayCommand(['test1', 'test2']);
 
-			expect(mockStdout).toBeCalledTimes(2);
-			expect(mockStdout.mock.calls[0][0]).toBe('[command]test1' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('[command]test2' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'[command]test1',
+				'[command]test2',
+			]);
 		});
 	});
 
 	describe('displayStdout', () => {
 		it('should output command', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.displayStdout(['test1\ntest2\n', 'test3']);
 
-			expect(mockStdout).toBeCalledTimes(3);
-			expect(mockStdout.mock.calls[0][0]).toBe('  >> test1' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('  >> test2' + EOL);
-			expect(mockStdout.mock.calls[2][0]).toBe('  >> test3' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'  >> test1',
+				'  >> test2',
+				'  >> test3',
+			]);
 		});
 	});
 
 	describe('displayStderr', () => {
 		it('should output warn', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.displayStderr(['test1\ntest2\n', 'test3']);
 
-			expect(mockStdout).toBeCalledTimes(3);
-			expect(mockStdout.mock.calls[0][0]).toBe('##[warning]  >> test1' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('##[warning]  >> test2' + EOL);
-			expect(mockStdout.mock.calls[2][0]).toBe('##[warning]  >> test3' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'##[warning]  >> test1',
+				'##[warning]  >> test2',
+				'##[warning]  >> test3',
+			]);
 		});
 	});
 });
 
 describe('Logger with replacer', () => {
+	testLogger();
+
 	const logger = new Logger((string: string): string => string.replace('<replace target>', '<replaced>'));
 
-	describe('info output info with args', () => {
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+	it('info output info with args', () => {
+		const mockStdout = spyOnStdout();
 
 		logger.info('message with args %s %d: <replace target>', '<replace target>', 2);
 
-		expect(mockStdout).toBeCalledWith('> message with args <replaced> 2: <replaced>' + EOL);
+		stdoutCalledWith(mockStdout, ['> message with args <replaced> 2: <replaced>']);
 	});
 
-	describe('displayCommand output command with args', () => {
-		const mockStdout = jest.spyOn(global.mockStdout, 'write');
+	it('displayCommand output command with args', () => {
+		const mockStdout = spyOnStdout();
 
 		logger.displayCommand('message with args %s %d: <replace target>', '<replace target>', 2);
 
-		expect(mockStdout).toBeCalledWith('[command]message with args <replaced> 2: <replaced>' + EOL);
+		stdoutCalledWith(mockStdout, ['[command]message with args <replaced> 2: <replaced>']);
 	});
 
 	describe('startProcess', () => {
 		it('should output process with args', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.startProcess('message with args %s %d: <replace target>', '<replace target>', 2);
 
-			expect(mockStdout).toBeCalledWith('##[group]message with args <replaced> 2: <replaced>' + EOL);
+			stdoutCalledWith(mockStdout, ['##[group]message with args <replaced> 2: <replaced>']);
 		});
 	});
 });
 
 describe('Logger with mixed', () => {
+	testLogger();
+
 	const logger = new Logger((string: string): string => string.replace('<replace target>', '<replaced>'));
 
 	describe('debug', () => {
 		it('should output debug', () => {
-			const mockStdout = jest.spyOn(global.mockStdout, 'write');
+			const mockStdout = spyOnStdout();
 
 			logger.debug(['test1: %s %d: <replace target>', 'test2: %s %d: <replace target>'], '<replace target>', 2);
 
-			expect(mockStdout).toBeCalledTimes(2);
-			expect(mockStdout.mock.calls[0][0]).toBe('##[debug]test1: <replaced> 2: <replaced>' + EOL);
-			expect(mockStdout.mock.calls[1][0]).toBe('##[debug]test2: <replaced> 2: <replaced>' + EOL);
+			stdoutCalledWith(mockStdout, [
+				'##[debug]test1: <replaced> 2: <replaced>',
+				'##[debug]test2: <replaced> 2: <replaced>',
+			]);
 		});
 	});
 });
