@@ -173,18 +173,24 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
-	 * @param {string} tag tag
+	 * @param {string|string[]} tags tags
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
 	 */
-	public deleteTag = async(workDir: string, tag: string, context: Context): Promise<void> => {
-		const url = getGitUrl(context);
-		await this.command.execAsync({
-			command: `git -C ${workDir} push --delete "${url}" tag ${tag}`,
-			quiet: true,
-			altCommand: `git push --delete origin tag ${tag}`,
-			suppressError: true,
-		});
+	public deleteTag = async(workDir: string, tags: string | string[], context: Context): Promise<void> => {
+		if ('string' === typeof tags) {
+			const url = getGitUrl(context);
+			await this.command.execAsync({
+				command: `git -C ${workDir} push --delete "${url}" tag ${tags}`,
+				quiet: true,
+				altCommand: `git push --delete origin tag ${tags}`,
+				suppressError: true,
+			});
+		} else {
+			for (const tag of tags) {
+				await this.deleteTag(workDir, tag, context);
+			}
+		}
 	};
 
 	/**
@@ -207,12 +213,16 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
-	 * @param {string[]} tags tags
+	 * @param {string|string[]} tags tags
 	 * @return {Promise<void>} void
 	 */
-	public addLocalTags = async(workDir: string, tags: string[]): Promise<void> => {
-		for (const tag of tags) {
-			await this.command.execAsync({command: `git -C ${workDir} tag ${tag}`});
+	public addLocalTag = async(workDir: string, tags: string | string[]): Promise<void> => {
+		if ('string' === typeof tags) {
+			await this.command.execAsync({command: `git -C ${workDir} tag ${tags}`});
+		} else {
+			for (const tag of tags) {
+				await this.addLocalTag(workDir, tag);
+			}
 		}
 	};
 
