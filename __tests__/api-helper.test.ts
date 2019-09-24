@@ -144,6 +144,34 @@ describe('ApiHelper', () => {
 	});
 
 	describe('updateRef', () => {
+		const response = createResponse<GitCreateCommitResponse>({
+			author: {
+				date: '',
+				email: '',
+				name: '',
+			},
+			committer: {
+				date: '',
+				email: '',
+				name: '',
+			},
+			message: '',
+			'node_id': '',
+			parents: [],
+			sha: '',
+			tree: {
+				sha: '',
+				url: '',
+			},
+			url: '',
+			verification: {
+				payload: null,
+				reason: '',
+				signature: null,
+				verified: true,
+			},
+		});
+
 		it('should update ref', async() => {
 			const fn1 = jest.fn();
 			const fn2 = jest.fn();
@@ -158,71 +186,64 @@ describe('ApiHelper', () => {
 					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
 				});
 
-			await helper.updateRef(createResponse<GitCreateCommitResponse>({
-				author: {
-					date: '',
-					email: '',
-					name: '',
-				},
-				committer: {
-					date: '',
-					email: '',
-					name: '',
-				},
-				message: '',
-				'node_id': '',
-				parents: [],
-				sha: '',
-				tree: {
-					sha: '',
-					url: '',
-				},
-				url: '',
-				verification: {
-					payload: null,
-					reason: '',
-					signature: null,
-					verified: true,
-				},
-			}), octokit, context);
+			await helper.updateRef(response, octokit, context);
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
 		});
-	});
 
-	describe('checkProtected', () => {
-		it('should return true', async() => {
-			const fn1 = jest.fn();
+		it('should output warning 1', async() => {
+			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
-				.persist()
-				.get('/repos/hello/world/branches/test/protection')
-				.reply(200, () => {
-					fn1();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.branches.protection');
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
+					expect(body).toHaveProperty('sha');
+					return body;
+				})
+				.reply(403, {
+					'message': 'Required status check "Test" is expected.',
 				});
 
-			expect(await helper.checkProtected(octokit, context)).toBeTruthy();
-			expect(fn1).toBeCalledTimes(1);
+			await helper.updateRef(response, octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'##[warning]Branch [test] is protected.',
+			]);
 		});
 
-		it('should return false', async() => {
-			const fn1 = jest.fn();
+		it('should output warning 2', async() => {
+			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
-				.persist()
-				.get('/repos/hello/world/branches/test/protection')
-				.reply(404, (uri, body) => {
-					fn1();
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
+					expect(body).toHaveProperty('sha');
 					return body;
+				})
+				.reply(403, {
+					'message': '5 of 5 required status checks are expected.',
 				});
 
-			expect(await helper.checkProtected(octokit, context)).toBeFalsy();
-			expect(fn1).toBeCalledTimes(1);
+			await helper.updateRef(response, octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'##[warning]Branch [test] is protected.',
+			]);
+		});
+
+		it('should throw error', async() => {
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
+					expect(body).toHaveProperty('sha');
+					return body;
+				})
+				.reply(404, {
+					'message': 'Not Found',
+				});
+
+			await expect(helper.updateRef(response, octokit, context)).rejects.toThrow('Not Found');
 		});
 	});
 
 	describe('commit', () => {
-		it('should not commit 1', async() => {
+		it('should not commit', async() => {
 			const mockStdout = spyOnStdout();
 
 			expect(await helper.commit(path.resolve(__dirname, '..'), 'test commit message', [], octokit, context)).toBeFalsy();
@@ -232,27 +253,11 @@ describe('ApiHelper', () => {
 			]);
 		});
 
-		it('should not commit 2', async() => {
-			const mockStdout = spyOnStdout();
-			nock('https://api.github.com')
-				.persist()
-				.get('/repos/hello/world/branches/test/protection')
-				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.branches.protection'));
-
-			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeFalsy();
-
-			stdoutCalledWith(mockStdout, [
-				'##[warning]Branch [test] is protected.',
-			]);
-		});
-
 		it('should commit', async() => {
 			const mockStdout = spyOnStdout();
 			process.env.GITHUB_SHA = 'sha';
 			nock('https://api.github.com')
 				.persist()
-				.get('/repos/hello/world/branches/test/protection')
-				.reply(404)
 				.post('/repos/hello/world/git/blobs')
 				.reply(201, () => {
 					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.blobs');
@@ -346,8 +351,6 @@ describe('ApiHelper with params', () => {
 			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
-				.get('/repos/hello/world/branches/test/protection')
-				.reply(404)
 				.post('/repos/hello/world/git/blobs')
 				.reply(201, () => {
 					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.blobs');

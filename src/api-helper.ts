@@ -135,30 +135,28 @@ export default class ApiHelper {
 	 * @return {Promise<void>} void
 	 */
 	public updateRef = async(commit: Response<GitCreateCommitResponse>, octokit: GitHub, context: Context): Promise<void> => {
-		await octokit.git.updateRef({
-			owner: context.repo.owner,
-			repo: context.repo.repo,
-			ref: this.getRefForUpdate(context),
-			sha: commit.data.sha,
-		});
+		try {
+			await octokit.git.updateRef({
+				owner: context.repo.owner,
+				repo: context.repo.repo,
+				ref: this.getRefForUpdate(context),
+				sha: commit.data.sha,
+			});
+		} catch (error) {
+			if (this.isProtectedBranchError(error)) {
+				this.logger.warn('Branch [%s] is protected.', this.getBranch(context));
+			} else {
+				throw error;
+			}
+		}
 	};
 
 	/**
-	 * @param {GitHub} octokit octokit
-	 * @param {Context} context context
-	 * @return {Promise<boolean>} result
+	 * @param {Error} error error
+	 * @return {boolean} result
 	 */
-	public checkProtected = async(octokit: GitHub, context: Context): Promise<boolean> => {
-		try {
-			// eslint-disable-next-line no-magic-numbers
-			return 200 === (await octokit.repos.getBranchProtection({
-				owner: context.repo.owner,
-				repo: context.repo.repo,
-				branch: this.getBranch(context),
-			})).status;
-		} catch (error) {
-			return false;
-		}
+	private isProtectedBranchError = (error: Error): boolean => {
+		return /required status checks?.* (is|are) expected/i.test(error.message);
 	};
 
 	/**
@@ -172,11 +170,6 @@ export default class ApiHelper {
 	public commit = async(rootDir: string, commitMessage: string, files: string[], octokit: GitHub, context: Context): Promise<boolean> => {
 		if (!files.length) {
 			this.logger.info('There is no diff.');
-			return false;
-		}
-
-		if (await this.checkProtected(octokit, context)) {
-			this.logger.warn('Branch [%s] is protected.', this.getBranch(context));
 			return false;
 		}
 
