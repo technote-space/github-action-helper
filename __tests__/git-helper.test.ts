@@ -211,6 +211,20 @@ describe('GitHelper', () => {
 				`git -C ${workDir} push --delete "https://octocat:token@github.com/hello/world.git" tag delete-tag > /dev/null 2>&1 || :`,
 			]);
 		});
+
+		it('should run delete tags', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.deleteTag(workDir, [
+				'delete-tag1',
+				'delete-tag2',
+			], context());
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} push --delete "https://octocat:token@github.com/hello/world.git" tag delete-tag1 > /dev/null 2>&1 || :`,
+				`git -C ${workDir} push --delete "https://octocat:token@github.com/hello/world.git" tag delete-tag2 > /dev/null 2>&1 || :`,
+			]);
+		});
 	});
 
 	describe('copyTag', () => {
@@ -227,15 +241,25 @@ describe('GitHelper', () => {
 		});
 	});
 
-	describe('addLocalTags', () => {
+	describe('addLocalTag', () => {
+		it('should run add tag', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.addLocalTag(workDir, 'add-tag');
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} tag add-tag`,
+			]);
+		});
+
 		it('should run add tags', async() => {
 			const mockExec = spyOnExec();
 
-			await helper.addLocalTags(workDir, ['tag1', 'tag2']);
+			await helper.addLocalTag(workDir, ['add-tag1', 'add-tag2']);
 
 			execCalledWith(mockExec, [
-				`git -C ${workDir} tag tag1`,
-				`git -C ${workDir} tag tag2`,
+				`git -C ${workDir} tag add-tag1`,
+				`git -C ${workDir} tag add-tag2`,
 			]);
 		});
 	});
