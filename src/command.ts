@@ -1,5 +1,5 @@
 import { exec, ExecException } from 'child_process';
-import { Logger } from './logger';
+import { Logger } from './index';
 
 /**
  * Command

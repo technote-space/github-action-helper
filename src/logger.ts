@@ -4,7 +4,7 @@ import { sprintf } from 'sprintf-js';
 /**
  * Logger
  */
-export class Logger {
+export default class Logger {
 
 	private readonly replacer: (string) => string;
 	private static isRequiredEndGroup = false;
