@@ -15,9 +15,9 @@ describe('Logger', () => {
 		it('should output log', () => {
 			const mockStdout = spyOnStdout();
 
-			logger.info('test');
+			logger.log('test');
 
-			stdoutCalledWith(mockStdout, ['> test']);
+			stdoutCalledWith(mockStdout, ['test']);
 		});
 	});
 
@@ -37,7 +37,7 @@ describe('Logger', () => {
 
 			logger.debug('test');
 
-			stdoutCalledWith(mockStdout, ['##[debug]test']);
+			stdoutCalledWith(mockStdout, ['::debug::test']);
 		});
 	});
 
@@ -47,7 +47,7 @@ describe('Logger', () => {
 
 			logger.error('test');
 
-			stdoutCalledWith(mockStdout, ['##[error]test']);
+			stdoutCalledWith(mockStdout, ['::error::test']);
 		});
 	});
 
@@ -57,7 +57,7 @@ describe('Logger', () => {
 
 			logger.warn('test');
 
-			stdoutCalledWith(mockStdout, ['##[warning]test']);
+			stdoutCalledWith(mockStdout, ['::warning::test']);
 		});
 	});
 
@@ -91,8 +91,8 @@ describe('Logger', () => {
 			logger.displayStderr('test1\ntest2\n');
 
 			stdoutCalledWith(mockStdout, [
-				'##[warning]  >> test1',
-				'##[warning]  >> test2',
+				'::warning::  >> test1',
+				'::warning::  >> test2',
 			]);
 		});
 	});
@@ -103,7 +103,7 @@ describe('Logger', () => {
 
 			logger.startProcess('test');
 
-			stdoutCalledWith(mockStdout, ['##[group]test']);
+			stdoutCalledWith(mockStdout, ['::group::test']);
 		});
 	});
 });
@@ -160,9 +160,9 @@ describe('Logger with string array', () => {
 			logger.displayStderr(['test1\ntest2\n', 'test3']);
 
 			stdoutCalledWith(mockStdout, [
-				'##[warning]  >> test1',
-				'##[warning]  >> test2',
-				'##[warning]  >> test3',
+				'::warning::  >> test1',
+				'::warning::  >> test2',
+				'::warning::  >> test3',
 			]);
 		});
 	});
@@ -195,7 +195,7 @@ describe('Logger with replacer', () => {
 
 			logger.startProcess('message with args %s %d: <replace target>', '<replace target>', 2);
 
-			stdoutCalledWith(mockStdout, ['##[group]message with args <replaced> 2: <replaced>']);
+			stdoutCalledWith(mockStdout, ['::group::message with args <replaced> 2: <replaced>']);
 		});
 	});
 });
@@ -212,8 +212,8 @@ describe('Logger with mixed', () => {
 			logger.debug(['test1: %s %d: <replace target>', 'test2: %s %d: <replace target>'], '<replace target>', 2);
 
 			stdoutCalledWith(mockStdout, [
-				'##[debug]test1: <replaced> 2: <replaced>',
-				'##[debug]test2: <replaced> 2: <replaced>',
+				'::debug::test1: <replaced> 2: <replaced>',
+				'::debug::test2: <replaced> 2: <replaced>',
 			]);
 		});
 	});
