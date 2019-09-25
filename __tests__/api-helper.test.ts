@@ -246,6 +246,7 @@ describe('ApiHelper', () => {
 				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
 				'::endgroup::',
 				'::group::Updating ref... [heads%2Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'::set-env name=GITHUB_SHA,::7638417db6d59f3c431d3e1f261cc637155684cd',
 				'::endgroup::',
 			]);
 			expect(process.env.GITHUB_SHA).toBe('7638417db6d59f3c431d3e1f261cc637155684cd');
@@ -428,6 +429,7 @@ describe('ApiHelper with params', () => {
 				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
 				'::endgroup::',
 				'::group::Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'::set-env name=GITHUB_SHA,::7638417db6d59f3c431d3e1f261cc637155684cd',
 				'::endgroup::',
 			]);
 		});
