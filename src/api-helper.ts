@@ -3,6 +3,7 @@ import path from 'path';
 import { GitHub } from '@actions/github/lib/github';
 import { Context } from '@actions/github/lib/context';
 import { Response, GitCreateTreeResponse, GitCreateCommitResponse, GitGetCommitResponse } from '@octokit/rest';
+import { exportVariable } from '@actions/core';
 import { Logger } from './index';
 import { getBranch, getSender, getRefForUpdate } from './utils';
 
@@ -191,6 +192,7 @@ export default class ApiHelper {
 		await this.updateRef(commit, octokit, context);
 
 		process.env.GITHUB_SHA = commit.data.sha;
+		exportVariable('GITHUB_SHA', commit.data.sha);
 
 		this.logger.endProcess();
 		return true;

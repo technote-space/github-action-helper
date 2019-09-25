@@ -44,7 +44,7 @@ describe('Command', () => {
 		stdoutCalledWith(mockStdout, [
 			'[command]alt',
 			'  >> stdout',
-			'##[warning]  >> stderr',
+			'::warning::  >> stderr',
 		]);
 	});
 
