@@ -237,16 +237,16 @@ describe('ApiHelper', () => {
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
 			stdoutCalledWith(mockStdout, [
-				'##[group]Start push to branch [test]',
-				'##[endgroup]',
-				'##[group]Creating blobs...',
-				'##[endgroup]',
-				'##[group]Creating tree...',
-				'##[endgroup]',
-				'##[group]Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
-				'##[endgroup]',
-				'##[group]Updating ref... [heads%2Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]',
-				'##[endgroup]',
+				'::group::Start push to branch [test]',
+				'::endgroup::',
+				'::group::Creating blobs...',
+				'::endgroup::',
+				'::group::Creating tree...',
+				'::endgroup::',
+				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
+				'::endgroup::',
+				'::group::Updating ref... [heads%2Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'::endgroup::',
 			]);
 			expect(process.env.GITHUB_SHA).toBe('7638417db6d59f3c431d3e1f261cc637155684cd');
 		});
@@ -351,7 +351,7 @@ describe('ApiHelper with params', () => {
 			await helper.updateRef(response, octokit, context);
 
 			stdoutCalledWith(mockStdout, [
-				'##[warning]Branch [test-branch] is protected.',
+				'::warning::Branch [test-branch] is protected.',
 			]);
 		});
 
@@ -369,7 +369,7 @@ describe('ApiHelper with params', () => {
 			await helper.updateRef(response, octokit, context);
 
 			stdoutCalledWith(mockStdout, [
-				'##[warning]Branch [test-branch] is protected.',
+				'::warning::Branch [test-branch] is protected.',
 			]);
 		});
 
@@ -419,16 +419,16 @@ describe('ApiHelper with params', () => {
 			expect(fn1).not.toBeCalled();
 			expect(fn2).toBeCalledTimes(1);
 			stdoutCalledWith(mockStdout, [
-				'##[group]Start push to branch [test-branch]',
-				'##[endgroup]',
-				'##[group]Creating blobs...',
-				'##[endgroup]',
-				'##[group]Creating tree...',
-				'##[endgroup]',
-				'##[group]Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
-				'##[endgroup]',
-				'##[group]Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]',
-				'##[endgroup]',
+				'::group::Start push to branch [test-branch]',
+				'::endgroup::',
+				'::group::Creating blobs...',
+				'::endgroup::',
+				'::group::Creating tree...',
+				'::endgroup::',
+				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
+				'::endgroup::',
+				'::group::Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'::endgroup::',
 			]);
 		});
 	});
