@@ -2,7 +2,11 @@ on:
   push:
     tags:
       - 'v*'
+  release:
+    types: [published]
+
 name: Publish Package
+
 jobs:
   release:
     name: Publish Package
