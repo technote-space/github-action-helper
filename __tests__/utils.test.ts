@@ -24,6 +24,7 @@ const {
 	uniqueArray,
 	getBuildVersion,
 	showActionInfo,
+	getArrayInput,
 } = Utils;
 
 describe('isRelease', () => {
@@ -289,5 +290,27 @@ describe('showActionInfo', () => {
 			'> sha: test-sha',
 			'> ref: refs/heads/test',
 		]);
+	});
+});
+
+describe('getArrayInput', () => {
+	testEnv();
+
+	it('should get single input', () => {
+		process.env.INPUT_TEST = 'test';
+
+		expect(getArrayInput('test')).toEqual(['test']);
+	});
+
+	it('should get multiple inputs', () => {
+		process.env.INPUT_TEST = 'test1\ntest2, test3\n\ntest4';
+
+		expect(getArrayInput('test')).toEqual(['test1', 'test2', 'test3', 'test4']);
+	});
+
+	it('should throw error', () => {
+		expect(() => {
+			getArrayInput('test', true);
+		}).toThrow();
 	});
 });
