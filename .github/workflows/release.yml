@@ -6,6 +6,7 @@ on:
     types: [published]
 
 name: Publish Package
+
 jobs:
   release:
     name: Publish Package
