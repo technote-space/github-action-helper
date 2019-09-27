@@ -28,12 +28,12 @@ Helper for GitHub Action.
 1. Install  
 `npm i @technote-space/github-action-helper`
 1. Use
-```js
+```typescript
 import { Logger, Command, Utils } from '@technote-space/github-action-helper';
 ```
 
 ### Logger
-```js
+```typescript
 import { Logger } from '@technote-space/github-action-helper';
 
 const logger = new Logger();
@@ -57,10 +57,11 @@ logger.endProcess();
 ```
 
 ### Command
-```js
+```typescript
 import { Logger, Command } from '@technote-space/github-action-helper';
 
-const command = new Command(new Logger());
+const logger = new Logger();
+const command = new Command(logger);
 async function run() {
     logger.startProcess('Simple use');
     await command.execAsync({command: 'ls'});
@@ -84,7 +85,7 @@ run();
 ```
 
 ### ApiHelper
-```js
+```typescript
 import { Logger, ApiHelper } from '@technote-space/github-action-helper';
 import { context } from '@actions/github';
 import { GitHub } from '@actions/github' ;
@@ -100,7 +101,7 @@ run();
 ```
 
 ### GitHelper
-```js
+```typescript
 import { Logger, GitHelper } from '@technote-space/github-action-helper';
 import { context } from '@actions/github';
 import path from 'path';
@@ -128,7 +129,7 @@ run();
 ```
 
 ### Utils
-```js
+```typescript
 import { Logger, Utils } from '@technote-space/github-action-helper';
 import { context } from '@actions/github';
 import path from 'path';
