@@ -314,6 +314,12 @@ describe('getArrayInput', () => {
 		expect(getArrayInput('test', false, '&&')).toEqual(['test1', 'test2', 'test3', 'test4']);
 	});
 
+	it('should not separate', () => {
+		process.env.INPUT_TEST = 'test1\ntest2 && test3\n\ntest4';
+
+		expect(getArrayInput('test', false, '')).toEqual(['test1', 'test2 && test3', 'test4']);
+	});
+
 	it('should throw error', () => {
 		expect(() => {
 			getArrayInput('test', true);

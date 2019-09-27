@@ -68,6 +68,6 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 };
 
 export const getArrayInput = (name: string, required = false, separator = ','): string[] => uniqueArray<string>(getInput(name, {required}).split(/\r?\n/).reduce<string[]>(
-	(acc, line) => acc.concat(line.split(separator)).filter(item => item).map(item => item.trim()),
+	(acc, line) => acc.concat(separator ? line.split(separator) : line).filter(item => item).map(item => item.trim()),
 	[],
 ));
