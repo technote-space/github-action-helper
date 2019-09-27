@@ -354,10 +354,10 @@
     once "^1.4.0"
     universal-user-agent "^4.0.0"
 
-"@technote-space/github-action-test-helper@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.0.8.tgz#e004882b32b92e006d821f3a5ac6307449a2e4bb"
-  integrity sha512-HcPVa3OhfkltG4aAg0qedYr08dMSVtW0tpvQsTJh599WCqO+l8Ie0HVdVye0V6fKlGcUcoYBAdB1HqjbGfkNJg==
+"@technote-space/github-action-test-helper@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.0.10.tgz#710284ac82af42cac1d7f2ec7d8890e55c2b5d35"
+  integrity sha512-WyrSyDQaA1z919/RBAyAgR4NTAR+NEX+CkKvossUaf3FiCMug1tt9Jxt6xMxs8ERZnKOETQQSdLWupalZ3h16g==
   dependencies:
     "@actions/github" "^1.1.0"
 
