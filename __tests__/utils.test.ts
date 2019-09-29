@@ -268,7 +268,8 @@ describe('showActionInfo', () => {
 		}));
 
 		stdoutCalledWith(mockStdout, [
-			'=================================================',
+			'',
+			'==================================================',
 			'Version:  v1.2.3',
 			'Event:    push',
 			'Action:   rerequested',
@@ -278,7 +279,7 @@ describe('showActionInfo', () => {
 			'owner:    hello',
 			'repo:     world',
 			'actor:    test-actor',
-			'=================================================',
+			'==================================================',
 			'',
 		]);
 	});
@@ -301,7 +302,8 @@ describe('showActionInfo', () => {
 		}));
 
 		stdoutCalledWith(mockStdout, [
-			'=================================================',
+			'',
+			'==================================================',
 			'Event:    push',
 			'Action:   rerequested',
 			'sha:      test-sha',
@@ -309,7 +311,7 @@ describe('showActionInfo', () => {
 			'owner:    hello',
 			'repo:     world',
 			'actor:    test-actor',
-			'=================================================',
+			'==================================================',
 			'',
 		]);
 	});
