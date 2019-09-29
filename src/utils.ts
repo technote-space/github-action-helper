@@ -55,16 +55,22 @@ export const getWorkspace = (): string => process.env.GITHUB_WORKSPACE || '';
 export const showActionInfo = (rootDir: string, logger: Logger, context: Context): void => {
 	const version = getBuildVersion(path.resolve(rootDir, 'build.json'));
 	const tagName = getTagName(context);
+	logger.log('=================================================');
 	if ('string' === typeof version) {
-		logger.info('Version: %s', version);
+		logger.log('Version:  %s', version);
 	}
-	logger.info('Event: %s', context.eventName);
-	logger.info('Action: %s', context.payload.action);
-	logger.info('sha: %s', context.sha);
-	logger.info('ref: %s', context.ref);
+	logger.log('Event:    %s', context.eventName);
+	logger.log('Action:   %s', context.payload.action);
+	logger.log('sha:      %s', context.sha);
+	logger.log('ref:      %s', context.ref);
 	if (tagName) {
-		logger.info('Tag name: %s', tagName);
+		logger.log('Tag name: %s', tagName);
 	}
+	logger.log('owner:    %s', context.repo.owner);
+	logger.log('repo:     %s', context.repo.repo);
+	logger.log('actor:    %s', context.actor);
+	logger.log('=================================================');
+	logger.log('');
 };
 
 export const getArrayInput = (name: string, required = false, separator = ','): string[] => uniqueArray<string>(getInput(name, {required}).split(/\r?\n/).reduce<string[]>(
