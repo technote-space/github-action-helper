@@ -55,7 +55,8 @@ export const getWorkspace = (): string => process.env.GITHUB_WORKSPACE || '';
 export const showActionInfo = (rootDir: string, logger: Logger, context: Context): void => {
 	const version = getBuildVersion(path.resolve(rootDir, 'build.json'));
 	const tagName = getTagName(context);
-	logger.log('=================================================');
+	logger.log('');
+	logger.log('==================================================');
 	if ('string' === typeof version) {
 		logger.log('Version:  %s', version);
 	}
@@ -69,7 +70,7 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	logger.log('owner:    %s', context.repo.owner);
 	logger.log('repo:     %s', context.repo.repo);
 	logger.log('actor:    %s', context.actor);
-	logger.log('=================================================');
+	logger.log('==================================================');
 	logger.log('');
 };
 
