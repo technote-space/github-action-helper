@@ -260,15 +260,26 @@ describe('showActionInfo', () => {
 				action: 'rerequested',
 			},
 			sha: 'test-sha',
+			repo: {
+				owner: 'hello',
+				repo: 'world',
+			},
+			actor: 'test-actor',
 		}));
 
 		stdoutCalledWith(mockStdout, [
-			'> Version: v1.2.3',
-			'> Event: push',
-			'> Action: rerequested',
-			'> sha: test-sha',
-			'> ref: refs/tags/test',
-			'> Tag name: test',
+			'=================================================',
+			'Version:  v1.2.3',
+			'Event:    push',
+			'Action:   rerequested',
+			'sha:      test-sha',
+			'ref:      refs/tags/test',
+			'Tag name: test',
+			'owner:    hello',
+			'repo:     world',
+			'actor:    test-actor',
+			'=================================================',
+			'',
 		]);
 	});
 
@@ -282,13 +293,24 @@ describe('showActionInfo', () => {
 				action: 'rerequested',
 			},
 			sha: 'test-sha',
+			repo: {
+				owner: 'hello',
+				repo: 'world',
+			},
+			actor: 'test-actor',
 		}));
 
 		stdoutCalledWith(mockStdout, [
-			'> Event: push',
-			'> Action: rerequested',
-			'> sha: test-sha',
-			'> ref: refs/heads/test',
+			'=================================================',
+			'Event:    push',
+			'Action:   rerequested',
+			'sha:      test-sha',
+			'ref:      refs/heads/test',
+			'owner:    hello',
+			'repo:     world',
+			'actor:    test-actor',
+			'=================================================',
+			'',
 		]);
 	});
 });
