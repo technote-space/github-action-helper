@@ -19,7 +19,7 @@ export default class GitHelper {
 	 * @param {number|undefined} options.depth depth
 	 * @param {function|undefined} options.filter filter
 	 */
-	constructor(private readonly logger: Logger, options?: { depth?: number; filter?: (string) => boolean }) {
+	constructor(private readonly logger: Logger, options?: { depth?: number; filter?: (string: string) => boolean }) {
 		this.command = new Command(logger);
 		if (options && options.depth) {
 			this.cloneDepth = options.depth > 0 ? ` --depth=${options.depth}` : ''; // eslint-disable-line no-magic-numbers

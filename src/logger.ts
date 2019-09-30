@@ -12,7 +12,7 @@ export default class Logger {
 	/**
 	 * @param {function|undefined} replacer replacer
 	 */
-	constructor(replacer?: (string) => string) {
+	constructor(replacer?: (string: string) => string) {
 		this.replacer = replacer ? replacer : (text: string): string => text;
 	}
 
