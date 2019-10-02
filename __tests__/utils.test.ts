@@ -315,6 +315,88 @@ describe('showActionInfo', () => {
 			'',
 		]);
 	});
+
+	it('should show action info with issue labels', () => {
+		const mockStdout = spyOnStdout();
+
+		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), getContext({
+			eventName: 'issues',
+			ref: 'refs/heads/test',
+			payload: {
+				action: 'opened',
+				issue: {
+					labels: [
+						{name: 'Issue Label1'},
+						{name: 'Issue Label2'},
+					],
+				},
+			},
+			sha: 'test-sha',
+			repo: {
+				owner: 'hello',
+				repo: 'world',
+			},
+			actor: 'test-actor',
+		}));
+
+		stdoutCalledWith(mockStdout, [
+			'',
+			'==================================================',
+			'Event:    issues',
+			'Action:   opened',
+			'sha:      test-sha',
+			'ref:      refs/heads/test',
+			'Labels:',
+			'  - Issue Label1',
+			'  - Issue Label2',
+			'owner:    hello',
+			'repo:     world',
+			'actor:    test-actor',
+			'==================================================',
+			'',
+		]);
+	});
+
+	it('should show action info with PR labels', () => {
+		const mockStdout = spyOnStdout();
+
+		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), getContext({
+			eventName: 'pull_request',
+			ref: 'refs/heads/test',
+			payload: {
+				action: 'opened',
+				'pull_request': {
+					labels: [
+						{name: 'PR Label1'},
+						{name: 'PR Label2'},
+					],
+				},
+			},
+			sha: 'test-sha',
+			repo: {
+				owner: 'hello',
+				repo: 'world',
+			},
+			actor: 'test-actor',
+		}));
+
+		stdoutCalledWith(mockStdout, [
+			'',
+			'==================================================',
+			'Event:    pull_request',
+			'Action:   opened',
+			'sha:      test-sha',
+			'ref:      refs/heads/test',
+			'Labels:',
+			'  - PR Label1',
+			'  - PR Label2',
+			'owner:    hello',
+			'repo:     world',
+			'actor:    test-actor',
+			'==================================================',
+			'',
+		]);
+	});
 });
 
 describe('getArrayInput', () => {

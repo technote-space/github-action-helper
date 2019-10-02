@@ -67,6 +67,14 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	if (tagName) {
 		logger.log('Tag name: %s', tagName);
 	}
+	if (context.payload.issue) {
+		logger.log('Labels:');
+		context.payload.issue.labels.map(label => label.name).forEach(label => logger.log('  - %s', label));
+	}
+	if (context.payload.pull_request) {
+		logger.log('Labels:');
+		context.payload.pull_request.labels.map(label => label.name).forEach(label => logger.log('  - %s', label));
+	}
 	logger.log('owner:    %s', context.repo.owner);
 	logger.log('repo:     %s', context.repo.repo);
 	logger.log('actor:    %s', context.actor);
