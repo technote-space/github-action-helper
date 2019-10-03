@@ -177,9 +177,15 @@ describe('isSemanticVersioningTagName', () => {
 });
 
 describe('getBranch', () => {
-	it('should get branch', () => {
+	it('should get branch 1', () => {
 		expect(getBranch(getContext({
 			ref: 'refs/heads/test',
+		}))).toBe('test');
+	});
+
+	it('should get branch 1', () => {
+		expect(getBranch(getContext({
+			ref: 'refs/remotes/origin/test',
 		}))).toBe('test');
 	});
 

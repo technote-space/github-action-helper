@@ -25,7 +25,11 @@ export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+
 
 export const isBranch = (context: Context): boolean => /^refs\/heads\//.test(context.ref);
 
-export const getBranch = (context: Context): string => isBranch(context) ? context.ref.replace(/^refs\/heads\//, '') : '';
+export const isRemoteBranch = (context: Context): boolean => /^refs\/remotes\/origin\//.test(context.ref);
+
+export const getBranch = (context: Context): string => isBranch(context) ?
+	context.ref.replace(/^refs\/heads\//, '') :
+	(isRemoteBranch(context) ? context.ref.replace(/^refs\/remotes\/origin\//, '') : '');
 
 export const getRefForUpdate = (context: Context): string => encodeURIComponent(context.ref.replace(/^refs\//, ''));
 
