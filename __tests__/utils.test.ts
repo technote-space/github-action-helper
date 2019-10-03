@@ -177,10 +177,28 @@ describe('isSemanticVersioningTagName', () => {
 });
 
 describe('getBranch', () => {
-	it('should get branch', () => {
+	it('should get branch 1', () => {
 		expect(getBranch(getContext({
 			ref: 'refs/heads/test',
 		}))).toBe('test');
+	});
+
+	it('should get branch 1', () => {
+		expect(getBranch(getContext({
+			ref: 'refs/remotes/origin/test',
+		}))).toBe('test');
+	});
+
+	it('should not get branch 1', () => {
+		expect(getBranch(getContext({
+			ref: 'refs/tags/test',
+		}))).toBe('');
+	});
+
+	it('should not get branch 2', () => {
+		expect(getBranch(getContext({
+			ref: 'refs/pull/2/head',
+		}))).toBe('');
 	});
 });
 
