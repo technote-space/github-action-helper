@@ -18,7 +18,7 @@ const context = (override: object = {}): Context => getContext(Object.assign({
 		owner: 'hello',
 		repo: 'world',
 	},
-	ref: 'test-ref',
+	ref: 'refs/heads/test-ref',
 	sha: 'test-sha',
 }, override));
 
@@ -78,7 +78,7 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				`git -C ${workDir} clone --depth=3 https://octocat:token@github.com/hello/world.git . > /dev/null 2>&1`,
-				`git -C ${workDir} fetch https://octocat:token@github.com/hello/world.git test-ref > /dev/null 2>&1`,
+				`git -C ${workDir} fetch https://octocat:token@github.com/hello/world.git refs/heads/test-ref > /dev/null 2>&1`,
 				`git -C ${workDir} checkout -qf test-sha`,
 			]);
 		});

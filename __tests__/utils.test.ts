@@ -182,6 +182,18 @@ describe('getBranch', () => {
 			ref: 'refs/heads/test',
 		}))).toBe('test');
 	});
+
+	it('should not get branch 1', () => {
+		expect(getBranch(getContext({
+			ref: 'refs/tags/test',
+		}))).toBe('');
+	});
+
+	it('should not get branch 2', () => {
+		expect(getBranch(getContext({
+			ref: 'refs/pull/2/head',
+		}))).toBe('');
+	});
 });
 
 describe('getRefForUpdate', () => {
