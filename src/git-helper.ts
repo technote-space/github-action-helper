@@ -52,12 +52,12 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @param {string} branch branch
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
 	 */
-	private cloneBranch = async(workDir: string, context: Context): Promise<void> => {
+	public cloneBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
 		const url = getGitUrl(context);
-		const branch = getBranch(context);
 		await this.command.execAsync({
 			command: `git -C ${workDir} clone --branch=${branch}${this.cloneDepth} ${url} .`,
 			quiet: true,
@@ -94,7 +94,7 @@ export default class GitHelper {
 		}
 
 		if (isBranch(context)) {
-			await this.cloneBranch(workDir, context);
+			await this.cloneBranch(workDir, getBranch(context), context);
 		} else if (isMergeRef(context)) {
 			await this.clonePR(workDir, context);
 		} else {
