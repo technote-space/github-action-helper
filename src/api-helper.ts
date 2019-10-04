@@ -138,7 +138,7 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
 	 */
-	public updateRef = async(commit: Response<GitCreateCommitResponse>, octokit: GitHub, context: Context): Promise<void> => {
+	public updateRef = async(commit: Response<GitCreateCommitResponse>, octokit: GitHub, context: Context): Promise<boolean> => {
 		try {
 			await octokit.git.updateRef({
 				owner: context.repo.owner,
@@ -146,12 +146,14 @@ export default class ApiHelper {
 				ref: this.getRefForUpdate(context),
 				sha: commit.data.sha,
 			});
+			return true;
 		} catch (error) {
 			if (this.suppressBPError === true && this.isProtectedBranchError(error)) {
 				this.logger.warn('Branch [%s] is protected.', this.getBranch(context));
 			} else {
 				throw error;
 			}
+			return false;
 		}
 	};
 
@@ -189,10 +191,10 @@ export default class ApiHelper {
 		const commit = await this.createCommit(commitMessage, tree, octokit, context);
 
 		this.logger.startProcess('Updating ref... [%s] [%s]', this.getRefForUpdate(context), commit.data.sha);
-		await this.updateRef(commit, octokit, context);
-
-		process.env.GITHUB_SHA = commit.data.sha;
-		exportVariable('GITHUB_SHA', commit.data.sha);
+		if (await this.updateRef(commit, octokit, context)) {
+			process.env.GITHUB_SHA = commit.data.sha;
+			exportVariable('GITHUB_SHA', commit.data.sha);
+		}
 
 		this.logger.endProcess();
 		return true;
