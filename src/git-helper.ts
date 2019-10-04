@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getGitUrl, getBranch } from './utils';
+import { getGitUrl, getBranch, isBranch, isMergeRef } from './utils';
 
 /**
  * Git Helper
@@ -52,22 +52,54 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
-	 * @param {string} branch branch
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
 	 */
-	public clone = async(workDir: string, branch: string, context: Context): Promise<void> => {
-		if (this.isCloned(workDir)) {
-			return;
-		}
-
+	private cloneBranch = async(workDir: string, context: Context): Promise<void> => {
 		const url = getGitUrl(context);
+		const branch = getBranch(context);
 		await this.command.execAsync({
 			command: `git -C ${workDir} clone --branch=${branch}${this.cloneDepth} ${url} .`,
 			quiet: true,
 			altCommand: `git clone --branch=${branch}${this.cloneDepth}`,
 			suppressError: true,
 		});
+	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	private clonePR = async(workDir: string, context: Context): Promise<void> => {
+		const url = getGitUrl(context);
+		await this.command.execAsync({
+			command: `git -C ${workDir} clone${this.cloneDepth} ${url} .`,
+			quiet: true,
+			altCommand: `git clone${this.cloneDepth}`,
+			suppressError: true,
+		});
+		await this.command.execAsync({command: `git -C ${workDir} fetch origin +${context.ref}`});
+		await this.command.execAsync({command: `git -C ${workDir} checkout -qf FETCH_HEAD`});
+	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public clone = async(workDir: string, context: Context): Promise<void> => {
+		if (this.isCloned(workDir)) {
+			return;
+		}
+
+		if (isBranch(context)) {
+			await this.cloneBranch(workDir, context);
+		} else if (isMergeRef(context)) {
+			await this.clonePR(workDir, context);
+		} else {
+			await this.checkout(workDir, context);
+		}
 	};
 
 	/**
@@ -83,6 +115,9 @@ export default class GitHelper {
 			await this.command.execAsync({command: `git -C ${workDir} checkout -qf ${context.sha}`});
 		} else {
 			const checkout = context.sha || getBranch(context);
+			if (!checkout) {
+				throw new Error('Invalid context.');
+			}
 			await this.command.execAsync({command: `git -C ${workDir} clone ${url} .`, quiet: true, altCommand: 'git clone'});
 			await this.command.execAsync({command: `git -C ${workDir} checkout -qf ${checkout}`});
 		}
