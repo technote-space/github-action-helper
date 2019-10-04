@@ -121,6 +121,17 @@ describe('GitHelper', () => {
 				`git -C ${workDir} checkout -qf test-ref`,
 			]);
 		});
+
+		it('should run checkout 3', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.checkout(workDir, context({sha: '', ref: 'refs/tags/test-tag'}));
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} clone https://octocat:token@github.com/hello/world.git . > /dev/null 2>&1`,
+				`git -C ${workDir} checkout -qf refs/tags/test-tag`,
+			]);
+		});
 	});
 
 	describe('gitInit', () => {
