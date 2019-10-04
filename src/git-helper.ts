@@ -114,7 +114,7 @@ export default class GitHelper {
 			await this.command.execAsync({command: `git -C ${workDir} fetch ${url} ${context.ref}`, quiet: true, altCommand: `git fetch origin ${context.ref}`});
 			await this.command.execAsync({command: `git -C ${workDir} checkout -qf ${context.sha}`});
 		} else {
-			const checkout = context.sha || getBranch(context);
+			const checkout = context.sha || getBranch(context) || context.ref;
 			if (!checkout) {
 				throw new Error('Invalid context.');
 			}
