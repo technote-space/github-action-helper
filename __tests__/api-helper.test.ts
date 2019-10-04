@@ -389,7 +389,7 @@ describe('ApiHelper with params', () => {
 	});
 
 	describe('commit', () => {
-		it('should commit', async() => {
+		it('should commit without update ref', async() => {
 			const fn1 = jest.fn();
 			const fn2 = jest.fn();
 			const mockStdout = spyOnStdout();
@@ -411,9 +411,9 @@ describe('ApiHelper with params', () => {
 					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
 				})
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'))
-				.reply(200, () => {
+				.reply(403, () => {
 					fn2();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+					return {'message': 'Required status check "Test" is expected.'};
 				});
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
@@ -429,7 +429,7 @@ describe('ApiHelper with params', () => {
 				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
 				'::endgroup::',
 				'::group::Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]',
-				'::set-env name=GITHUB_SHA,::7638417db6d59f3c431d3e1f261cc637155684cd',
+				'::warning::Branch [test-branch] is protected.',
 				'::endgroup::',
 			]);
 		});
