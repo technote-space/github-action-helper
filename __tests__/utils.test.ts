@@ -18,6 +18,7 @@ const {
 	getRepository,
 	getTagName,
 	isSemanticVersioningTagName,
+	isMergeRef,
 	getBranch,
 	getRefForUpdate,
 	getSender,
@@ -31,13 +32,13 @@ describe('isRelease', () => {
 	it('should return true', () => {
 		expect(isRelease(getContext({
 			eventName: 'release',
-		}))).toBeTruthy();
+		}))).toBe(true);
 	});
 
 	it('should return false', () => {
 		expect(isRelease(getContext({
 			eventName: 'push',
-		}))).toBeFalsy();
+		}))).toBe(false);
 	});
 });
 
@@ -111,15 +112,15 @@ describe('escapeRegExp', () => {
 
 describe('getBoolValue', () => {
 	it('should return true', () => {
-		expect(getBoolValue('1')).toBeTruthy();
-		expect(getBoolValue('true')).toBeTruthy();
-		expect(getBoolValue('a')).toBeTruthy();
+		expect(getBoolValue('1')).toBe(true);
+		expect(getBoolValue('true')).toBe(true);
+		expect(getBoolValue('a')).toBe(true);
 	});
 
 	it('should return false', () => {
-		expect(getBoolValue('0')).toBeFalsy();
-		expect(getBoolValue('false')).toBeFalsy();
-		expect(getBoolValue('')).toBeFalsy();
+		expect(getBoolValue('0')).toBe(false);
+		expect(getBoolValue('false')).toBe(false);
+		expect(getBoolValue('')).toBe(false);
 	});
 });
 
@@ -163,16 +164,48 @@ describe('getTagName', () => {
 
 describe('isSemanticVersioningTagName', () => {
 	it('should return true', () => {
-		expect(isSemanticVersioningTagName('v1')).toBeTruthy();
-		expect(isSemanticVersioningTagName('v1.2')).toBeTruthy();
-		expect(isSemanticVersioningTagName('v12.23.34')).toBeTruthy();
-		expect(isSemanticVersioningTagName('1.2.3')).toBeTruthy();
+		expect(isSemanticVersioningTagName('v1')).toBe(true);
+		expect(isSemanticVersioningTagName('v1.2')).toBe(true);
+		expect(isSemanticVersioningTagName('v12.23.34')).toBe(true);
+		expect(isSemanticVersioningTagName('1.2.3')).toBe(true);
 	});
 
 	it('should return false', () => {
-		expect(isSemanticVersioningTagName('')).toBeFalsy();
-		expect(isSemanticVersioningTagName('v')).toBeFalsy();
-		expect(isSemanticVersioningTagName('abc')).toBeFalsy();
+		expect(isSemanticVersioningTagName('')).toBe(false);
+		expect(isSemanticVersioningTagName('v')).toBe(false);
+		expect(isSemanticVersioningTagName('abc')).toBe(false);
+	});
+});
+
+describe('isMergeRef', () => {
+	it('should return false 1', () => {
+		expect(isMergeRef(getContext({
+			ref: 'refs/heads/test',
+		}))).toBe(false);
+	});
+
+	it('should return false 2', () => {
+		expect(isMergeRef(getContext({
+			ref: 'refs/remotes/origin/test',
+		}))).toBe(false);
+	});
+
+	it('should return false 3', () => {
+		expect(isMergeRef(getContext({
+			ref: 'refs/tags/test',
+		}))).toBe(false);
+	});
+
+	it('should return true 4', () => {
+		expect(isMergeRef(getContext({
+			ref: 'refs/pull/123/head',
+		}))).toBe(false);
+	});
+
+	it('should return true 1', () => {
+		expect(isMergeRef(getContext({
+			ref: 'refs/pull/123/merge',
+		}))).toBe(true);
 	});
 });
 
@@ -226,7 +259,7 @@ describe('getSender', () => {
 	it('should not get sender 1', () => {
 		expect(getSender(getContext({
 			payload: {},
-		}))).toBeFalsy();
+		}))).toBe(false);
 	});
 
 	it('should not get sender 2', () => {
@@ -237,7 +270,7 @@ describe('getSender', () => {
 					login: 'test',
 				},
 			},
-		}))).toBeFalsy();
+		}))).toBe(false);
 	});
 });
 
@@ -257,11 +290,11 @@ describe('getBuildVersion', () => {
 	});
 
 	it('should return false 1', () => {
-		expect(getBuildVersion(path.resolve(__dirname, 'fixtures', 'build2.json'))).toBeFalsy();
+		expect(getBuildVersion(path.resolve(__dirname, 'fixtures', 'build2.json'))).toBe(false);
 	});
 
 	it('should return false 2', () => {
-		expect(getBuildVersion(path.resolve(__dirname, 'fixtures', 'build.test.json'))).toBeFalsy();
+		expect(getBuildVersion(path.resolve(__dirname, 'fixtures', 'build.test.json'))).toBe(false);
 	});
 });
 

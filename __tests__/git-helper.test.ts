@@ -53,7 +53,9 @@ describe('GitHelper', () => {
 			setExists(true);
 			const mockExec = spyOnExec();
 
-			await helper.clone(workDir, 'test', context());
+			await helper.clone(workDir, context({
+				ref: 'refs/heads/test',
+			}));
 
 			execCalledWith(mockExec, []);
 		});
@@ -62,11 +64,37 @@ describe('GitHelper', () => {
 			setExists(false);
 			const mockExec = spyOnExec();
 
-			await helper.clone(workDir, 'test', context());
+			await helper.clone(workDir, context({
+				ref: 'refs/heads/test',
+			}));
 
 			execCalledWith(mockExec, [
 				`git -C ${workDir} clone --branch=test --depth=3 https://octocat:token@github.com/hello/world.git . > /dev/null 2>&1 || :`,
 			]);
+		});
+
+		it('should run git checkout', async() => {
+			setExists(false);
+			const mockExec = spyOnExec();
+
+			expect(await helper.clone(workDir, context({
+				ref: 'refs/pull/123/merge',
+			})));
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} clone --depth=3 https://octocat:token@github.com/hello/world.git . > /dev/null 2>&1 || :`,
+				`git -C ${workDir} fetch origin +refs/pull/123/merge`,
+				`git -C ${workDir} checkout -qf FETCH_HEAD`,
+			]);
+		});
+
+		it('should throw error', async() => {
+			setExists(false);
+
+			await expect(helper.clone(workDir, context({
+				ref: '',
+				sha: '',
+			}))).rejects.toThrow('Invalid context.');
 		});
 	});
 
@@ -291,7 +319,9 @@ describe('GitHelper with params 1', () => {
 			setExists(false);
 			const mockExec = spyOnExec();
 
-			await helper.clone(workDir, 'test', context());
+			await helper.clone(workDir, context({
+				ref: 'refs/heads/test',
+			}));
 
 			execCalledWith(mockExec, [
 				`git -C ${workDir} clone --branch=test --depth=1 https://octocat:token@github.com/hello/world.git . > /dev/null 2>&1 || :`,
@@ -323,7 +353,9 @@ describe('GitHelper with params 2', () => {
 			setExists(false);
 			const mockExec = spyOnExec();
 
-			await helper.clone(workDir, 'test', context());
+			await helper.clone(workDir, context({
+				ref: 'refs/heads/test',
+			}));
 
 			execCalledWith(mockExec, [
 				`git -C ${workDir} clone --branch=test https://octocat:token@github.com/hello/world.git . > /dev/null 2>&1 || :`,
