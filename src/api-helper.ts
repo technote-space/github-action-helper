@@ -74,6 +74,12 @@ export default class ApiHelper {
 	};
 
 	/**
+	 * @param {Context} context context
+	 * @return {string} commit sha
+	 */
+	private getCommitSha = (context: Context): string => isPrRef(context) ? context.payload.after : context.sha;
+
+	/**
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitGetCommitResponse>>} commit
@@ -81,7 +87,7 @@ export default class ApiHelper {
 	private getCommit = async(octokit: GitHub, context: Context): Promise<Response<GitGetCommitResponse>> => octokit.git.getCommit({
 		owner: context.repo.owner,
 		repo: context.repo.repo,
-		'commit_sha': context.sha,
+		'commit_sha': this.getCommitSha(context),
 	});
 
 	/**
@@ -139,7 +145,7 @@ export default class ApiHelper {
 		owner: context.repo.owner,
 		repo: context.repo.repo,
 		tree: tree.data.sha,
-		parents: [context.sha],
+		parents: [this.getCommitSha(context)],
 		message: commitMessage,
 	});
 

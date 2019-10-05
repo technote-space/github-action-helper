@@ -121,6 +121,7 @@ describe('ApiHelper', () => {
 					fn1();
 					expect(body).toHaveProperty('tree');
 					expect(body).toHaveProperty('parents');
+					expect(body.parents).toEqual(['7638417db6d59f3c431d3e1f261cc637155684cd']);
 					return body;
 				})
 				.reply(201, () => {
@@ -140,6 +141,33 @@ describe('ApiHelper', () => {
 			expect(commit).toHaveProperty('url');
 			expect(commit).toHaveProperty('headers');
 			expect(commit).toHaveProperty('data');
+			expect(commit.status).toBe(201);
+		});
+
+		it('should create PR commit', async() => {
+			const fn = jest.fn();
+			nock('https://api.github.com')
+				.post('/repos/hello/world/git/commits', body => {
+					expect(body.parents).toEqual(['test-after']);
+					return body;
+				})
+				.reply(201, () => {
+					fn();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits');
+				});
+
+			const commit = await helper.createCommit('test commit message', createResponse<GitCreateTreeResponse>({
+				sha: 'tree-sha',
+				tree: [],
+				url: '',
+			}), octokit, Object.assign({}, context, {
+				ref: 'refs/pull/123/merge',
+				payload: {
+					after: 'test-after',
+				},
+			}));
+
+			expect(fn).toBeCalledTimes(1);
 			expect(commit.status).toBe(201);
 		});
 	});
