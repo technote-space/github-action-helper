@@ -161,16 +161,14 @@ export default class GitHelper {
 	 * @param {string} workDir work dir
 	 * @return {Promise<string[]>} diff
 	 */
-	public getDiff = async(workDir: string): Promise<string[]> => {
-		return (await this.command.execAsync({
-			command: `git -C ${workDir} status --short -uno`,
-			suppressOutput: true,
-		}))
-			.split(/\r\n|\n/)
-			.filter(line => line.match(/^[MDA]\s+/))
-			.filter(this.filter)
-			.map(line => line.replace(/^[MDA]\s+/, ''));
-	};
+	public getDiff = async(workDir: string): Promise<string[]> => (await this.command.execAsync({
+		command: `git -C ${workDir} status --short -uno`,
+		suppressOutput: true,
+	}))
+		.split(/\r\n|\n/)
+		.filter(line => line.match(/^[MDA]\s+/))
+		.filter(this.filter)
+		.map(line => line.replace(/^[MDA]\s+/, ''));
 
 	/**
 	 * @param {string} workDir work dir

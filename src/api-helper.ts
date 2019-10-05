@@ -77,13 +77,11 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitGetCommitResponse>>} commit
 	 */
-	private getCommit = async(octokit: GitHub, context: Context): Promise<Response<GitGetCommitResponse>> => {
-		return await octokit.git.getCommit({
-			owner: context.repo.owner,
-			repo: context.repo.repo,
-			'commit_sha': context.sha,
-		});
-	};
+	private getCommit = async(octokit: GitHub, context: Context): Promise<Response<GitGetCommitResponse>> => await octokit.git.getCommit({
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+		'commit_sha': context.sha,
+	});
 
 	/**
 	 * @param {GitHub} octokit octokit
@@ -117,19 +115,17 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitCreateTreeResponse>>} tree
 	 */
-	public createTree = async(blobs: { path: string; sha: string }[], octokit: GitHub, context: Context): Promise<Response<GitCreateTreeResponse>> => {
-		return await octokit.git.createTree({
-			owner: context.repo.owner,
-			repo: context.repo.repo,
-			'base_tree': (await this.getCommit(octokit, context)).data.tree.sha,
-			tree: Object.values(blobs).map(blob => ({
-				path: blob.path,
-				type: 'blob',
-				mode: '100644',
-				sha: blob.sha,
-			})),
-		});
-	};
+	public createTree = async(blobs: { path: string; sha: string }[], octokit: GitHub, context: Context): Promise<Response<GitCreateTreeResponse>> => await octokit.git.createTree({
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+		'base_tree': (await this.getCommit(octokit, context)).data.tree.sha,
+		tree: Object.values(blobs).map(blob => ({
+			path: blob.path,
+			type: 'blob',
+			mode: '100644',
+			sha: blob.sha,
+		})),
+	});
 
 	/**
 	 * @param {string} commitMessage commit message
@@ -138,15 +134,13 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitCreateCommitResponse>>} commit
 	 */
-	public createCommit = async(commitMessage: string, tree: Response<GitCreateTreeResponse>, octokit: GitHub, context: Context): Promise<Response<GitCreateCommitResponse>> => {
-		return await octokit.git.createCommit({
-			owner: context.repo.owner,
-			repo: context.repo.repo,
-			tree: tree.data.sha,
-			parents: [context.sha],
-			message: commitMessage,
-		});
-	};
+	public createCommit = async(commitMessage: string, tree: Response<GitCreateTreeResponse>, octokit: GitHub, context: Context): Promise<Response<GitCreateCommitResponse>> => await octokit.git.createCommit({
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+		tree: tree.data.sha,
+		parents: [context.sha],
+		message: commitMessage,
+	});
 
 	/**
 	 * @param {Response<GitCreateCommitResponse>} commit commit
@@ -177,9 +171,7 @@ export default class ApiHelper {
 	 * @param {Error} error error
 	 * @return {boolean} result
 	 */
-	private isProtectedBranchError = (error: Error): boolean => {
-		return /required status checks?.* (is|are) expected/i.test(error.message);
-	};
+	private isProtectedBranchError = (error: Error): boolean => /required status checks?.* (is|are) expected/i.test(error.message);
 
 	/**
 	 * @param {string} rootDir root dir
