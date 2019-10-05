@@ -46,10 +46,11 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {string} ref for update
 	 */
-	private getRefForUpdate = async(octokit: GitHub, context: Context): Promise<string> => this.refForUpdate ?
+	private getRefForUpdate = async(octokit: GitHub, context: Context): Promise<string> => encodeURIComponent(this.refForUpdate ?
 		this.refForUpdate : (
-			isMergeRef(context) ? (await this.getPR(octokit, context)).data.head.ref : getRefForUpdate(context)
-		);
+			isMergeRef(context) ? ('heads/' + (await this.getPR(octokit, context)).data.head.ref) : getRefForUpdate(context)
+		),
+	);
 
 	/**
 	 * @param {string} rootDir root dir

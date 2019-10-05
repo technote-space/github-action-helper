@@ -33,7 +33,7 @@ export const getBranch = (context: Context): string => isBranch(context) ?
 	context.ref.replace(/^refs\/heads\//, '') :
 	(isRemoteBranch(context) ? context.ref.replace(/^refs\/remotes\/origin\//, '') : '');
 
-export const getRefForUpdate = (context: Context): string => encodeURIComponent(context.ref.replace(/^refs\//, ''));
+export const getRefForUpdate = (context: Context): string => context.ref.replace(/^refs\//, '');
 
 export const getSender = (context: Context): string | false => context.payload.sender && context.payload.sender.type === 'User' ? context.payload.sender.login : false;
 
