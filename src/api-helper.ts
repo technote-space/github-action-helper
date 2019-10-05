@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { GitHub } from '@actions/github/lib/github';
 import { Context } from '@actions/github/lib/context';
-import { Response, GitCreateTreeResponse, GitCreateCommitResponse, GitGetCommitResponse } from '@octokit/rest';
+import { Response, GitCreateTreeResponse, GitCreateCommitResponse, GitGetCommitResponse, PullsGetResponse } from '@octokit/rest';
 import { exportVariable } from '@actions/core';
 import { Logger } from './index';
-import { getBranch, getSender, getRefForUpdate } from './utils';
+import { getSender, getRefForUpdate, isMergeRef } from './utils';
 
 /**
  * API Helper
@@ -14,8 +14,9 @@ export default class ApiHelper {
 
 	private readonly branch?: string | undefined = undefined;
 	private readonly sender?: string | undefined = undefined;
-	private readonly refForUpdate?: string | undefined = undefined;
 	private readonly suppressBPError?: boolean | undefined = undefined;
+	private readonly refForUpdate?: string | undefined = undefined;
+	private prCache: { [key: number]: Response<PullsGetResponse> } = {};
 
 	/**
 	 * @param {Logger} logger logger
@@ -36,21 +37,19 @@ export default class ApiHelper {
 
 	/**
 	 * @param {Context} context context
-	 * @return {string} branch
-	 */
-	private getBranch = (context: Context): string => this.branch ? this.branch : getBranch(context);
-
-	/**
-	 * @param {Context} context context
 	 * @return {string|boolean} sender
 	 */
 	private getSender = (context: Context): string | false => this.sender ? this.sender : getSender(context);
 
 	/**
+	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
 	 * @return {string} ref for update
 	 */
-	private getRefForUpdate = (context: Context): string => this.refForUpdate ? this.refForUpdate : getRefForUpdate(context);
+	private getRefForUpdate = async(octokit: GitHub, context: Context): Promise<string> => this.refForUpdate ?
+		this.refForUpdate : (
+			isMergeRef(context) ? (await this.getPR(octokit, context)).data.head.ref : getRefForUpdate(context)
+		);
 
 	/**
 	 * @param {string} rootDir root dir
@@ -78,12 +77,27 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitGetCommitResponse>>} commit
 	 */
-	private getCommit = async(octokit: GitHub, context: Context): Promise<Response<GitGetCommitResponse>> => {
-		return await octokit.git.getCommit({
-			owner: context.repo.owner,
-			repo: context.repo.repo,
-			'commit_sha': context.sha,
-		});
+	private getCommit = async(octokit: GitHub, context: Context): Promise<Response<GitGetCommitResponse>> => octokit.git.getCommit({
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+		'commit_sha': context.sha,
+	});
+
+	/**
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<Response<PullsGetResponse>>} commit
+	 */
+	private getPR = async(octokit: GitHub, context: Context): Promise<Response<PullsGetResponse>> => {
+		const key = parseInt(context.payload.number, 10);
+		if (!(key in this.prCache)) {
+			this.prCache[key] = await octokit.pulls.get({
+				owner: context.repo.owner,
+				repo: context.repo.repo,
+				'pull_number': context.payload.number,
+			});
+		}
+		return this.prCache[key];
 	};
 
 	/**
@@ -101,19 +115,17 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitCreateTreeResponse>>} tree
 	 */
-	public createTree = async(blobs: { path: string; sha: string }[], octokit: GitHub, context: Context): Promise<Response<GitCreateTreeResponse>> => {
-		return await octokit.git.createTree({
-			owner: context.repo.owner,
-			repo: context.repo.repo,
-			'base_tree': (await this.getCommit(octokit, context)).data.tree.sha,
-			tree: Object.values(blobs).map(blob => ({
-				path: blob.path,
-				type: 'blob',
-				mode: '100644',
-				sha: blob.sha,
-			})),
-		});
-	};
+	public createTree = async(blobs: { path: string; sha: string }[], octokit: GitHub, context: Context): Promise<Response<GitCreateTreeResponse>> => octokit.git.createTree({
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+		'base_tree': (await this.getCommit(octokit, context)).data.tree.sha,
+		tree: Object.values(blobs).map(blob => ({
+			path: blob.path,
+			type: 'blob',
+			mode: '100644',
+			sha: blob.sha,
+		})),
+	});
 
 	/**
 	 * @param {string} commitMessage commit message
@@ -122,15 +134,13 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitCreateCommitResponse>>} commit
 	 */
-	public createCommit = async(commitMessage: string, tree: Response<GitCreateTreeResponse>, octokit: GitHub, context: Context): Promise<Response<GitCreateCommitResponse>> => {
-		return await octokit.git.createCommit({
-			owner: context.repo.owner,
-			repo: context.repo.repo,
-			tree: tree.data.sha,
-			parents: [context.sha],
-			message: commitMessage,
-		});
-	};
+	public createCommit = async(commitMessage: string, tree: Response<GitCreateTreeResponse>, octokit: GitHub, context: Context): Promise<Response<GitCreateCommitResponse>> => octokit.git.createCommit({
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+		tree: tree.data.sha,
+		parents: [context.sha],
+		message: commitMessage,
+	});
 
 	/**
 	 * @param {Response<GitCreateCommitResponse>} commit commit
@@ -143,13 +153,13 @@ export default class ApiHelper {
 			await octokit.git.updateRef({
 				owner: context.repo.owner,
 				repo: context.repo.repo,
-				ref: this.getRefForUpdate(context),
+				ref: await this.getRefForUpdate(octokit, context),
 				sha: commit.data.sha,
 			});
 			return true;
 		} catch (error) {
 			if (this.suppressBPError === true && this.isProtectedBranchError(error)) {
-				this.logger.warn('Branch [%s] is protected.', this.getBranch(context));
+				this.logger.warn('Branch is protected.');
 			} else {
 				throw error;
 			}
@@ -161,9 +171,7 @@ export default class ApiHelper {
 	 * @param {Error} error error
 	 * @return {boolean} result
 	 */
-	private isProtectedBranchError = (error: Error): boolean => {
-		return /required status checks?.* (is|are) expected/i.test(error.message);
-	};
+	private isProtectedBranchError = (error: Error): boolean => /required status checks?.* (is|are) expected/i.test(error.message);
 
 	/**
 	 * @param {string} rootDir root dir
@@ -179,7 +187,7 @@ export default class ApiHelper {
 			return false;
 		}
 
-		this.logger.startProcess('Start push to branch [%s]', this.getBranch(context));
+		this.logger.startProcess('Start push to remote');
 
 		this.logger.startProcess('Creating blobs...');
 		const blobs = await this.filesToBlobs(rootDir, files, octokit, context);
@@ -190,7 +198,7 @@ export default class ApiHelper {
 		this.logger.startProcess('Creating commit... [%s]', tree.data.sha);
 		const commit = await this.createCommit(commitMessage, tree, octokit, context);
 
-		this.logger.startProcess('Updating ref... [%s] [%s]', this.getRefForUpdate(context), commit.data.sha);
+		this.logger.startProcess('Updating ref... [%s] [%s]', await this.getRefForUpdate(octokit, context), commit.data.sha);
 		if (await this.updateRef(commit, octokit, context)) {
 			process.env.GITHUB_SHA = commit.data.sha;
 			exportVariable('GITHUB_SHA', commit.data.sha);

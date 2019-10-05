@@ -27,6 +27,7 @@ const context = getContext({
 			type: 'User',
 			login: 'octocat',
 		},
+		number: 123,
 	},
 });
 const octokit = new GitHub('');
@@ -192,6 +193,55 @@ describe('ApiHelper', () => {
 			expect(fn2).toBeCalledTimes(1);
 		});
 
+		it('should update PR ref', async() => {
+			const fn1 = jest.fn();
+			const fn2 = jest.fn();
+			const fn3 = jest.fn();
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('new-topic'), body => {
+					fn1();
+					expect(body).toHaveProperty('sha');
+					return body;
+				})
+				.reply(200, () => {
+					fn2();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+				})
+				.get('/repos/hello/world/pulls/123')
+				.reply(200, () => {
+					fn3();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'pulls.get');
+				});
+
+			await helper.updateRef(response, octokit, Object.assign({}, context, {
+				ref: 'refs/pull/123/merge',
+			}));
+
+			expect(fn1).toBeCalledTimes(1);
+			expect(fn2).toBeCalledTimes(1);
+			expect(fn3).toBeCalledTimes(1);
+		});
+
+		it('should cache PR get api', async() => {
+			const fn = jest.fn();
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('new-topic'))
+				.reply(200, () => {
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+				})
+				.get('/repos/hello/world/pulls/123')
+				.reply(200, () => {
+					fn();
+					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'pulls.get');
+				});
+
+			await helper.updateRef(response, octokit, Object.assign({}, context, {
+				ref: 'refs/pull/123/merge',
+			}));
+
+			expect(fn).toBeCalledTimes(0);
+		});
+
 		it('should output warning', async() => {
 			nock('https://api.github.com')
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
@@ -237,7 +287,7 @@ describe('ApiHelper', () => {
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
 			stdoutCalledWith(mockStdout, [
-				'::group::Start push to branch [test]',
+				'::group::Start push to remote',
 				'::endgroup::',
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -352,7 +402,7 @@ describe('ApiHelper with params', () => {
 			await helper.updateRef(response, octokit, context);
 
 			stdoutCalledWith(mockStdout, [
-				'::warning::Branch [test-branch] is protected.',
+				'::warning::Branch is protected.',
 			]);
 		});
 
@@ -370,7 +420,7 @@ describe('ApiHelper with params', () => {
 			await helper.updateRef(response, octokit, context);
 
 			stdoutCalledWith(mockStdout, [
-				'::warning::Branch [test-branch] is protected.',
+				'::warning::Branch is protected.',
 			]);
 		});
 
@@ -420,7 +470,7 @@ describe('ApiHelper with params', () => {
 			expect(fn1).not.toBeCalled();
 			expect(fn2).toBeCalledTimes(1);
 			stdoutCalledWith(mockStdout, [
-				'::group::Start push to branch [test-branch]',
+				'::group::Start push to remote',
 				'::endgroup::',
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -429,7 +479,7 @@ describe('ApiHelper with params', () => {
 				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
 				'::endgroup::',
 				'::group::Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]',
-				'::warning::Branch [test-branch] is protected.',
+				'::warning::Branch is protected.',
 				'::endgroup::',
 			]);
 		});
