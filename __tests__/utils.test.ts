@@ -18,7 +18,9 @@ const {
 	getRepository,
 	getTagName,
 	isSemanticVersioningTagName,
-	isMergeRef,
+	isPrRef,
+	getPrMergeRef,
+	getPrHeadRef,
 	getBranch,
 	getRefForUpdate,
 	getSender,
@@ -177,35 +179,63 @@ describe('isSemanticVersioningTagName', () => {
 	});
 });
 
-describe('isMergeRef', () => {
+describe('isPrRef', () => {
 	it('should return false 1', () => {
-		expect(isMergeRef(getContext({
+		expect(isPrRef(getContext({
 			ref: 'refs/heads/test',
 		}))).toBe(false);
 	});
 
 	it('should return false 2', () => {
-		expect(isMergeRef(getContext({
+		expect(isPrRef(getContext({
 			ref: 'refs/remotes/origin/test',
 		}))).toBe(false);
 	});
 
 	it('should return false 3', () => {
-		expect(isMergeRef(getContext({
+		expect(isPrRef(getContext({
 			ref: 'refs/tags/test',
 		}))).toBe(false);
 	});
 
-	it('should return true 4', () => {
-		expect(isMergeRef(getContext({
-			ref: 'refs/pull/123/head',
-		}))).toBe(false);
-	});
-
 	it('should return true 1', () => {
-		expect(isMergeRef(getContext({
+		expect(isPrRef(getContext({
 			ref: 'refs/pull/123/merge',
 		}))).toBe(true);
+	});
+
+	it('should return true 2', () => {
+		expect(isPrRef(getContext({
+			ref: 'refs/pull/123/head',
+		}))).toBe(true);
+	});
+});
+
+describe('getPrMergeRef', () => {
+	it('should get merge ref 1', () => {
+		expect(getPrMergeRef(getContext({
+			ref: 'refs/pull/123/merge',
+		}))).toBe('refs/pull/123/merge');
+	});
+
+	it('should get merge ref 2', () => {
+		expect(getPrMergeRef(getContext({
+			ref: 'refs/pull/123/head',
+		}))).toBe('refs/pull/123/merge');
+	});
+});
+
+describe('getPrHeadRef', () => {
+	it('should get head ref 1', () => {
+		expect(getPrHeadRef(getContext({
+			ref: 'refs/pull/123/merge',
+		}))).toBe('refs/pull/123/head');
+	});
+
+	it('should get head ref 2', () => {
+		expect(getPrHeadRef(getContext({
+			ref: 'refs/pull/123/head',
+		}))).toBe('refs/pull/123/head');
 	});
 });
 
