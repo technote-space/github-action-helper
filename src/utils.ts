@@ -27,7 +27,7 @@ export const isBranch = (context: Context): boolean => /^refs\/heads\//.test(con
 
 export const isRemoteBranch = (context: Context): boolean => /^refs\/remotes\/origin\//.test(context.ref);
 
-export const isMergeRef = (context: Context): boolean => /^refs\/pull\/\d+\/merge$/.test(context.ref);
+export const isPrRef = (context: Context): boolean => /^refs\/pull\/\d+\/(merge|head)$/.test(context.ref);
 
 export const getBranch = (context: Context): string => isBranch(context) ?
 	context.ref.replace(/^refs\/heads\//, '') :

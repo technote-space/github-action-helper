@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getGitUrl, getBranch, isBranch, isMergeRef } from './utils';
+import { getGitUrl, getBranch, isBranch, isPrRef } from './utils';
 
 /**
  * Git Helper
@@ -95,7 +95,7 @@ export default class GitHelper {
 
 		if (isBranch(context)) {
 			await this.cloneBranch(workDir, getBranch(context), context);
-		} else if (isMergeRef(context)) {
+		} else if (isPrRef(context)) {
 			await this.clonePR(workDir, context);
 		} else {
 			await this.checkout(workDir, context);

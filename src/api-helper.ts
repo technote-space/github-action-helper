@@ -5,7 +5,7 @@ import { Context } from '@actions/github/lib/context';
 import { Response, GitCreateTreeResponse, GitCreateCommitResponse, GitGetCommitResponse, PullsGetResponse } from '@octokit/rest';
 import { exportVariable } from '@actions/core';
 import { Logger } from './index';
-import { getSender, getRefForUpdate, isMergeRef } from './utils';
+import { getSender, getRefForUpdate, isPrRef } from './utils';
 
 /**
  * API Helper
@@ -48,7 +48,7 @@ export default class ApiHelper {
 	 */
 	private getRefForUpdate = async(octokit: GitHub, context: Context): Promise<string> => encodeURIComponent(this.refForUpdate ?
 		this.refForUpdate : (
-			isMergeRef(context) ? ('heads/' + (await this.getPR(octokit, context)).data.head.ref) : getRefForUpdate(context)
+			isPrRef(context) ? ('heads/' + (await this.getPR(octokit, context)).data.head.ref) : getRefForUpdate(context)
 		),
 	);
 
