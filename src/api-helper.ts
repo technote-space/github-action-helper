@@ -77,7 +77,7 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitGetCommitResponse>>} commit
 	 */
-	private getCommit = async(octokit: GitHub, context: Context): Promise<Response<GitGetCommitResponse>> => await octokit.git.getCommit({
+	private getCommit = async(octokit: GitHub, context: Context): Promise<Response<GitGetCommitResponse>> => octokit.git.getCommit({
 		owner: context.repo.owner,
 		repo: context.repo.repo,
 		'commit_sha': context.sha,
@@ -89,7 +89,7 @@ export default class ApiHelper {
 	 * @return {Promise<Response<PullsGetResponse>>} commit
 	 */
 	private getPR = async(octokit: GitHub, context: Context): Promise<Response<PullsGetResponse>> => {
-		const key = parseInt(context.payload.number);
+		const key = parseInt(context.payload.number, 10);
 		if (!(key in this.prCache)) {
 			this.prCache[key] = await octokit.pulls.get({
 				owner: context.repo.owner,
@@ -115,7 +115,7 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitCreateTreeResponse>>} tree
 	 */
-	public createTree = async(blobs: { path: string; sha: string }[], octokit: GitHub, context: Context): Promise<Response<GitCreateTreeResponse>> => await octokit.git.createTree({
+	public createTree = async(blobs: { path: string; sha: string }[], octokit: GitHub, context: Context): Promise<Response<GitCreateTreeResponse>> => octokit.git.createTree({
 		owner: context.repo.owner,
 		repo: context.repo.repo,
 		'base_tree': (await this.getCommit(octokit, context)).data.tree.sha,
@@ -134,7 +134,7 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<Response<GitCreateCommitResponse>>} commit
 	 */
-	public createCommit = async(commitMessage: string, tree: Response<GitCreateTreeResponse>, octokit: GitHub, context: Context): Promise<Response<GitCreateCommitResponse>> => await octokit.git.createCommit({
+	public createCommit = async(commitMessage: string, tree: Response<GitCreateTreeResponse>, octokit: GitHub, context: Context): Promise<Response<GitCreateCommitResponse>> => octokit.git.createCommit({
 		owner: context.repo.owner,
 		repo: context.repo.repo,
 		tree: tree.data.sha,
