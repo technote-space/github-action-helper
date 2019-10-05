@@ -240,7 +240,7 @@ describe('getRefForUpdate', () => {
 	it('should get ref for update', () => {
 		expect(getRefForUpdate(getContext({
 			ref: 'refs/heads/test',
-		}))).toBe(encodeURIComponent('heads/test'));
+		}))).toBe('heads/test');
 	});
 });
 
