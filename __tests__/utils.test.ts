@@ -223,6 +223,12 @@ describe('getPrMergeRef', () => {
 			ref: 'refs/pull/123/head',
 		}))).toBe('refs/pull/123/merge');
 	});
+
+	it('should get original ref', () => {
+		expect(getPrMergeRef(getContext({
+			ref: 'refs/heads/test',
+		}))).toBe('refs/heads/test');
+	});
 });
 
 describe('getPrHeadRef', () => {
@@ -236,6 +242,12 @@ describe('getPrHeadRef', () => {
 		expect(getPrHeadRef(getContext({
 			ref: 'refs/pull/123/head',
 		}))).toBe('refs/pull/123/head');
+	});
+
+	it('should get original ref', () => {
+		expect(getPrHeadRef(getContext({
+			ref: 'refs/heads/test',
+		}))).toBe('refs/heads/test');
 	});
 });
 
