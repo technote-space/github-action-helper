@@ -198,7 +198,7 @@ describe('ApiHelper', () => {
 			const fn2 = jest.fn();
 			const fn3 = jest.fn();
 			nock('https://api.github.com')
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('new-topic'), body => {
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/new-topic'), body => {
 					fn1();
 					expect(body).toHaveProperty('sha');
 					return body;
@@ -225,7 +225,7 @@ describe('ApiHelper', () => {
 		it('should cache PR get api', async() => {
 			const fn = jest.fn();
 			nock('https://api.github.com')
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('new-topic'))
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/new-topic'))
 				.reply(200, () => {
 					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
 				})
