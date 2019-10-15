@@ -181,6 +181,37 @@ export default class ApiHelper {
 	private isProtectedBranchError = (error: Error): boolean => /required status checks?.* (is|are) expected/i.test(error.message);
 
 	/**
+	 * @param {string[]} files files
+	 * @return {boolean} diff?
+	 */
+	private checkDiff = (files: string[]): boolean => {
+		if (!files.length) {
+			this.logger.info('There is no diff.');
+			return false;
+		}
+		return true;
+	};
+
+	/**
+	 * @param {string} rootDir root dir
+	 * @param {string} commitMessage commit message
+	 * @param {string[]} files files
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<Response<GitCreateCommitResponse>>} commit
+	 */
+	private prepareCommit = async(rootDir: string, commitMessage: string, files: string[], octokit: GitHub, context: Context): Promise<Response<GitCreateCommitResponse>> => {
+		this.logger.startProcess('Creating blobs...');
+		const blobs = await this.filesToBlobs(rootDir, files, octokit, context);
+
+		this.logger.startProcess('Creating tree...');
+		const tree = await this.createTree(blobs, octokit, context);
+
+		this.logger.startProcess('Creating commit... [%s]', tree.data.sha);
+		return await this.createCommit(commitMessage, tree, octokit, context);
+	};
+
+	/**
 	 * @param {string} rootDir root dir
 	 * @param {string} commitMessage commit message
 	 * @param {string[]} files files
@@ -189,21 +220,11 @@ export default class ApiHelper {
 	 * @return {Promise<boolean>} result
 	 */
 	public commit = async(rootDir: string, commitMessage: string, files: string[], octokit: GitHub, context: Context): Promise<boolean> => {
-		if (!files.length) {
-			this.logger.info('There is no diff.');
+		if (!this.checkDiff(files)) {
 			return false;
 		}
 
-		this.logger.startProcess('Start push to remote');
-
-		this.logger.startProcess('Creating blobs...');
-		const blobs = await this.filesToBlobs(rootDir, files, octokit, context);
-
-		this.logger.startProcess('Creating tree...');
-		const tree = await this.createTree(blobs, octokit, context);
-
-		this.logger.startProcess('Creating commit... [%s]', tree.data.sha);
-		const commit = await this.createCommit(commitMessage, tree, octokit, context);
+		const commit = await this.prepareCommit(rootDir, commitMessage, files, octokit, context);
 
 		this.logger.startProcess('Updating ref... [%s] [%s]', await this.getRefForUpdate(octokit, context), commit.data.sha);
 		if (await this.updateRef(commit, octokit, context)) {

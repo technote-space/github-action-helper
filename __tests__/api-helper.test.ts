@@ -315,8 +315,6 @@ describe('ApiHelper', () => {
 
 			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
 			stdoutCalledWith(mockStdout, [
-				'::group::Start push to remote',
-				'::endgroup::',
 				'::group::Creating blobs...',
 				'::endgroup::',
 				'::group::Creating tree...',
@@ -498,8 +496,6 @@ describe('ApiHelper with params', () => {
 			expect(fn1).not.toBeCalled();
 			expect(fn2).toBeCalledTimes(1);
 			stdoutCalledWith(mockStdout, [
-				'::group::Start push to remote',
-				'::endgroup::',
 				'::group::Creating blobs...',
 				'::endgroup::',
 				'::group::Creating tree...',
