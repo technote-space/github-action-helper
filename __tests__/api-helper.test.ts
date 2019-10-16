@@ -15,6 +15,7 @@ import {
 import { testLogger } from './util';
 import { ApiHelper, Logger } from '../src';
 
+const rootDir = path.resolve(__dirname, 'fixtures');
 const context = getContext({
 	ref: 'refs/heads/test',
 	repo: {
@@ -32,6 +33,34 @@ const context = getContext({
 });
 const octokit = new GitHub('');
 
+const createCommitResponse = createResponse<GitCreateCommitResponse>({
+	author: {
+		date: '',
+		email: '',
+		name: '',
+	},
+	committer: {
+		date: '',
+		email: '',
+		name: '',
+	},
+	message: '',
+	'node_id': '',
+	parents: [],
+	sha: '',
+	tree: {
+		sha: '',
+		url: '',
+	},
+	url: '',
+	verification: {
+		payload: null,
+		reason: '',
+		signature: null,
+		verified: true,
+	},
+});
+
 describe('ApiHelper', () => {
 	disableNetConnect(nock);
 	testEnv();
@@ -41,7 +70,7 @@ describe('ApiHelper', () => {
 
 	describe('filesToBlobs', () => {
 		it('should return empty', async() => {
-			expect(await helper.filesToBlobs(path.resolve(__dirname, 'fixtures'), [], new GitHub(''), context)).toHaveLength(0);
+			expect(await helper.filesToBlobs(rootDir, [], new GitHub(''), context)).toHaveLength(0);
 		});
 
 		it('should return blobs', async() => {
@@ -57,10 +86,10 @@ describe('ApiHelper', () => {
 				})
 				.reply(201, () => {
 					fn2();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.blobs');
+					return getApiFixture(rootDir, 'repos.git.blobs');
 				});
 
-			const blobs = await helper.filesToBlobs(path.resolve(__dirname, 'fixtures'), ['build1.json', 'build2.json'], octokit, context);
+			const blobs = await helper.filesToBlobs(rootDir, ['build1.json', 'build2.json'], octokit, context);
 			expect(blobs).toHaveLength(2);
 			expect(fn1).toBeCalledTimes(2);
 			expect(fn2).toBeCalledTimes(2);
@@ -77,7 +106,7 @@ describe('ApiHelper', () => {
 				.get('/repos/hello/world/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd')
 				.reply(200, () => {
 					fn1();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits.get');
+					return getApiFixture(rootDir, 'repos.git.commits.get');
 				})
 				.post('/repos/hello/world/git/trees', body => {
 					fn2();
@@ -87,7 +116,7 @@ describe('ApiHelper', () => {
 				})
 				.reply(201, () => {
 					fn3();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.trees');
+					return getApiFixture(rootDir, 'repos.git.trees');
 				});
 
 			const tree = await helper.createTree([
@@ -126,7 +155,7 @@ describe('ApiHelper', () => {
 				})
 				.reply(201, () => {
 					fn2();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits');
+					return getApiFixture(rootDir, 'repos.git.commits');
 				});
 
 			const commit = await helper.createCommit('test commit message', createResponse<GitCreateTreeResponse>({
@@ -153,7 +182,7 @@ describe('ApiHelper', () => {
 				})
 				.reply(201, () => {
 					fn();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits');
+					return getApiFixture(rootDir, 'repos.git.commits');
 				});
 
 			const commit = await helper.createCommit('test commit message', createResponse<GitCreateTreeResponse>({
@@ -173,34 +202,6 @@ describe('ApiHelper', () => {
 	});
 
 	describe('updateRef', () => {
-		const response = createResponse<GitCreateCommitResponse>({
-			author: {
-				date: '',
-				email: '',
-				name: '',
-			},
-			committer: {
-				date: '',
-				email: '',
-				name: '',
-			},
-			message: '',
-			'node_id': '',
-			parents: [],
-			sha: '',
-			tree: {
-				sha: '',
-				url: '',
-			},
-			url: '',
-			verification: {
-				payload: null,
-				reason: '',
-				signature: null,
-				verified: true,
-			},
-		});
-
 		it('should update ref', async() => {
 			const fn1 = jest.fn();
 			const fn2 = jest.fn();
@@ -212,10 +213,10 @@ describe('ApiHelper', () => {
 				})
 				.reply(200, () => {
 					fn2();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+					return getApiFixture(rootDir, 'repos.git.refs.update');
 				});
 
-			await helper.updateRef(response, octokit, context);
+			await helper.updateRef(createCommitResponse, octokit, context);
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -233,15 +234,15 @@ describe('ApiHelper', () => {
 				})
 				.reply(200, () => {
 					fn2();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+					return getApiFixture(rootDir, 'repos.git.refs.update');
 				})
 				.get('/repos/hello/world/pulls/123')
 				.reply(200, () => {
 					fn3();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'pulls.get');
+					return getApiFixture(rootDir, 'pulls.get');
 				});
 
-			await helper.updateRef(response, octokit, Object.assign({}, context, {
+			await helper.updateRef(createCommitResponse, octokit, Object.assign({}, context, {
 				ref: 'refs/pull/123/merge',
 			}));
 
@@ -255,15 +256,15 @@ describe('ApiHelper', () => {
 			nock('https://api.github.com')
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/new-topic'))
 				.reply(200, () => {
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+					return getApiFixture(rootDir, 'repos.git.refs.update');
 				})
 				.get('/repos/hello/world/pulls/123')
 				.reply(200, () => {
 					fn();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'pulls.get');
+					return getApiFixture(rootDir, 'pulls.get');
 				});
 
-			await helper.updateRef(response, octokit, Object.assign({}, context, {
+			await helper.updateRef(createCommitResponse, octokit, Object.assign({}, context, {
 				ref: 'refs/pull/123/merge',
 			}));
 
@@ -280,7 +281,101 @@ describe('ApiHelper', () => {
 					'message': 'Required status check "Test" is expected.',
 				});
 
-			await expect(helper.updateRef(response, octokit, context)).rejects.toThrow('Required status check "Test" is expected.');
+			await expect(helper.updateRef(createCommitResponse, octokit, context)).rejects.toThrow('Required status check "Test" is expected.');
+		});
+	});
+
+	describe('createRef', () => {
+		it('should create ref', async() => {
+			const fn1 = jest.fn();
+			const fn2 = jest.fn();
+			nock('https://api.github.com')
+				.post('/repos/hello/world/git/refs', body => {
+					fn1();
+					expect(body).toHaveProperty('sha');
+					expect(body).toHaveProperty('ref');
+					expect(body.ref).toBe('refs/heads/featureA');
+					return body;
+				})
+				.reply(201, () => {
+					fn2();
+					return getApiFixture(rootDir, 'repos.git.refs.create');
+				});
+
+			await helper.createRef(createCommitResponse, 'refs/heads/featureA', octokit, context);
+
+			expect(fn1).toBeCalledTimes(1);
+			expect(fn2).toBeCalledTimes(1);
+		});
+	});
+
+	describe('pullsCreate', () => {
+		it('should create pull request', async() => {
+			const fn1 = jest.fn();
+			const fn2 = jest.fn();
+			nock('https://api.github.com')
+				.post('/repos/hello/world/pulls', body => {
+					fn1();
+					expect(body).toHaveProperty('head');
+					expect(body).toHaveProperty('base');
+					expect(body).toHaveProperty('title');
+					expect(body).toHaveProperty('body');
+					expect(body.head).toBe('hello:test/branch');
+					expect(body.base).toBe('test');
+					expect(body.title).toBe('test title');
+					expect(body.body).toBe('body1\nbody2\nbody3');
+					return body;
+				})
+				.reply(201, () => {
+					fn2();
+					return getApiFixture(rootDir, 'pulls.create');
+				});
+
+			await helper.pullsCreate('test/branch', {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context);
+
+			expect(fn1).toBeCalledTimes(1);
+			expect(fn2).toBeCalledTimes(1);
+		});
+	});
+
+	describe('pullsUpdate', () => {
+		it('should create pull request', async() => {
+			const fn1 = jest.fn();
+			const fn2 = jest.fn();
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/pulls/1347', body => {
+					fn1();
+					expect(body).toHaveProperty('title');
+					expect(body).toHaveProperty('body');
+					expect(body).toHaveProperty('state');
+					expect(body.title).toBe('test title');
+					expect(body.body).toBe('body1\nbody2\nbody3');
+					expect(body.state).toBe('open');
+					return body;
+				})
+				.reply(200, () => {
+					fn2();
+					return getApiFixture(rootDir, 'pulls.update');
+				});
+
+			await helper.pullsUpdate(1347, {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context);
+
+			expect(fn1).toBeCalledTimes(1);
+			expect(fn2).toBeCalledTimes(1);
 		});
 	});
 
@@ -288,7 +383,7 @@ describe('ApiHelper', () => {
 		it('should not commit', async() => {
 			const mockStdout = spyOnStdout();
 
-			expect(await helper.commit(path.resolve(__dirname, '..'), 'test commit message', [], octokit, context)).toBeFalsy();
+			expect(await helper.commit(path.resolve(__dirname, '..'), 'test commit message', [], octokit, context)).toBe(false);
 
 			stdoutCalledWith(mockStdout, [
 				'> There is no diff.',
@@ -302,18 +397,18 @@ describe('ApiHelper', () => {
 				.persist()
 				.post('/repos/hello/world/git/blobs')
 				.reply(201, () => {
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.blobs');
+					return getApiFixture(rootDir, 'repos.git.blobs');
 				})
 				.get('/repos/hello/world/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd')
-				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits.get'))
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.commits.get'))
 				.post('/repos/hello/world/git/trees')
-				.reply(201, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.trees'))
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
 				.post('/repos/hello/world/git/commits')
-				.reply(201, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits'))
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'))
-				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs'));
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.refs.update'));
 
-			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
+			expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBe(true);
 			stdoutCalledWith(mockStdout, [
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -329,6 +424,111 @@ describe('ApiHelper', () => {
 		});
 	});
 
+	describe('createPR', () => {
+		it('should do nothing', async() => {
+			expect(await helper.createPR(rootDir, 'test commit message', [], 'create/test', {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context)).toBe(false);
+		});
+
+		it('should update pull request', async() => {
+			const mockStdout = spyOnStdout();
+			process.env.GITHUB_SHA = 'sha';
+			nock('https://api.github.com')
+				.persist()
+				.post('/repos/hello/world/git/blobs')
+				.reply(201, () => {
+					return getApiFixture(rootDir, 'repos.git.blobs');
+				})
+				.get('/repos/hello/world/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.commits.get'))
+				.post('/repos/hello/world/git/trees')
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
+				.post('/repos/hello/world/git/commits')
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
+				.get('/repos/hello/world/git/refs/heads/create/test')
+				.reply(404)
+				.post('/repos/hello/world/git/refs')
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
+				.patch('/repos/hello/world/pulls/1347')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
+
+			expect(await helper.createPR(rootDir, 'test commit message', ['build1.json', 'build2.json'], 'create/test', {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context)).toBe(true);
+			stdoutCalledWith(mockStdout, [
+				'::group::Creating blobs...',
+				'::endgroup::',
+				'::group::Creating tree...',
+				'::endgroup::',
+				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
+				'::endgroup::',
+				'::group::Creating reference... [refs/heads/create/test] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'::endgroup::',
+				'::group::Creating PullRequest... [create/test] -> [heads/test]',
+				'::endgroup::',
+			]);
+		});
+
+		it('should create pull request', async() => {
+			const mockStdout = spyOnStdout();
+			process.env.GITHUB_SHA = 'sha';
+			nock('https://api.github.com')
+				.persist()
+				.post('/repos/hello/world/git/blobs')
+				.reply(201, () => {
+					return getApiFixture(rootDir, 'repos.git.blobs');
+				})
+				.get('/repos/hello/world/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.commits.get'))
+				.post('/repos/hello/world/git/trees')
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
+				.post('/repos/hello/world/git/commits')
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
+				.get('/repos/hello/world/git/refs/heads/create/test')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.ref'))
+				.post('/repos/hello/world/git/refs')
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.reply(200, () => [])
+				.post('/repos/hello/world/pulls')
+				.reply(201, () => getApiFixture(rootDir, 'pulls.create'));
+
+			expect(await helper.createPR(rootDir, 'test commit message', ['build1.json', 'build2.json'], 'create/test', {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context)).toBe(true);
+			stdoutCalledWith(mockStdout, [
+				'::group::Creating blobs...',
+				'::endgroup::',
+				'::group::Creating tree...',
+				'::endgroup::',
+				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
+				'::endgroup::',
+				'::group::Creating reference... [refs/heads/create/test] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'::endgroup::',
+				'::group::Creating PullRequest... [create/test] -> [heads/test]',
+				'::endgroup::',
+			]);
+		});
+	});
+
 	describe('getUser', () => {
 		it('should throw error 1', async() => {
 			const fn1 = jest.fn();
@@ -337,7 +537,7 @@ describe('ApiHelper', () => {
 				.get('/users/octocat')
 				.reply(200, () => {
 					fn1();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'users.get');
+					return getApiFixture(rootDir, 'users.get');
 				});
 
 			await expect(helper.getUser(octokit, getContext({}))).rejects.toThrow('Sender is not valid.');
@@ -365,7 +565,7 @@ describe('ApiHelper', () => {
 				.get('/users/octocat')
 				.reply(200, () => {
 					fn1();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'users.get');
+					return getApiFixture(rootDir, 'users.get');
 				});
 
 			const user = await helper.getUser(octokit, context);
@@ -386,34 +586,6 @@ describe('ApiHelper with params', () => {
 	const helper = new ApiHelper(new Logger(), {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
 
 	describe('updateRef', () => {
-		const response = createResponse<GitCreateCommitResponse>({
-			author: {
-				date: '',
-				email: '',
-				name: '',
-			},
-			committer: {
-				date: '',
-				email: '',
-				name: '',
-			},
-			message: '',
-			'node_id': '',
-			parents: [],
-			sha: '',
-			tree: {
-				sha: '',
-				url: '',
-			},
-			url: '',
-			verification: {
-				payload: null,
-				reason: '',
-				signature: null,
-				verified: true,
-			},
-		});
-
 		it('should output warning 1', async() => {
 			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
@@ -425,7 +597,7 @@ describe('ApiHelper with params', () => {
 					'message': 'Required status check "Test" is expected.',
 				});
 
-			await helper.updateRef(response, octokit, context);
+			await helper.updateRef(createCommitResponse, octokit, context);
 
 			stdoutCalledWith(mockStdout, [
 				'::warning::Branch is protected.',
@@ -443,7 +615,7 @@ describe('ApiHelper with params', () => {
 					'message': '5 of 5 required status checks are expected.',
 				});
 
-			await helper.updateRef(response, octokit, context);
+			await helper.updateRef(createCommitResponse, octokit, context);
 
 			stdoutCalledWith(mockStdout, [
 				'::warning::Branch is protected.',
@@ -460,7 +632,7 @@ describe('ApiHelper with params', () => {
 					'message': 'Not Found',
 				});
 
-			await expect(helper.updateRef(response, octokit, context)).rejects.toThrow('Not Found');
+			await expect(helper.updateRef(createCommitResponse, octokit, context)).rejects.toThrow('Not Found');
 		});
 	});
 
@@ -473,18 +645,18 @@ describe('ApiHelper with params', () => {
 				.persist()
 				.post('/repos/hello/world/git/blobs')
 				.reply(201, () => {
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.blobs');
+					return getApiFixture(rootDir, 'repos.git.blobs');
 				})
 				.get('/repos/hello/world/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd')
-				.reply(200, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits.get'))
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.commits.get'))
 				.post('/repos/hello/world/git/trees')
-				.reply(201, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.trees'))
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
 				.post('/repos/hello/world/git/commits')
-				.reply(201, () => getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.commits'))
+				.reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'))
 				.reply(200, () => {
 					fn1();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'repos.git.refs');
+					return getApiFixture(rootDir, 'repos.git.refs.update');
 				})
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'))
 				.reply(403, () => {
@@ -492,7 +664,7 @@ describe('ApiHelper with params', () => {
 					return {'message': 'Required status check "Test" is expected.'};
 				});
 
-			expect(await helper.commit(path.resolve(__dirname, 'fixtures'), 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBeTruthy();
+			expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBe(true);
 			expect(fn1).not.toBeCalled();
 			expect(fn2).toBeCalledTimes(1);
 			stdoutCalledWith(mockStdout, [
@@ -518,12 +690,12 @@ describe('ApiHelper with params', () => {
 				.get('/users/octocat')
 				.reply(200, () => {
 					fn1();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'users.get');
+					return getApiFixture(rootDir, 'users.get');
 				})
 				.get('/users/test-sender')
 				.reply(200, () => {
 					fn2();
-					return getApiFixture(path.resolve(__dirname, 'fixtures'), 'users.get');
+					return getApiFixture(rootDir, 'users.get');
 				});
 
 			const user = await helper.getUser(octokit, context);

@@ -2,10 +2,28 @@ import fs from 'fs';
 import path from 'path';
 import { GitHub } from '@actions/github/lib/github';
 import { Context } from '@actions/github/lib/context';
-import { Response, GitCreateTreeResponse, GitCreateCommitResponse, GitGetCommitResponse, PullsGetResponse } from '@octokit/rest';
+import {
+	Response,
+	AnyResponse,
+	GitCreateTreeResponse,
+	GitCreateCommitResponse,
+	GitGetCommitResponse,
+	PullsGetResponse,
+	PullsListResponse,
+	PullsCreateResponse,
+	PullsUpdateResponse,
+} from '@octokit/rest';
 import { exportVariable } from '@actions/core';
 import { Logger } from './index';
 import { getSender, getRefForUpdate, isPrRef } from './utils';
+
+type PullsCreateParams = {
+	body?: string;
+
+	draft?: boolean;
+
+	title: string;
+};
 
 /**
  * API Helper
@@ -42,15 +60,17 @@ export default class ApiHelper {
 	private getSender = (context: Context): string | false => this.sender ? this.sender : getSender(context);
 
 	/**
+	 * @param {boolean} encode encode?
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
 	 * @return {string} ref for update
 	 */
-	private getRefForUpdate = async(octokit: GitHub, context: Context): Promise<string> => encodeURIComponent(this.refForUpdate ?
-		this.refForUpdate : (
+	private getRefForUpdate = async(encode: boolean, octokit: GitHub, context: Context): Promise<string> => {
+		const ref = this.refForUpdate ? this.refForUpdate : (
 			isPrRef(context) ? ('heads/' + (await this.getPR(octokit, context)).data.head.ref) : getRefForUpdate(context)
-		),
-	);
+		);
+		return encode ? encodeURIComponent(ref) : ref;
+	};
 
 	/**
 	 * @param {string} rootDir root dir
@@ -150,6 +170,24 @@ export default class ApiHelper {
 	});
 
 	/**
+	 * @param {string} refName refName
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<AnyResponse|null>} refName
+	 */
+	private getRef = async(refName: string, octokit: GitHub, context: Context): Promise<AnyResponse | null> => {
+		try {
+			return await octokit.git.getRef({
+				owner: context.repo.owner,
+				repo: context.repo.repo,
+				ref: refName,
+			});
+		} catch (error) {
+			return null;
+		}
+	};
+
+	/**
 	 * @param {Response<GitCreateCommitResponse>} commit commit
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
@@ -160,7 +198,7 @@ export default class ApiHelper {
 			await octokit.git.updateRef({
 				owner: context.repo.owner,
 				repo: context.repo.repo,
-				ref: await this.getRefForUpdate(octokit, context),
+				ref: await this.getRefForUpdate(true, octokit, context),
 				sha: commit.data.sha,
 			});
 			return true;
@@ -173,6 +211,67 @@ export default class ApiHelper {
 			return false;
 		}
 	};
+
+	/**
+	 * @param {Response<GitCreateCommitResponse>} commit commit
+	 * @param {string} refName refName
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public createRef = async(commit: Response<GitCreateCommitResponse>, refName: string, octokit: GitHub, context: Context): Promise<void> => {
+		await octokit.git.createRef({
+			owner: context.repo.owner,
+			repo: context.repo.repo,
+			ref: refName,
+			sha: commit.data.sha,
+		});
+	};
+
+	/**
+	 * @param {string} branchName branch name
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<Response<PullsListResponse>>} pulls
+	 */
+	private pullsList = async(branchName: string, octokit: GitHub, context: Context): Promise<Response<PullsListResponse>> => {
+		return octokit.pulls.list({
+			owner: context.repo.owner,
+			repo: context.repo.repo,
+			head: `${context.repo.owner}:${branchName}`,
+		});
+	};
+
+	/**
+	 * @param {string} branchName branch name
+	 * @param {PullsCreateParams} detail detail
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<PullsCreateResponse>} pull
+	 */
+	public pullsCreate = async(branchName: string, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<Response<PullsCreateResponse>> => octokit.pulls.create({
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+		head: `${context.repo.owner}:${branchName}`,
+		base: (await this.getRefForUpdate(false, octokit, context)).replace(/^heads\//, ''),
+		...detail,
+	});
+
+	/**
+	 * @param {number} number pull number
+	 * @param {PullsCreateParams} detail detail
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<PullsUpdateResponse>} pull
+	 */
+	public pullsUpdate = async(number: number, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<Response<PullsUpdateResponse>> => octokit.pulls.update({
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+		'pull_number': number,
+		base: (await this.getRefForUpdate(false, octokit, context)).replace(/^heads\//, ''),
+		state: 'open',
+		...detail,
+	});
 
 	/**
 	 * @param {Error} error error
@@ -226,10 +325,49 @@ export default class ApiHelper {
 
 		const commit = await this.prepareCommit(rootDir, commitMessage, files, octokit, context);
 
-		this.logger.startProcess('Updating ref... [%s] [%s]', await this.getRefForUpdate(octokit, context), commit.data.sha);
+		this.logger.startProcess('Updating ref... [%s] [%s]', await this.getRefForUpdate(true, octokit, context), commit.data.sha);
 		if (await this.updateRef(commit, octokit, context)) {
 			process.env.GITHUB_SHA = commit.data.sha;
 			exportVariable('GITHUB_SHA', commit.data.sha);
+		}
+
+		this.logger.endProcess();
+		return true;
+	};
+
+	/**
+	 * @param {string} rootDir root dir
+	 * @param {string} commitMessage commit message
+	 * @param {string[]} files files
+	 * @param {string} createBranchName branch name
+	 * @param {PullsCreateParams} detail detail
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<boolean>} result
+	 */
+	public createPR = async(rootDir: string, commitMessage: string, files: string[], createBranchName: string, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<boolean> => {
+		if (!this.checkDiff(files)) {
+			return false;
+		}
+
+		const branchName = createBranchName.replace(/^(refs\/)?heads/, '');
+		const headName = `heads/${branchName}`;
+		const refName = `refs/${headName}`;
+
+		const commit = await this.prepareCommit(rootDir, commitMessage, files, octokit, context);
+
+		this.logger.startProcess('Creating reference... [%s] [%s]', refName, commit.data.sha);
+		const ref = await this.getRef(headName, octokit, context);
+		if (null === ref) {
+			await this.createRef(commit, refName, octokit, context);
+		}
+
+		this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', branchName, await this.getRefForUpdate(false, octokit, context));
+		const pulls = await this.pullsList(branchName, octokit, context);
+		if (pulls.data.length) {
+			await this.pullsUpdate(pulls.data[0].number, detail, octokit, context);
+		} else {
+			await this.pullsCreate(branchName, detail, octokit, context);
 		}
 
 		this.logger.endProcess();
