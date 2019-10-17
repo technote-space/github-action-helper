@@ -307,7 +307,7 @@ export default class ApiHelper {
 		const tree = await this.createTree(blobs, octokit, context);
 
 		this.logger.startProcess('Creating commit... [%s]', tree.data.sha);
-		return await this.createCommit(commitMessage, tree, octokit, context);
+		return this.createCommit(commitMessage, tree, octokit, context);
 	};
 
 	/**
