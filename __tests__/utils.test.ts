@@ -10,6 +10,9 @@ import { testLogger } from './util';
 
 const {
 	isRelease,
+	isPush,
+	isPr,
+	isIssue,
 	getWorkspace,
 	getActor,
 	getGitUrl,
@@ -40,6 +43,48 @@ describe('isRelease', () => {
 	it('should return false', () => {
 		expect(isRelease(getContext({
 			eventName: 'push',
+		}))).toBe(false);
+	});
+});
+
+describe('isPush', () => {
+	it('should return true', () => {
+		expect(isPush(getContext({
+			eventName: 'push',
+		}))).toBe(true);
+	});
+
+	it('should return false', () => {
+		expect(isPush(getContext({
+			eventName: 'release',
+		}))).toBe(false);
+	});
+});
+
+describe('isPr', () => {
+	it('should return true', () => {
+		expect(isPr(getContext({
+			eventName: 'pull_request',
+		}))).toBe(true);
+	});
+
+	it('should return false', () => {
+		expect(isPr(getContext({
+			eventName: 'release',
+		}))).toBe(false);
+	});
+});
+
+describe('isIssue', () => {
+	it('should return true', () => {
+		expect(isIssue(getContext({
+			eventName: 'issues',
+		}))).toBe(true);
+	});
+
+	it('should return false', () => {
+		expect(isIssue(getContext({
+			eventName: 'release',
 		}))).toBe(false);
 	});
 });
