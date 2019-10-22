@@ -216,7 +216,7 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'repos.git.refs.update');
 				});
 
-			await helper.updateRef(createCommitResponse, octokit, context);
+			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true, octokit, context), false, octokit, context);
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -242,9 +242,10 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'pulls.get');
 				});
 
-			await helper.updateRef(createCommitResponse, octokit, Object.assign({}, context, {
+			const _context = Object.assign({}, context, {
 				ref: 'refs/pull/123/merge',
-			}));
+			});
+			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true, octokit, _context), false, octokit, _context);
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -264,9 +265,10 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'pulls.get');
 				});
 
-			await helper.updateRef(createCommitResponse, octokit, Object.assign({}, context, {
+			const _context = Object.assign({}, context, {
 				ref: 'refs/pull/123/merge',
-			}));
+			});
+			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true, octokit, _context), false, octokit, _context);
 
 			expect(fn).toBeCalledTimes(0);
 		});
@@ -281,7 +283,7 @@ describe('ApiHelper', () => {
 					'message': 'Required status check "Test" is expected.',
 				});
 
-			await expect(helper.updateRef(createCommitResponse, octokit, context)).rejects.toThrow('Required status check "Test" is expected.');
+			await expect(helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true, octokit, context), false, octokit, context)).rejects.toThrow('Required status check "Test" is expected.');
 		});
 	});
 
@@ -460,14 +462,20 @@ describe('ApiHelper', () => {
 				.patch('/repos/hello/world/pulls/1347')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
 
-			expect(await helper.createPR(rootDir, 'test commit message', ['build1.json', 'build2.json'], 'create/test', {
+			const info = await helper.createPR(rootDir, 'test commit message', ['build1.json', 'build2.json'], 'create/test', {
 				body: [
 					'body1',
 					'body2',
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context)).toBe(true);
+			}, octokit, context);
+			expect(info).toHaveProperty('html_url');
+			expect(info).toHaveProperty('commits_url');
+			expect(info).toHaveProperty('comments_url');
+			expect(info).toHaveProperty('number');
+			expect(info['html_url']).toBe('https://github.com/hello/world/pull/1347');
+			expect(info['number']).toBe(1347);
 			stdoutCalledWith(mockStdout, [
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -477,7 +485,7 @@ describe('ApiHelper', () => {
 				'::endgroup::',
 				'::group::Creating reference... [refs/heads/create/test] [7638417db6d59f3c431d3e1f261cc637155684cd]',
 				'::endgroup::',
-				'::group::Creating PullRequest... [create/test] -> [heads/test]',
+				'::group::Updating PullRequest... [create/test] -> [heads/test]',
 				'::endgroup::',
 			]);
 		});
@@ -499,6 +507,8 @@ describe('ApiHelper', () => {
 				.reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
 				.get('/repos/hello/world/git/refs/heads/create/test')
 				.reply(200, () => getApiFixture(rootDir, 'repos.git.ref'))
+				.patch('/repos/hello/world/git/refs/heads/create/test')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.refs.update'))
 				.post('/repos/hello/world/git/refs')
 				.reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
 				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
@@ -506,14 +516,20 @@ describe('ApiHelper', () => {
 				.post('/repos/hello/world/pulls')
 				.reply(201, () => getApiFixture(rootDir, 'pulls.create'));
 
-			expect(await helper.createPR(rootDir, 'test commit message', ['build1.json', 'build2.json'], 'create/test', {
+			const info = await helper.createPR(rootDir, 'test commit message', ['build1.json', 'build2.json'], 'create/test', {
 				body: [
 					'body1',
 					'body2',
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context)).toBe(true);
+			}, octokit, context);
+			expect(info).toHaveProperty('html_url');
+			expect(info).toHaveProperty('commits_url');
+			expect(info).toHaveProperty('comments_url');
+			expect(info).toHaveProperty('number');
+			expect(info['html_url']).toBe('https://github.com/hello/world/pull/1347');
+			expect(info['number']).toBe(1347);
 			stdoutCalledWith(mockStdout, [
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -521,7 +537,7 @@ describe('ApiHelper', () => {
 				'::endgroup::',
 				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
 				'::endgroup::',
-				'::group::Creating reference... [refs/heads/create/test] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+				'::group::Updating reference... [refs/heads/create/test] [7638417db6d59f3c431d3e1f261cc637155684cd]',
 				'::endgroup::',
 				'::group::Creating PullRequest... [create/test] -> [heads/test]',
 				'::endgroup::',
@@ -597,7 +613,7 @@ describe('ApiHelper with params', () => {
 					'message': 'Required status check "Test" is expected.',
 				});
 
-			await helper.updateRef(createCommitResponse, octokit, context);
+			await helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context);
 
 			stdoutCalledWith(mockStdout, [
 				'::warning::Branch is protected.',
@@ -615,7 +631,7 @@ describe('ApiHelper with params', () => {
 					'message': '5 of 5 required status checks are expected.',
 				});
 
-			await helper.updateRef(createCommitResponse, octokit, context);
+			await helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context);
 
 			stdoutCalledWith(mockStdout, [
 				'::warning::Branch is protected.',
@@ -632,7 +648,7 @@ describe('ApiHelper with params', () => {
 					'message': 'Not Found',
 				});
 
-			await expect(helper.updateRef(createCommitResponse, octokit, context)).rejects.toThrow('Not Found');
+			await expect(helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context)).rejects.toThrow('Not Found');
 		});
 	});
 

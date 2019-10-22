@@ -390,8 +390,7 @@ describe('showActionInfo', () => {
 
 	it('should show action info', () => {
 		const mockStdout = spyOnStdout();
-
-		showActionInfo(path.resolve(__dirname, 'fixtures'), new Logger(), getContext({
+		const context = getContext({
 			eventName: 'push',
 			ref: 'refs/tags/test',
 			payload: {
@@ -403,7 +402,9 @@ describe('showActionInfo', () => {
 				repo: 'world',
 			},
 			actor: 'test-actor',
-		}));
+		});
+
+		showActionInfo(path.resolve(__dirname, 'fixtures'), new Logger(), context);
 
 		stdoutCalledWith(mockStdout, [
 			'',
@@ -416,7 +417,13 @@ describe('showActionInfo', () => {
 			'Tag name: test',
 			'owner:    hello',
 			'repo:     world',
-			'actor:    test-actor',
+			'',
+			'::group::Dump context',
+			JSON.stringify(context, null, '\t'),
+			'::endgroup::',
+			'::group::Dump Payload',
+			JSON.stringify(context.payload, null, '\t'),
+			'::endgroup::',
 			'==================================================',
 			'',
 		]);
@@ -424,8 +431,7 @@ describe('showActionInfo', () => {
 
 	it('should show action info without version and tag', () => {
 		const mockStdout = spyOnStdout();
-
-		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), getContext({
+		const context = getContext({
 			eventName: 'push',
 			ref: 'refs/heads/test',
 			payload: {
@@ -437,7 +443,9 @@ describe('showActionInfo', () => {
 				repo: 'world',
 			},
 			actor: 'test-actor',
-		}));
+		});
+
+		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), context);
 
 		stdoutCalledWith(mockStdout, [
 			'',
@@ -448,7 +456,13 @@ describe('showActionInfo', () => {
 			'ref:      refs/heads/test',
 			'owner:    hello',
 			'repo:     world',
-			'actor:    test-actor',
+			'',
+			'::group::Dump context',
+			JSON.stringify(context, null, '\t'),
+			'::endgroup::',
+			'::group::Dump Payload',
+			JSON.stringify(context.payload, null, '\t'),
+			'::endgroup::',
 			'==================================================',
 			'',
 		]);
@@ -456,8 +470,7 @@ describe('showActionInfo', () => {
 
 	it('should show action info with issue labels', () => {
 		const mockStdout = spyOnStdout();
-
-		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), getContext({
+		const context = getContext({
 			eventName: 'issues',
 			ref: 'refs/heads/test',
 			payload: {
@@ -475,7 +488,9 @@ describe('showActionInfo', () => {
 				repo: 'world',
 			},
 			actor: 'test-actor',
-		}));
+		});
+
+		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), context);
 
 		stdoutCalledWith(mockStdout, [
 			'',
@@ -489,7 +504,13 @@ describe('showActionInfo', () => {
 			'  - Issue Label2',
 			'owner:    hello',
 			'repo:     world',
-			'actor:    test-actor',
+			'',
+			'::group::Dump context',
+			JSON.stringify(context, null, '\t'),
+			'::endgroup::',
+			'::group::Dump Payload',
+			JSON.stringify(context.payload, null, '\t'),
+			'::endgroup::',
 			'==================================================',
 			'',
 		]);
@@ -497,8 +518,7 @@ describe('showActionInfo', () => {
 
 	it('should show action info with PR labels', () => {
 		const mockStdout = spyOnStdout();
-
-		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), getContext({
+		const context = getContext({
 			eventName: 'pull_request',
 			ref: 'refs/heads/test',
 			payload: {
@@ -516,7 +536,9 @@ describe('showActionInfo', () => {
 				repo: 'world',
 			},
 			actor: 'test-actor',
-		}));
+		});
+
+		showActionInfo(path.resolve(__dirname, 'a'), new Logger(), context);
 
 		stdoutCalledWith(mockStdout, [
 			'',
@@ -530,7 +552,13 @@ describe('showActionInfo', () => {
 			'  - PR Label2',
 			'owner:    hello',
 			'repo:     world',
-			'actor:    test-actor',
+			'',
+			'::group::Dump context',
+			JSON.stringify(context, null, '\t'),
+			'::endgroup::',
+			'::group::Dump Payload',
+			JSON.stringify(context.payload, null, '\t'),
+			'::endgroup::',
 			'==================================================',
 			'',
 		]);

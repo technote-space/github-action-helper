@@ -95,7 +95,12 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	}
 	logger.log('owner:    %s', context.repo.owner);
 	logger.log('repo:     %s', context.repo.repo);
-	logger.log('actor:    %s', context.actor);
+	logger.log('');
+	logger.startProcess('Dump context');
+	console.log(context);
+	logger.startProcess('Dump Payload');
+	console.log(context.payload);
+	logger.endProcess();
 	logger.log('==================================================');
 	logger.log('');
 };
