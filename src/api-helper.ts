@@ -20,6 +20,7 @@ import { getSender, getRefForUpdate, isPrRef } from './utils';
 type PullsCreateParams = {
 	body?: string;
 	draft?: boolean;
+	state?: 'open' | 'closed' | undefined;
 	title: string;
 };
 

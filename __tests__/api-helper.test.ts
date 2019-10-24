@@ -348,7 +348,7 @@ describe('ApiHelper', () => {
 	});
 
 	describe('pullsUpdate', () => {
-		it('should create pull request', async() => {
+		it('should update pull request', async() => {
 			const fn1 = jest.fn();
 			const fn2 = jest.fn();
 			nock('https://api.github.com')
@@ -374,6 +374,41 @@ describe('ApiHelper', () => {
 					'body3',
 				].join('\n'),
 				title: 'test title',
+			}, octokit, context);
+
+			expect(fn1).toBeCalledTimes(1);
+			expect(fn2).toBeCalledTimes(1);
+		});
+	});
+
+	describe('pullsUpdate', () => {
+		it('should close pull request', async() => {
+			const fn1 = jest.fn();
+			const fn2 = jest.fn();
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/pulls/1347', body => {
+					fn1();
+					expect(body).toHaveProperty('title');
+					expect(body).toHaveProperty('body');
+					expect(body).toHaveProperty('state');
+					expect(body.title).toBe('test title');
+					expect(body.body).toBe('body1\nbody2\nbody3');
+					expect(body.state).toBe('closed');
+					return body;
+				})
+				.reply(200, () => {
+					fn2();
+					return getApiFixture(rootDir, 'pulls.update');
+				});
+
+			await helper.pullsUpdate(1347, {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+				state: 'closed',
 			}, octokit, context);
 
 			expect(fn1).toBeCalledTimes(1);
