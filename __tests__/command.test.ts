@@ -109,6 +109,26 @@ describe('Command', () => {
 		]);
 	});
 
+	it('should output stdout instead of stderr', async() => {
+		setChildProcessParams({stderr: 'stderr'});
+		const mockExec = spyOnExec();
+		const mockStdout = spyOnStdout();
+
+		await command.execAsync({
+			command: 'test',
+			stderrToStdout: true,
+		});
+
+		execCalledWith(mockExec, [
+			'test',
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]test',
+			'  >> stdout',
+			'  >> stderr',
+		]);
+	});
+
 	it('should not output stdout', async() => {
 		setChildProcessParams({stdout: ''});
 		const mockExec = spyOnExec();
