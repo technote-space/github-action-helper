@@ -79,7 +79,7 @@ export default class GitHelper {
 			altCommand: `git clone${this.cloneDepth}`,
 			suppressError: true,
 		});
-		await this.command.execAsync({command: `git -C ${workDir} fetch origin +${context.ref}`});
+		await this.command.execAsync({command: `git -C ${workDir} fetch origin +${context.ref}`, stderrToStdout: true});
 		await this.command.execAsync({command: `git -C ${workDir} checkout -qf FETCH_HEAD`});
 	};
 
