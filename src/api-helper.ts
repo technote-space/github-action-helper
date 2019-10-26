@@ -103,7 +103,7 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {string} commit sha
 	 */
-	private getCommitSha = (context: Context): string => isPrRef(context) ? context.payload.after : context.sha;
+	private getCommitSha = (context: Context): string => isPrRef(context) && context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha;
 
 	/**
 	 * @param {GitHub} octokit octokit
