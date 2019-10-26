@@ -177,7 +177,7 @@ describe('ApiHelper', () => {
 			const fn = jest.fn();
 			nock('https://api.github.com')
 				.post('/repos/hello/world/git/commits', body => {
-					expect(body.parents).toEqual(['test-after']);
+					expect(body.parents).toEqual(['test-head-sha']);
 					return body;
 				})
 				.reply(201, () => {
@@ -192,7 +192,11 @@ describe('ApiHelper', () => {
 			}), octokit, Object.assign({}, context, {
 				ref: 'refs/pull/123/merge',
 				payload: {
-					after: 'test-after',
+					'pull_request': {
+						head: {
+							sha: 'test-head-sha',
+						},
+					},
 				},
 			}));
 
