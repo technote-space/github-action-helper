@@ -245,15 +245,13 @@ export default class ApiHelper {
 	 * @param {string} branchName branch name
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
-	 * @param {string} state state
 	 * @return {Promise<Response<PullsListResponse>>} pulls
 	 */
-	private pullsList = async(branchName: string, octokit: GitHub, context: Context, state: 'open' | 'closed' | 'all' = 'open'): Promise<Response<PullsListResponse>> => {
+	private pullsList = async(branchName: string, octokit: GitHub, context: Context): Promise<Response<PullsListResponse>> => {
 		return octokit.pulls.list({
 			owner: context.repo.owner,
 			repo: context.repo.repo,
 			head: `${context.repo.owner}:${branchName}`,
-			state,
 		});
 	};
 
@@ -380,7 +378,7 @@ export default class ApiHelper {
 			await this.updateRef(commit, headName, true, octokit, context);
 		}
 
-		const pulls = await this.pullsList(branchName, octokit, context, 'all');
+		const pulls = await this.pullsList(branchName, octokit, context);
 		if (pulls.data.length) {
 			this.logger.startProcess('Updating PullRequest... [%s] -> [%s]', branchName, await this.getRefForUpdate(false, octokit, context));
 			const updated = await this.pullsUpdate(pulls.data[0].number, detail, octokit, context);
