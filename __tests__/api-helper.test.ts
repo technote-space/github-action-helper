@@ -594,7 +594,7 @@ describe('ApiHelper', () => {
 				.patch('/repos/hello/world/pulls/1347')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
 
-			await helper.closePR(rootDir, 'create/test', octokit, context);
+			await helper.closePR('create/test', octokit, context);
 
 			stdoutCalledWith(mockStdout, [
 				'::group::Closing PullRequest... [create/test]',
@@ -609,7 +609,7 @@ describe('ApiHelper', () => {
 				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=open')
 				.reply(200, () => []);
 
-			await helper.closePR(rootDir, 'create/test', octokit, context);
+			await helper.closePR('create/test', octokit, context);
 
 			stdoutCalledWith(mockStdout, [
 				'> There is no PullRequest named [create/test]',
