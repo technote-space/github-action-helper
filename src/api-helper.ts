@@ -395,6 +395,28 @@ export default class ApiHelper {
 	};
 
 	/**
+	 * @param {string} rootDir root dir
+	 * @param {string} createBranchName branch name
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @param {string} message message
+	 */
+	public closePR = async(rootDir: string, createBranchName: string, octokit: GitHub, context: Context, message?: string): Promise<void> => {
+		const branchName = createBranchName.replace(/^(refs\/)?heads/, '');
+		const pulls = await this.pullsList(branchName, octokit, context);
+		if (pulls.data.length) {
+			this.logger.startProcess('Closing PullRequest... [%s]', branchName);
+			this.pullsUpdate(pulls.data[0].number, {
+				body: message,
+				state: 'closed',
+			}, octokit, context);
+			this.logger.endProcess();
+		} else {
+			this.logger.info('There is no PullRequest named [%s]', branchName);
+		}
+	};
+
+	/**
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
 	 * @return {Promise<{ login: string, email: string, name: string, id: number }>} user

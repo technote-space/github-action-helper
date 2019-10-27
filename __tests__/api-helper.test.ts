@@ -584,6 +584,39 @@ describe('ApiHelper', () => {
 		});
 	});
 
+	describe('closePR', () => {
+		it('should close pull request', async() => {
+			const mockStdout = spyOnStdout();
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=open')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
+				.patch('/repos/hello/world/pulls/1347')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
+
+			await helper.closePR(rootDir, 'create/test', octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'::group::Closing PullRequest... [create/test]',
+				'::endgroup::',
+			]);
+		});
+
+		it('should not close pull request', async() => {
+			const mockStdout = spyOnStdout();
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=open')
+				.reply(200, () => []);
+
+			await helper.closePR(rootDir, 'create/test', octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'> There is no PullRequest named [create/test]',
+			]);
+		});
+	});
+
 	describe('getUser', () => {
 		it('should throw error 1', async() => {
 			const fn1 = jest.fn();
