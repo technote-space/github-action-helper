@@ -496,7 +496,7 @@ describe('ApiHelper', () => {
 				.reply(404)
 				.post('/repos/hello/world/git/refs')
 				.reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
-				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=all')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
 				.patch('/repos/hello/world/pulls/1347')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
@@ -550,7 +550,7 @@ describe('ApiHelper', () => {
 				.reply(200, () => getApiFixture(rootDir, 'repos.git.refs.update'))
 				.post('/repos/hello/world/git/refs')
 				.reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
-				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=all')
 				.reply(200, () => [])
 				.post('/repos/hello/world/pulls')
 				.reply(201, () => getApiFixture(rootDir, 'pulls.create'));
@@ -580,6 +580,39 @@ describe('ApiHelper', () => {
 				'::endgroup::',
 				'::group::Creating PullRequest... [create/test] -> [heads/test]',
 				'::endgroup::',
+			]);
+		});
+	});
+
+	describe('closePR', () => {
+		it('should close pull request', async() => {
+			const mockStdout = spyOnStdout();
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=open')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
+				.patch('/repos/hello/world/pulls/1347')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
+
+			await helper.closePR(rootDir, 'create/test', octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'::group::Closing PullRequest... [create/test]',
+				'::endgroup::',
+			]);
+		});
+
+		it('should not close pull request', async() => {
+			const mockStdout = spyOnStdout();
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=open')
+				.reply(200, () => []);
+
+			await helper.closePR(rootDir, 'create/test', octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'> There is no PullRequest named [create/test]',
 			]);
 		});
 	});
