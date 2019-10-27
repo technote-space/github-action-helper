@@ -496,7 +496,7 @@ describe('ApiHelper', () => {
 				.reply(404)
 				.post('/repos/hello/world/git/refs')
 				.reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
-				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=all')
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
 				.patch('/repos/hello/world/pulls/1347')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
@@ -550,7 +550,7 @@ describe('ApiHelper', () => {
 				.reply(200, () => getApiFixture(rootDir, 'repos.git.refs.update'))
 				.post('/repos/hello/world/git/refs')
 				.reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
-				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=all')
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
 				.reply(200, () => [])
 				.post('/repos/hello/world/pulls')
 				.reply(201, () => getApiFixture(rootDir, 'pulls.create'));
@@ -589,7 +589,7 @@ describe('ApiHelper', () => {
 			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
-				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=open')
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
 				.patch('/repos/hello/world/pulls/1347')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
@@ -606,7 +606,7 @@ describe('ApiHelper', () => {
 			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
-				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest&state=open')
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
 				.reply(200, () => []);
 
 			await helper.closePR('create/test', octokit, context);
