@@ -395,13 +395,12 @@ export default class ApiHelper {
 	};
 
 	/**
-	 * @param {string} rootDir root dir
 	 * @param {string} createBranchName branch name
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
 	 * @param {string} message message
 	 */
-	public closePR = async(rootDir: string, createBranchName: string, octokit: GitHub, context: Context, message?: string): Promise<void> => {
+	public closePR = async(createBranchName: string, octokit: GitHub, context: Context, message?: string): Promise<void> => {
 		const branchName = createBranchName.replace(/^(refs\/)?heads/, '');
 		const pulls = await this.pullsList(branchName, octokit, context);
 		if (pulls.data.length) {
