@@ -17,10 +17,14 @@ import { exportVariable } from '@actions/core';
 import { Logger } from './index';
 import { getSender, getRefForUpdate, isPrRef } from './utils';
 
-type PullsCreateParams = {
+type PullsUpdateParams = {
 	body?: string;
 	draft?: boolean;
 	state?: 'open' | 'closed' | undefined;
+	title?: string;
+};
+
+type PullsCreateParams = PullsUpdateParams & {
 	title: string;
 };
 
@@ -270,12 +274,12 @@ export default class ApiHelper {
 
 	/**
 	 * @param {number} number pull number
-	 * @param {PullsCreateParams} detail detail
+	 * @param {PullsUpdateParams} detail detail
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
 	 * @return {Promise<PullsUpdateResponse>} pull
 	 */
-	public pullsUpdate = async(number: number, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<Response<PullsUpdateResponse>> => octokit.pulls.update({
+	public pullsUpdate = async(number: number, detail: PullsUpdateParams, octokit: GitHub, context: Context): Promise<Response<PullsUpdateResponse>> => octokit.pulls.update({
 		owner: context.repo.owner,
 		repo: context.repo.repo,
 		'pull_number': number,
