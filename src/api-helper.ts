@@ -22,6 +22,7 @@ type PullsUpdateParams = {
 	draft?: boolean;
 	state?: 'open' | 'closed' | undefined;
 	title?: string;
+	base?: string;
 };
 
 type PullsCreateParams = PullsUpdateParams & {
@@ -242,6 +243,20 @@ export default class ApiHelper {
 	};
 
 	/**
+	 * @param {string} refName refName
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public deleteRef = async(refName: string, octokit: GitHub, context: Context): Promise<void> => {
+		await octokit.git.deleteRef({
+			owner: context.repo.owner,
+			repo: context.repo.repo,
+			ref: refName,
+		});
+	};
+
+	/**
 	 * @param {string} branchName branch name
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
@@ -400,13 +415,19 @@ export default class ApiHelper {
 	 */
 	public closePR = async(createBranchName: string, octokit: GitHub, context: Context, message?: string): Promise<void> => {
 		const branchName = createBranchName.replace(/^(refs\/)?heads/, '');
+		const headName = `heads/${branchName}`;
+		const refName = `refs/${headName}`;
+
 		const pulls = await this.pullsList(branchName, octokit, context);
 		if (pulls.data.length) {
 			this.logger.startProcess('Closing PullRequest... [%s]', branchName);
-			this.pullsUpdate(pulls.data[0].number, {
+			await this.pullsUpdate(pulls.data[0].number, {
 				body: message,
 				state: 'closed',
+				base: undefined,
 			}, octokit, context);
+			this.logger.startProcess('Deleting reference... [%s]', refName);
+			await this.deleteRef(headName, octokit, context);
 			this.logger.endProcess();
 		} else {
 			this.logger.info('There is no PullRequest named [%s]', branchName);

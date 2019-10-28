@@ -589,15 +589,19 @@ describe('ApiHelper', () => {
 			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
-				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.get('/repos/hello/world/pulls?head=hello%3Aclose%2Ftest')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
 				.patch('/repos/hello/world/pulls/1347')
-				.reply(200, () => getApiFixture(rootDir, 'pulls.update'));
+				.reply(200, () => getApiFixture(rootDir, 'pulls.update'))
+				.delete('/repos/hello/world/git/refs/heads/close/test')
+				.reply(204, () => getApiFixture(rootDir, 'pulls.update'));
 
-			await helper.closePR('create/test', octokit, context);
+			await helper.closePR('close/test', octokit, context);
 
 			stdoutCalledWith(mockStdout, [
-				'::group::Closing PullRequest... [create/test]',
+				'::group::Closing PullRequest... [close/test]',
+				'::endgroup::',
+				'::group::Deleting reference... [refs/heads/close/test]',
 				'::endgroup::',
 			]);
 		});
@@ -606,13 +610,13 @@ describe('ApiHelper', () => {
 			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
-				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.get('/repos/hello/world/pulls?head=hello%3Aclose%2Ftest')
 				.reply(200, () => []);
 
-			await helper.closePR('create/test', octokit, context);
+			await helper.closePR('close/test', octokit, context);
 
 			stdoutCalledWith(mockStdout, [
-				'> There is no PullRequest named [create/test]',
+				'> There is no PullRequest named [close/test]',
 			]);
 		});
 	});
