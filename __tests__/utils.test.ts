@@ -8,30 +8,9 @@ import { testEnv, getContext } from '@technote-space/github-action-test-helper';
 import { Logger, Utils } from '../src';
 import { testLogger } from './util';
 
-const {
-	isRelease,
-	isPush,
-	isPr,
-	isIssue,
-	getWorkspace,
-	getActor,
-	getGitUrl,
-	escapeRegExp,
-	getBoolValue,
-	getRepository,
-	getTagName,
-	isSemanticVersioningTagName,
-	isPrRef,
-	getPrMergeRef,
-	getPrHeadRef,
-	getBranch,
-	getRefForUpdate,
-	getSender,
-	uniqueArray,
-	getBuildVersion,
-	showActionInfo,
-	getArrayInput,
-} = Utils;
+const {isRelease, isPush, isPr, isIssue, isCron, getWorkspace, getActor, getGitUrl, escapeRegExp, getBoolValue} = Utils;
+const {getRepository, getTagName, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getPrHeadRef}            = Utils;
+const {getBranch, getRefForUpdate, getSender, uniqueArray, getBuildVersion, showActionInfo, getArrayInput}      = Utils;
 
 describe('isRelease', () => {
 	it('should return true', () => {
@@ -84,6 +63,20 @@ describe('isIssue', () => {
 
 	it('should return false', () => {
 		expect(isIssue(getContext({
+			eventName: 'release',
+		}))).toBe(false);
+	});
+});
+
+describe('isCron', () => {
+	it('should return true', () => {
+		expect(isCron(getContext({
+			eventName: 'schedule',
+		}))).toBe(true);
+	});
+
+	it('should return false', () => {
+		expect(isCron(getContext({
 			eventName: 'release',
 		}))).toBe(false);
 	});
@@ -390,7 +383,7 @@ describe('showActionInfo', () => {
 
 	it('should show action info', () => {
 		const mockStdout = spyOnStdout();
-		const context = getContext({
+		const context    = getContext({
 			eventName: 'push',
 			ref: 'refs/tags/test',
 			payload: {
@@ -431,7 +424,7 @@ describe('showActionInfo', () => {
 
 	it('should show action info without version and tag', () => {
 		const mockStdout = spyOnStdout();
-		const context = getContext({
+		const context    = getContext({
 			eventName: 'push',
 			ref: 'refs/heads/test',
 			payload: {
@@ -470,7 +463,7 @@ describe('showActionInfo', () => {
 
 	it('should show action info with issue labels', () => {
 		const mockStdout = spyOnStdout();
-		const context = getContext({
+		const context    = getContext({
 			eventName: 'issues',
 			ref: 'refs/heads/test',
 			payload: {
@@ -518,7 +511,7 @@ describe('showActionInfo', () => {
 
 	it('should show action info with PR labels', () => {
 		const mockStdout = spyOnStdout();
-		const context = getContext({
+		const context    = getContext({
 			eventName: 'pull_request',
 			ref: 'refs/heads/test',
 			payload: {
