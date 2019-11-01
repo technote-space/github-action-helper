@@ -11,9 +11,9 @@ import {
 } from '@technote-space/github-action-test-helper';
 import { GitHelper, Logger } from '../src';
 
-const workDir = '.work';
+const workDir   = '.work';
 const setExists = testFs(true);
-const context = (override: object = {}): Context => getContext(Object.assign({
+const context   = (override: object = {}): Context => getContext(Object.assign({
 	repo: {
 		owner: 'hello',
 		repo: 'world',

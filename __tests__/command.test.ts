@@ -17,7 +17,7 @@ describe('Command', () => {
 	const command = new Command(new Logger());
 
 	it('should run command', async() => {
-		const mockExec = spyOnExec();
+		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test'})).toBe('stdout');
@@ -33,7 +33,7 @@ describe('Command', () => {
 
 	it('should run command with cwd, altCommand', async() => {
 		setChildProcessParams({stderr: 'stderr'});
-		const mockExec = spyOnExec();
+		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toBe('stdout');
@@ -49,7 +49,7 @@ describe('Command', () => {
 	});
 
 	it('should catch error 1', async() => {
-		const error = new Error('test message');
+		const error   = new Error('test message');
 		error['code'] = 123;
 		setChildProcessParams({error: error});
 
@@ -59,7 +59,7 @@ describe('Command', () => {
 	});
 
 	it('should catch error 2', async() => {
-		const error = new Error('test message');
+		const error   = new Error('test message');
 		error['code'] = 123;
 		setChildProcessParams({error: error});
 
@@ -70,7 +70,7 @@ describe('Command', () => {
 	});
 
 	it('should catch error 3', async() => {
-		const error = new Error('test message');
+		const error   = new Error('test message');
 		error['code'] = 123;
 		setChildProcessParams({error: error});
 
@@ -82,7 +82,7 @@ describe('Command', () => {
 	});
 
 	it('should catch error 4', async() => {
-		const error = new Error('test message');
+		const error   = new Error('test message');
 		error['code'] = 123;
 		setChildProcessParams({error: error});
 
@@ -93,7 +93,7 @@ describe('Command', () => {
 	});
 
 	it('should suppress stdout', async() => {
-		const mockExec = spyOnExec();
+		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
@@ -111,7 +111,7 @@ describe('Command', () => {
 
 	it('should output stdout instead of stderr', async() => {
 		setChildProcessParams({stderr: 'stderr'});
-		const mockExec = spyOnExec();
+		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
@@ -131,7 +131,7 @@ describe('Command', () => {
 
 	it('should not output stdout', async() => {
 		setChildProcessParams({stdout: ''});
-		const mockExec = spyOnExec();
+		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
@@ -147,7 +147,7 @@ describe('Command', () => {
 	});
 
 	it('should run suppress error command', async() => {
-		const mockExec = spyOnExec();
+		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
