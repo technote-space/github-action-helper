@@ -315,6 +315,22 @@ describe('ApiHelper', () => {
 		});
 	});
 
+	describe('deleteRef', () => {
+		it('should create ref', async() => {
+			const fn = jest.fn();
+			nock('https://api.github.com')
+				.delete('/repos/hello/world/git/refs/heads/featureA')
+				.reply(204, () => {
+					fn();
+					return getApiFixture(rootDir, 'repos.git.refs.create');
+				});
+
+			await helper.deleteRef('heads/featureA', octokit, context);
+
+			expect(fn).toBeCalledTimes(1);
+		});
+	});
+
 	describe('pullsCreate', () => {
 		it('should create pull request', async() => {
 			const fn1 = jest.fn();
@@ -432,7 +448,7 @@ describe('ApiHelper', () => {
 		});
 
 		it('should commit', async() => {
-			const mockStdout = spyOnStdout();
+			const mockStdout       = spyOnStdout();
 			process.env.GITHUB_SHA = 'sha';
 			nock('https://api.github.com')
 				.persist()
@@ -478,7 +494,7 @@ describe('ApiHelper', () => {
 		});
 
 		it('should update pull request', async() => {
-			const mockStdout = spyOnStdout();
+			const mockStdout       = spyOnStdout();
 			process.env.GITHUB_SHA = 'sha';
 			nock('https://api.github.com')
 				.persist()
@@ -530,7 +546,7 @@ describe('ApiHelper', () => {
 		});
 
 		it('should create pull request', async() => {
-			const mockStdout = spyOnStdout();
+			const mockStdout       = spyOnStdout();
 			process.env.GITHUB_SHA = 'sha';
 			nock('https://api.github.com')
 				.persist()
@@ -730,8 +746,8 @@ describe('ApiHelper with params', () => {
 
 	describe('commit', () => {
 		it('should commit without update ref', async() => {
-			const fn1 = jest.fn();
-			const fn2 = jest.fn();
+			const fn1        = jest.fn();
+			const fn2        = jest.fn();
 			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
