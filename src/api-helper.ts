@@ -12,7 +12,6 @@ import {
 	PullsListResponseItem,
 	PullsCreateResponse,
 	PullsUpdateResponse,
-	PullsListParams,
 } from '@octokit/rest';
 import { exportVariable } from '@actions/core';
 import { Logger } from './index';
@@ -36,6 +35,14 @@ type PullsInfo = {
 	'comments_url': string;
 	number: number;
 };
+
+type PullsListParams = {
+	base?: string;
+	direction?: 'asc' | 'desc';
+	head?: string;
+	sort?: 'created' | 'updated' | 'popularity' | 'long-running';
+	state?: 'open' | 'closed' | 'all';
+}
 
 /**
  * API Helper
@@ -274,6 +281,31 @@ export default class ApiHelper {
 		}
 		return null;
 	};
+
+	/**
+	 * @param {PullsListParams} params params
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {AsyncIterable<PullsListResponseItem>} pull request list
+	 */
+	public async* pullsList(params: PullsListParams, octokit: GitHub, context: Context): AsyncIterable<PullsListResponseItem> {
+		const perPage = 100;
+		let page      = 1;
+		while (true) {
+			const list = await octokit.pulls.list(Object.assign({}, params, {
+				owner: context.repo.owner,
+				repo: context.repo.repo,
+				'per_page': perPage,
+				page: page++,
+			}));
+			if (!list.data.length) {
+				break;
+			}
+			for (const item of list.data) {
+				yield item;
+			}
+		}
+	}
 
 	/**
 	 * @param {string} branchName branch name
