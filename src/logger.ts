@@ -12,8 +12,9 @@ export default class Logger {
 
 	/**
 	 * @param {function|undefined} replacer replacer
+	 * @param {boolean} notUseGroup not use group?
 	 */
-	constructor(replacer?: (string: string) => string) {
+	constructor(replacer?: (string: string) => string, private notUseGroup = false) {
 		this.replacer = replacer ? replacer : (text: string): string => text;
 	}
 
@@ -107,6 +108,10 @@ export default class Logger {
 	 * @return {void}
 	 */
 	public startProcess = (message: string, ...args: any[]): void => {
+		if (this.notUseGroup) {
+			this.info(message, ...args);
+			return;
+		}
 		this.endProcess();
 		startGroup(this.getOutputString(message, ...args));
 		Logger.isRequiredEndGroup = true;
