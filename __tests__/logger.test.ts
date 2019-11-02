@@ -168,10 +168,10 @@ describe('Logger with string array', () => {
 	});
 });
 
-describe('Logger with replacer', () => {
+describe('Logger with arguments', () => {
 	testLogger();
 
-	const logger = new Logger((string: string): string => string.replace('<replace target>', '<replaced>'));
+	const logger = new Logger((string: string): string => string.replace('<replace target>', '<replaced>'), true);
 
 	it('info output info with args', () => {
 		const mockStdout = spyOnStdout();
@@ -195,7 +195,7 @@ describe('Logger with replacer', () => {
 
 			logger.startProcess('message with args %s %d: <replace target>', '<replace target>', 2);
 
-			stdoutCalledWith(mockStdout, ['::group::message with args <replaced> 2: <replaced>']);
+			stdoutCalledWith(mockStdout, ['> message with args <replaced> 2: <replaced>']);
 		});
 	});
 });
