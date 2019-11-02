@@ -111,3 +111,5 @@ export const getArrayInput = (name: string, required = false, separator = ','): 
 	(acc, line) => acc.concat(separator ? line.split(separator) : line).filter(item => item).map(item => item.trim()),
 	[],
 ));
+
+export const sleep = async(millisecond: number): Promise<void> => new Promise(resolve => setTimeout(resolve, millisecond));
