@@ -19,6 +19,13 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           COMMIT_DISABLED: 1
+      - name: Cache node modules
+        uses: actions/cache@preview
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - name: Install Package dependencies
         run: yarn install
       - name: Test

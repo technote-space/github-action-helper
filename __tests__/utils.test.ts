@@ -9,8 +9,10 @@ import { Logger, Utils } from '../src';
 import { testLogger } from './util';
 
 const {isRelease, isPush, isPr, isIssue, isCron, getWorkspace, getActor, getGitUrl, escapeRegExp, getBoolValue} = Utils;
-const {getRepository, getTagName, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getPrHeadRef}            = Utils;
+const {getRepository, getTagName, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getPrHeadRef, sleep}     = Utils;
 const {getBranch, getRefForUpdate, getSender, uniqueArray, getBuildVersion, showActionInfo, getArrayInput}      = Utils;
+
+jest.useFakeTimers();
 
 describe('isRelease', () => {
 	it('should return true', () => {
@@ -589,5 +591,19 @@ describe('getArrayInput', () => {
 		expect(() => {
 			getArrayInput('test', true);
 		}).toThrow();
+	});
+});
+
+describe('sleep', () => {
+	it('should sleep', done => {
+		const fn = jest.fn();
+
+		sleep(1000).then(() => {
+			fn();
+			done();
+		});
+
+		expect(fn).not.toBeCalled();
+		jest.runTimersToTime(1500);
 	});
 });
