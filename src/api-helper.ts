@@ -292,7 +292,10 @@ export default class ApiHelper {
 		const perPage = 100;
 		let page      = 1;
 		while (true) {
-			const list = await octokit.pulls.list(Object.assign({}, params, {
+			const list = await octokit.pulls.list(Object.assign({
+				sort: 'created',
+				direction: 'asc',
+			}, params, {
 				owner: context.repo.owner,
 				repo: context.repo.repo,
 				'per_page': perPage,
