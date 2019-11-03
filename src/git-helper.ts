@@ -200,10 +200,11 @@ export default class GitHelper {
 	/**
 	 * @param {string} workDir work dir
 	 * @param {string} message message
+	 * @param {number} count stat count
 	 */
-	public makeCommit = async(workDir: string, message: string): Promise<void> => {
+	public makeCommit = async(workDir: string, message: string, count = 10): Promise<void> => { // eslint-disable-line no-magic-numbers
 		await this.command.execAsync({command: `git -C ${workDir} commit -qm "${message.replace('"', '\\"')}"`});
-		await this.command.execAsync({command: `git -C ${workDir} show --stat-count=10 HEAD`});
+		await this.command.execAsync({command: `git -C ${workDir} show --stat-count=${count} HEAD`});
 	};
 
 	/**
