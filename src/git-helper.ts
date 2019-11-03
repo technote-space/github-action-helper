@@ -149,12 +149,17 @@ export default class GitHelper {
 	/**
 	 * @param {string} workDir work dir
 	 * @param {string[]} commands commands
-	 * @return {Promise<void>} void
+	 * @return {Promise<{}[]>} void
 	 */
-	public runCommand = async(workDir: string, commands: string[]): Promise<void> => {
+	public runCommand = async(workDir: string, commands: string[]): Promise<{ command: string; stdout: string[] }[]> => {
+		const result: { command: string; stdout: string[] }[] = [];
 		for (const command of commands) {
-			await this.command.execAsync({command, cwd: workDir});
+			result.push({
+				command,
+				stdout: (await this.command.execAsync({command, cwd: workDir})).split(/\r?\n/),
+			});
 		}
+		return result;
 	};
 
 	/**
