@@ -10,7 +10,7 @@ import { testLogger } from './util';
 
 const {isRelease, isPush, isPr, isIssue, isCron, getWorkspace, getActor, getGitUrl, escapeRegExp, getBoolValue} = Utils;
 const {getRepository, getTagName, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getPrHeadRef, sleep}     = Utils;
-const {getBranch, getRefForUpdate, getSender, uniqueArray, getBuildVersion, showActionInfo, getArrayInput}      = Utils;
+const {getBranch, getRefForUpdate, getSender, uniqueArray, getBuildInfo, showActionInfo, getArrayInput}         = Utils;
 
 jest.useFakeTimers();
 
@@ -366,17 +366,43 @@ describe('uniqueArray', () => {
 	});
 });
 
-describe('getBuildVersion', () => {
-	it('should get build version', () => {
-		expect(getBuildVersion(path.resolve(__dirname, 'fixtures', 'build1.json'))).toBe('v1.2.3');
+describe('getBuildInfo', () => {
+	it('should get build version 1', () => {
+		expect(getBuildInfo(path.resolve(__dirname, 'fixtures', 'build1.json'))).toEqual({
+			'tagName': 'v1.2.3',
+			'branch': 'gh-actions',
+			'tags': [
+				'v1.2.3',
+				'v1',
+				'v1.2',
+			],
+			'updated_at': '2020-01-01T01:23:45.000Z',
+		});
+	});
+
+	it('should get build version 2', () => {
+		expect(getBuildInfo(path.resolve(__dirname, 'fixtures', 'build2.json'))).toEqual({
+			'owner': 'hello',
+			'repo': 'world',
+			'sha': 'ed968e840d10d2d313a870bc131a4e2c311d7ad09bdf32b3418147221f51a6e2',
+			'ref': 'release/v1.2.3',
+			'tagName': 'v1.2.3',
+			'branch': 'gh-actions',
+			'tags': [
+				'v1.2.3',
+				'v1',
+				'v1.2',
+			],
+			'updated_at': '2020-01-01T01:23:45.000Z',
+		});
 	});
 
 	it('should return false 1', () => {
-		expect(getBuildVersion(path.resolve(__dirname, 'fixtures', 'build2.json'))).toBe(false);
+		expect(getBuildInfo(path.resolve(__dirname, 'fixtures', 'build.test.json'))).toBe(false);
 	});
 
 	it('should return false 2', () => {
-		expect(getBuildVersion(path.resolve(__dirname, 'fixtures', 'build.test.json'))).toBe(false);
+		expect(getBuildInfo(path.resolve(__dirname, 'fixtures', 'build3.json'))).toBe(false);
 	});
 });
 
@@ -405,6 +431,47 @@ describe('showActionInfo', () => {
 			'',
 			'==================================================',
 			'Version:  v1.2.3',
+			'Event:    push',
+			'Action:   rerequested',
+			'sha:      test-sha',
+			'ref:      refs/tags/test',
+			'Tag name: test',
+			'owner:    hello',
+			'repo:     world',
+			'',
+			'::group::Dump context',
+			JSON.stringify(context, null, '\t'),
+			'::endgroup::',
+			'::group::Dump Payload',
+			JSON.stringify(context.payload, null, '\t'),
+			'::endgroup::',
+			'==================================================',
+			'',
+		]);
+	});
+
+	it('should show action info with owner/repo', () => {
+		const mockStdout = spyOnStdout();
+		const context    = getContext({
+			eventName: 'push',
+			ref: 'refs/tags/test',
+			payload: {
+				action: 'rerequested',
+			},
+			sha: 'test-sha',
+			repo: {
+				owner: 'hello',
+				repo: 'world',
+			},
+			actor: 'test-actor',
+		});
+
+		showActionInfo(path.resolve(__dirname, 'fixtures', 'test'), new Logger(), context);
+
+		stdoutCalledWith(mockStdout, [
+			'',
+			'==================================================',
+			'Version:  hello/world@v1.2.3',
 			'Event:    push',
 			'Action:   rerequested',
 			'sha:      test-sha',

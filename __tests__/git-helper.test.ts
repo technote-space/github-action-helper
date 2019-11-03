@@ -175,6 +175,36 @@ describe('GitHelper', () => {
 				['command2', {cwd: workDir}],
 			]);
 		});
+
+		it('should return stdout', async() => {
+			const mockExec = spyOnExec();
+			setChildProcessParams({stdout: 'test1\ntest2'});
+
+			expect(await helper.runCommand(workDir, [
+				'command1',
+				'command2',
+			])).toEqual([
+				{
+					command: 'command1',
+					stdout: [
+						'test1',
+						'test2',
+					],
+				},
+				{
+					command: 'command2',
+					stdout: [
+						'test1',
+						'test2',
+					],
+				},
+			]);
+
+			execCalledWith(mockExec, [
+				['command1', {cwd: workDir}],
+				['command2', {cwd: workDir}],
+			]);
+		});
 	});
 
 	describe('getDiff', () => {
