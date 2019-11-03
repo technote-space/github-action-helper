@@ -4,17 +4,25 @@ import { getInput } from '@actions/core' ;
 import { Context } from '@actions/github/lib/context';
 import { Logger } from './index';
 
-export const getBuildVersion = (filepath: string): string | boolean => {
+export const getBuildInfo = (filepath: string): {
+	owner?: string;
+	repo?: string;
+	sha?: string;
+	ref?: string;
+	tagName: string;
+	branch: string;
+	tags: string[];
+	'updated_at': string;
+} | false => {
 	if (!fs.existsSync(filepath)) {
 		return false;
 	}
 
-	const json = JSON.parse(fs.readFileSync(filepath, 'utf8'));
-	if (json && 'tagName' in json) {
-		return json['tagName'];
+	try {
+		return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+	} catch {
+		return false;
 	}
-
-	return false;
 };
 
 export const isRelease = (context: Context): boolean => 'release' === context.eventName;
@@ -73,12 +81,16 @@ export const uniqueArray = <T>(array: T[]): T[] => [...new Set<T>(array)];
 export const getWorkspace = (): string => process.env.GITHUB_WORKSPACE || '';
 
 export const showActionInfo = (rootDir: string, logger: Logger, context: Context): void => {
-	const version = getBuildVersion(path.resolve(rootDir, 'build.json'));
+	const info    = getBuildInfo(path.resolve(rootDir, 'build.json'));
 	const tagName = getTagName(context);
 	logger.log('');
 	logger.log('==================================================');
-	if ('string' === typeof version) {
-		logger.log('Version:  %s', version);
+	if (false !== info) {
+		if ('owner' in info) {
+			logger.log('Version:  %s/%s@%s', info.owner, info.repo, info.tagName);
+		} else {
+			logger.log('Version:  %s', info.tagName);
+		}
 	}
 	logger.log('Event:    %s', context.eventName);
 	logger.log('Action:   %s', context.payload.action);
