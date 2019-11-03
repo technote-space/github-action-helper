@@ -193,9 +193,17 @@ export default class GitHelper {
 			return false;
 		}
 
+		await this.makeCommit(workDir, message);
+		return true;
+	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @param {string} message message
+	 */
+	public makeCommit = async(workDir: string, message: string): Promise<void> => {
 		await this.command.execAsync({command: `git -C ${workDir} commit -qm "${message.replace('"', '\\"')}"`});
 		await this.command.execAsync({command: `git -C ${workDir} show --stat-count=10 HEAD`});
-		return true;
 	};
 
 	/**
