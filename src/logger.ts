@@ -121,6 +121,9 @@ export default class Logger {
 	 * @return {void}
 	 */
 	public endProcess = (): void => {
+		if (this.notUseGroup) {
+			return;
+		}
 		if (Logger.isRequiredEndGroup) {
 			endGroup();
 			Logger.isRequiredEndGroup = false;
