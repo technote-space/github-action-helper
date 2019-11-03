@@ -342,6 +342,29 @@ export default class ApiHelper {
 	});
 
 	/**
+	 * @param {string} createBranchName branch name
+	 * @param {PullsCreateParams} detail detail
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<PullsInfo>} info
+	 */
+	public pullsCreateOrUpdate = async(createBranchName: string, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<PullsInfo> => {
+		const branchName  = createBranchName.replace(/^(refs\/)?heads/, '');
+		const pullRequest = await this.findPullRequest(branchName, octokit, context);
+		if (pullRequest) {
+			this.logger.startProcess('Updating PullRequest... [%s] -> [%s]', branchName, await this.getRefForUpdate(false, octokit, context));
+			const updated = await this.pullsUpdate(pullRequest.number, detail, octokit, context);
+			this.logger.endProcess();
+			return updated.data;
+		} else {
+			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', branchName, await this.getRefForUpdate(false, octokit, context));
+			const created = await this.pullsCreate(branchName, detail, octokit, context);
+			this.logger.endProcess();
+			return created.data;
+		}
+	};
+
+	/**
 	 * @param {Error} error error
 	 * @return {boolean} result
 	 */
@@ -433,18 +456,7 @@ export default class ApiHelper {
 			await this.updateRef(commit, headName, true, octokit, context);
 		}
 
-		const pullRequest = await this.findPullRequest(branchName, octokit, context);
-		if (pullRequest) {
-			this.logger.startProcess('Updating PullRequest... [%s] -> [%s]', branchName, await this.getRefForUpdate(false, octokit, context));
-			const updated = await this.pullsUpdate(pullRequest.number, detail, octokit, context);
-			this.logger.endProcess();
-			return updated.data;
-		} else {
-			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', branchName, await this.getRefForUpdate(false, octokit, context));
-			const created = await this.pullsCreate(branchName, detail, octokit, context);
-			this.logger.endProcess();
-			return created.data;
-		}
+		return this.pullsCreateOrUpdate(branchName, detail, octokit, context);
 	};
 
 	/**
