@@ -194,6 +194,7 @@ describe('Logger with arguments', () => {
 			const mockStdout = spyOnStdout();
 
 			logger.startProcess('message with args %s %d: <replace target>', '<replace target>', 2);
+			logger.endProcess();
 
 			stdoutCalledWith(mockStdout, ['> message with args <replaced> 2: <replaced>']);
 		});
