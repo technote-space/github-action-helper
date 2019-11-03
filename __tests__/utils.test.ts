@@ -4,13 +4,13 @@ import {
 	spyOnStdout,
 	stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import { testEnv, getContext } from '@technote-space/github-action-test-helper';
+import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Logger, Utils } from '../src';
 import { testLogger } from './util';
 
 const {isRelease, isPush, isPr, isIssue, isCron, getWorkspace, getActor, getGitUrl, escapeRegExp, getBoolValue} = Utils;
 const {getRepository, getTagName, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getPrHeadRef, sleep}     = Utils;
-const {getBranch, getRefForUpdate, getSender, uniqueArray, getBuildInfo, showActionInfo, getArrayInput}         = Utils;
+const {getBranch, getRefForUpdate, getSender, uniqueArray, getBuildInfo, showActionInfo, getArrayInput, useNpm} = Utils;
 
 jest.useFakeTimers();
 
@@ -672,5 +672,29 @@ describe('sleep', () => {
 
 		expect(fn).not.toBeCalled();
 		jest.runTimersToTime(1500);
+	});
+});
+
+describe('useNpm', () => {
+	const setExists = testFs();
+
+	it('should return true 1', () => {
+		setExists([false, true]);
+		expect(useNpm('test')).toBe(true);
+	});
+
+	it('should return true 2', () => {
+		setExists(false);
+		expect(useNpm('test', true)).toBe(true);
+	});
+
+	it('should return false 1', () => {
+		setExists(false);
+		expect(useNpm('test')).toBe(false);
+	});
+
+	it('should return false 2', () => {
+		setExists(true);
+		expect(useNpm('test')).toBe(false);
 	});
 });

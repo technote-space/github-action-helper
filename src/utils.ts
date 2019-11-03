@@ -125,3 +125,5 @@ export const getArrayInput = (name: string, required = false, separator = ','): 
 ));
 
 export const sleep = async(millisecond: number): Promise<void> => new Promise(resolve => setTimeout(resolve, millisecond));
+
+export const useNpm = (workDir: string, defaultFlag = false): boolean => !fs.existsSync(path.resolve(workDir, 'yarn.lock')) && (defaultFlag || fs.existsSync(path.resolve(workDir, 'package-lock.json')));
