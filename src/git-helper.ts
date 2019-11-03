@@ -165,7 +165,7 @@ export default class GitHelper {
 		command: `git -C ${workDir} status --short -uno`,
 		suppressOutput: true,
 	}))
-		.split(/\r\n|\n/)
+		.split(/\r?\n/)
 		.filter(line => line.match(/^[MDA]\s+/))
 		.filter(this.filter)
 		.map(line => line.replace(/^[MDA]\s+/, ''));
