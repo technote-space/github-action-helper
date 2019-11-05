@@ -166,6 +166,7 @@ console.log(uniqueArray([1, 2, 2, 3, 4, 3]));  // [1, 2, 3, 4]
 console.log(getBuildInfo(path.resolve(__dirname, 'build.json')));  // e.g. 'v1.2.3'
 showActionInfo(path.resolve(__dirname, '..'), new Logger(), context);
 console.log(getArrayInput('TEST'));  // e.g. ['test1', 'test2']
+console.log(useNpm('dir')); // e.g. true
 ```
 
 ## Author
