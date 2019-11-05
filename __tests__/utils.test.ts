@@ -702,4 +702,9 @@ describe('useNpm', () => {
 		setExists([false, true]);
 		expect(useNpm('test')).toBe(false);
 	});
+
+	it('should return false (explicitly specified yarn)', () => {
+		setExists(true);
+		expect(useNpm('test', 'yarn')).toBe(false);
+	});
 });
