@@ -678,23 +678,28 @@ describe('sleep', () => {
 describe('useNpm', () => {
 	const setExists = testFs();
 
-	it('should return true 1', () => {
-		setExists([false, true]);
+	it('should return true (both package-lock.json and yarn.json exist)', () => {
+		setExists(true);
 		expect(useNpm('test')).toBe(true);
 	});
 
-	it('should return true 2', () => {
-		setExists(false);
-		expect(useNpm('test', true)).toBe(true);
+	it('should return true (explicitly specified npm)', () => {
+		setExists([false, true]);
+		expect(useNpm('test', 'npm')).toBe(true);
 	});
 
-	it('should return false 1', () => {
-		setExists(false);
-		expect(useNpm('test')).toBe(false);
+	it('should return true (only package-lock.json exists)', () => {
+		setExists([true, false]);
+		expect(useNpm('test')).toBe(true);
 	});
 
-	it('should return false 2', () => {
-		setExists(true);
+	it('should return true (neither exists package-lock.json and yarn.json)', () => {
+		setExists(false);
+		expect(useNpm('test')).toBe(true);
+	});
+
+	it('should return false (only yarn.json exists)', () => {
+		setExists([false, true]);
 		expect(useNpm('test')).toBe(false);
 	});
 });
