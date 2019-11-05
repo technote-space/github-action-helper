@@ -136,6 +136,10 @@ import path from 'path';
 
 const {
 	isRelease,
+	isPush,
+	isPr,
+	isIssue,
+	isCron,
 	getWorkspace,
 	getGitUrl,
 	escapeRegExp,
@@ -153,6 +157,10 @@ const {
 } = Utils;
 
 console.log(isRelease(context));  // e.g. true
+console.log(isPush(context));  // e.g. true
+console.log(isPr(context));  // e.g. true
+console.log(isIssue(context));  // e.g. true
+console.log(isCron(context));  // e.g. true
 console.log(getWorkspace());  // e.g. /home/runner/work/RepoOwner/RepoName
 console.log(getGitUrl());  // e.g. https://octocat:token@github.com/RepoOwner/RepoName.git
 console.log(escapeRegExp('.*+?^${}()|[]\\')); // '\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\'
