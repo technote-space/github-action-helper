@@ -337,10 +337,20 @@ describe('GitHelper', () => {
 		it('should run push', async() => {
 			const mockExec = spyOnExec();
 
-			await helper.push(workDir, 'test-branch', context());
+			await helper.push(workDir, 'test-branch', true, context());
 
 			execCalledWith(mockExec, [
 				`git -C ${workDir} push --tags "https://octocat:token@github.com/hello/world.git" "test-branch":"refs/heads/test-branch" > /dev/null 2>&1`,
+			]);
+		});
+
+		it('should run push without tags', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.push(workDir, 'test-branch', false, context());
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} push "https://octocat:token@github.com/hello/world.git" "test-branch":"refs/heads/test-branch" > /dev/null 2>&1`,
 			]);
 		});
 	});

@@ -276,15 +276,17 @@ export default class GitHelper {
 	/**
 	 * @param {string} workDir work dir
 	 * @param {string} branch branch
+	 * @param {boolean} withTag with tag?
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
 	 */
-	public push = async(workDir: string, branch: string, context: Context): Promise<void> => {
-		const url = getGitUrl(context);
+	public push = async(workDir: string, branch: string, withTag: boolean, context: Context): Promise<void> => {
+		const url  = getGitUrl(context);
+		const tags = withTag ? ' --tags' : '';
 		await this.command.execAsync({
-			command: `git -C ${workDir} push --tags "${url}" "${branch}":"refs/heads/${branch}"`,
+			command: `git -C ${workDir} push${tags} "${url}" "${branch}":"refs/heads/${branch}"`,
 			quiet: true,
-			altCommand: `git push --tags "${branch}":"refs/heads/${branch}"`,
+			altCommand: `git push${tags} "${branch}":"refs/heads/${branch}"`,
 		});
 	};
 }
