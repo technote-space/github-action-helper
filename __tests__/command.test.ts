@@ -48,6 +48,37 @@ describe('Command', () => {
 		]);
 	});
 
+	it('should not output empty stdout', async() => {
+		setChildProcessParams({stdout: ' \n\n  \n'});
+		const mockExec   = spyOnExec();
+		const mockStdout = spyOnStdout();
+
+		expect(await command.execAsync({command: 'test'})).toBe('');
+
+		execCalledWith(mockExec, [
+			'test',
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]test',
+		]);
+	});
+
+	it('should not output empty stderr', async() => {
+		setChildProcessParams({stderr: ' \n\n  \n'});
+		const mockExec   = spyOnExec();
+		const mockStdout = spyOnStdout();
+
+		expect(await command.execAsync({command: 'test'})).toBe('stdout');
+
+		execCalledWith(mockExec, [
+			'test',
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]test',
+			'  >> stdout',
+		]);
+	});
+
 	it('should catch error 1', async() => {
 		const error   = new Error('test message');
 		error['code'] = 123;
