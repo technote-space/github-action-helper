@@ -39,7 +39,7 @@ describe('Command', () => {
 		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toBe('stdout');
 
 		execCalledWith(mockExec, [
-			'test',
+			['test', {'cwd': 'dir'}],
 		]);
 		stdoutCalledWith(mockStdout, [
 			'[command]alt',
