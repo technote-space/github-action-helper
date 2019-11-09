@@ -34,7 +34,7 @@ type PullsInfo = {
 	'commits_url': string;
 	'comments_url': string;
 	number: number;
-	isCreated: boolean;
+	isPrCreated: boolean;
 };
 
 type PullsListParams = {
@@ -372,22 +372,27 @@ export default class ApiHelper {
 			this.logger.startProcess('Updating PullRequest... [%s] -> [%s]', this.getBranch(createBranchName), await this.getRefForUpdate(false, octokit, context));
 			const updated = await this.pullsUpdate(pullRequest.number, detail, octokit, context);
 			this.logger.endProcess();
-			return Object.assign({isCreated: false}, updated.data);
+			return Object.assign({isPrCreated: false}, updated.data);
 		} else {
 			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', this.getBranch(createBranchName), await this.getRefForUpdate(false, octokit, context));
 			const created = await this.pullsCreate(createBranchName, detail, octokit, context);
 			this.logger.endProcess();
-			return Object.assign({isCreated: true}, created.data);
+			return Object.assign({isPrCreated: true}, created.data);
 		}
 	};
 
 	/**
 	 * @param {string} branch branch
+	 * @param {string} body body
 	 * @param {GitHub} octokit octokit
 	 * @param {Context} context context
 	 * @return {Promise<boolean>} result
 	 */
-	public createCommentToPr = async(branch: string, octokit: GitHub, context: Context): Promise<boolean> => {
+	public createCommentToPr = async(branch: string, body: string | undefined, octokit: GitHub, context: Context): Promise<boolean> => {
+		if (!body) {
+			return false;
+		}
+
 		const pullRequest = await this.findPullRequest(branch, octokit, context);
 		if (!pullRequest) {
 			return false;
@@ -397,7 +402,7 @@ export default class ApiHelper {
 			owner: context.repo.owner,
 			repo: context.repo.repo,
 			'issue_number': pullRequest.number,
-			body: '',
+			body,
 		});
 
 		return true;

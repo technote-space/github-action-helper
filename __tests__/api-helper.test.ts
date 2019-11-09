@@ -505,16 +505,20 @@ describe('ApiHelper', () => {
 				.post('/repos/hello/world/issues/1347/comments')
 				.reply(201);
 
-			expect(await helper.createCommentToPr('test', octokit, context)).toBe(true);
+			expect(await helper.createCommentToPr('test', 'test body', octokit, context)).toBe(true);
 		});
 
-		it('should not create comment to pull request', async() => {
+		it('should not create comment to pull request 1', async() => {
+			expect(await helper.createCommentToPr('test', undefined, octokit, context)).toBe(false);
+		});
+
+		it('should not create comment to pull request 2', async() => {
 			nock('https://api.github.com')
 				.persist()
 				.get('/repos/hello/world/pulls?head=hello%3Atest')
 				.reply(200, () => []);
 
-			expect(await helper.createCommentToPr('test', octokit, context)).toBe(false);
+			expect(await helper.createCommentToPr('test', 'test body', octokit, context)).toBe(false);
 		});
 	});
 
@@ -611,8 +615,10 @@ describe('ApiHelper', () => {
 			expect(info).toHaveProperty('commits_url');
 			expect(info).toHaveProperty('comments_url');
 			expect(info).toHaveProperty('number');
+			expect(info).toHaveProperty('isPrCreated');
 			expect(info['html_url']).toBe('https://github.com/hello/world/pull/1347');
 			expect(info['number']).toBe(1347);
+			expect(info['isPrCreated']).toBe(false);
 			stdoutCalledWith(mockStdout, [
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -665,8 +671,10 @@ describe('ApiHelper', () => {
 			expect(info).toHaveProperty('commits_url');
 			expect(info).toHaveProperty('comments_url');
 			expect(info).toHaveProperty('number');
+			expect(info).toHaveProperty('isPrCreated');
 			expect(info['html_url']).toBe('https://github.com/hello/world/pull/1347');
 			expect(info['number']).toBe(1347);
+			expect(info['isPrCreated']).toBe(true);
 			stdoutCalledWith(mockStdout, [
 				'::group::Creating blobs...',
 				'::endgroup::',
