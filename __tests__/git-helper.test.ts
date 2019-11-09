@@ -230,6 +230,17 @@ describe('GitHelper', () => {
 		});
 	});
 
+	describe('getRefDiff', () => {
+		it('should get diff', async() => {
+			setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
+			expect(await helper.getRefDiff(workDir, 'master', 'refs/pull/123/merge')).toEqual([
+				'file1',
+				'file2',
+				'file3',
+			]);
+		});
+	});
+
 	describe('checkDiff', () => {
 		it('should return true', async() => {
 			setChildProcessParams({stdout: 'M  file1\nA  file2\nD  file3\n   file4\n\nB  file5\n'});
