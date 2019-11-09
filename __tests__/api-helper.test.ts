@@ -332,6 +332,31 @@ describe('ApiHelper', () => {
 		});
 	});
 
+	describe('findPullRequest', () => {
+		it('should return null', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Atest')
+				.reply(200, () => []);
+
+			expect(await helper.findPullRequest('test', octokit, context)).toBeNull();
+		});
+
+		it('should return PR', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Atest')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'));
+
+			const pr = await helper.findPullRequest('test', octokit, context);
+
+			expect(pr).toHaveProperty('id');
+			expect(pr).toHaveProperty('number');
+			expect(pr).toHaveProperty('title');
+			expect(pr).toHaveProperty('body');
+		});
+	});
+
 	describe('pullsList', () => {
 		it('should return pulls list generator', async() => {
 			const fn = jest.fn();
@@ -436,9 +461,7 @@ describe('ApiHelper', () => {
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
 		});
-	});
 
-	describe('pullsUpdate', () => {
 		it('should close pull request', async() => {
 			const fn1 = jest.fn();
 			const fn2 = jest.fn();
