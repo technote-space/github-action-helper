@@ -332,6 +332,31 @@ describe('ApiHelper', () => {
 		});
 	});
 
+	describe('findPullRequest', () => {
+		it('should return null', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Atest')
+				.reply(200, () => []);
+
+			expect(await helper.findPullRequest('test', octokit, context)).toBeNull();
+		});
+
+		it('should return PR', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Atest')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'));
+
+			const pr = await helper.findPullRequest('test', octokit, context);
+
+			expect(pr).toHaveProperty('id');
+			expect(pr).toHaveProperty('number');
+			expect(pr).toHaveProperty('title');
+			expect(pr).toHaveProperty('body');
+		});
+	});
+
 	describe('pullsList', () => {
 		it('should return pulls list generator', async() => {
 			const fn = jest.fn();
@@ -436,9 +461,7 @@ describe('ApiHelper', () => {
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
 		});
-	});
 
-	describe('pullsUpdate', () => {
 		it('should close pull request', async() => {
 			const fn1 = jest.fn();
 			const fn2 = jest.fn();
@@ -470,6 +493,76 @@ describe('ApiHelper', () => {
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
+		});
+	});
+
+	describe('pullsCreateOrComment', () => {
+		it('should create pull request', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.reply(200, () => [])
+				.post('/repos/hello/world/pulls')
+				.reply(201, () => getApiFixture(rootDir, 'pulls.create'));
+
+			const info = await helper.pullsCreateOrComment('create/test', {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context);
+
+			expect(info).toHaveProperty('isPrCreated');
+			expect(info['isPrCreated']).toBe(true);
+		});
+
+		it('should create comment', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
+				.post('/repos/hello/world/issues/1347/comments')
+				.reply(201);
+
+			const info = await helper.pullsCreateOrComment('create/test', {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context);
+
+			expect(info).toHaveProperty('isPrCreated');
+			expect(info['isPrCreated']).toBe(false);
+		});
+	});
+
+	describe('createCommentToPr', () => {
+		it('should create comment to pull request', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Atest')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
+				.post('/repos/hello/world/issues/1347/comments')
+				.reply(201);
+
+			expect(await helper.createCommentToPr('test', 'test body', octokit, context)).toBe(true);
+		});
+
+		it('should not create comment to pull request 1', async() => {
+			expect(await helper.createCommentToPr('test', undefined, octokit, context)).toBe(false);
+		});
+
+		it('should not create comment to pull request 2', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Atest')
+				.reply(200, () => []);
+
+			expect(await helper.createCommentToPr('test', 'test body', octokit, context)).toBe(false);
 		});
 	});
 
@@ -566,8 +659,10 @@ describe('ApiHelper', () => {
 			expect(info).toHaveProperty('commits_url');
 			expect(info).toHaveProperty('comments_url');
 			expect(info).toHaveProperty('number');
+			expect(info).toHaveProperty('isPrCreated');
 			expect(info['html_url']).toBe('https://github.com/hello/world/pull/1347');
 			expect(info['number']).toBe(1347);
+			expect(info['isPrCreated']).toBe(false);
 			stdoutCalledWith(mockStdout, [
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -620,8 +715,10 @@ describe('ApiHelper', () => {
 			expect(info).toHaveProperty('commits_url');
 			expect(info).toHaveProperty('comments_url');
 			expect(info).toHaveProperty('number');
+			expect(info).toHaveProperty('isPrCreated');
 			expect(info['html_url']).toBe('https://github.com/hello/world/pull/1347');
 			expect(info['number']).toBe(1347);
+			expect(info['isPrCreated']).toBe(true);
 			stdoutCalledWith(mockStdout, [
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -715,139 +812,6 @@ describe('ApiHelper', () => {
 
 			const user = await helper.getUser(octokit, context);
 			expect(fn1).toBeCalledTimes(1);
-			expect(user.login).toBe('octocat');
-			expect(user.email).toBe('octocat@github.com');
-			expect(user.name).toBe('monalisa octocat');
-			expect(user.id).toBe(1);
-		});
-	});
-});
-
-describe('ApiHelper with params', () => {
-	disableNetConnect(nock);
-	testEnv();
-	beforeEach(() => {
-		Logger.resetForTesting();
-	});
-
-	const helper = new ApiHelper(new Logger(), {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
-
-	describe('updateRef', () => {
-		it('should output warning 1', async() => {
-			const mockStdout = spyOnStdout();
-			nock('https://api.github.com')
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'), body => {
-					expect(body).toHaveProperty('sha');
-					return body;
-				})
-				.reply(403, {
-					'message': 'Required status check "Test" is expected.',
-				});
-
-			await helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context);
-
-			stdoutCalledWith(mockStdout, [
-				'::warning::Branch is protected.',
-			]);
-		});
-
-		it('should output warning 2', async() => {
-			const mockStdout = spyOnStdout();
-			nock('https://api.github.com')
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'), body => {
-					expect(body).toHaveProperty('sha');
-					return body;
-				})
-				.reply(403, {
-					'message': '5 of 5 required status checks are expected.',
-				});
-
-			await helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context);
-
-			stdoutCalledWith(mockStdout, [
-				'::warning::Branch is protected.',
-			]);
-		});
-
-		it('should throw error', async() => {
-			nock('https://api.github.com')
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'), body => {
-					expect(body).toHaveProperty('sha');
-					return body;
-				})
-				.reply(404, {
-					'message': 'Not Found',
-				});
-
-			await expect(helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context)).rejects.toThrow('Not Found');
-		});
-	});
-
-	describe('commit', () => {
-		it('should commit without update ref', async() => {
-			const fn1        = jest.fn();
-			const fn2        = jest.fn();
-			const mockStdout = spyOnStdout();
-			nock('https://api.github.com')
-				.persist()
-				.post('/repos/hello/world/git/blobs')
-				.reply(201, () => {
-					return getApiFixture(rootDir, 'repos.git.blobs');
-				})
-				.get('/repos/hello/world/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd')
-				.reply(200, () => getApiFixture(rootDir, 'repos.git.commits.get'))
-				.post('/repos/hello/world/git/trees')
-				.reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
-				.post('/repos/hello/world/git/commits')
-				.reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'))
-				.reply(200, () => {
-					fn1();
-					return getApiFixture(rootDir, 'repos.git.refs.update');
-				})
-				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'))
-				.reply(403, () => {
-					fn2();
-					return {'message': 'Required status check "Test" is expected.'};
-				});
-
-			expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBe(true);
-			expect(fn1).not.toBeCalled();
-			expect(fn2).toBeCalledTimes(1);
-			stdoutCalledWith(mockStdout, [
-				'::group::Creating blobs...',
-				'::endgroup::',
-				'::group::Creating tree...',
-				'::endgroup::',
-				'::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
-				'::endgroup::',
-				'::group::Updating ref... [test-ref] [7638417db6d59f3c431d3e1f261cc637155684cd]',
-				'::warning::Branch is protected.',
-				'::endgroup::',
-			]);
-		});
-	});
-
-	describe('getUser', () => {
-		it('should get user', async() => {
-			const fn1 = jest.fn();
-			const fn2 = jest.fn();
-			nock('https://api.github.com')
-				.persist()
-				.get('/users/octocat')
-				.reply(200, () => {
-					fn1();
-					return getApiFixture(rootDir, 'users.get');
-				})
-				.get('/users/test-sender')
-				.reply(200, () => {
-					fn2();
-					return getApiFixture(rootDir, 'users.get');
-				});
-
-			const user = await helper.getUser(octokit, context);
-			expect(fn1).not.toBeCalled();
-			expect(fn2).toBeCalledTimes(1);
 			expect(user.login).toBe('octocat');
 			expect(user.email).toBe('octocat@github.com');
 			expect(user.name).toBe('monalisa octocat');

@@ -34,6 +34,7 @@ type PullsInfo = {
 	'commits_url': string;
 	'comments_url': string;
 	number: number;
+	isPrCreated: boolean;
 };
 
 type PullsListParams = {
@@ -270,11 +271,11 @@ export default class ApiHelper {
 	 * @param {Context} context context
 	 * @return {Promise<PullsListResponseItem>} pull request
 	 */
-	private findPullRequest = async(branchName: string, octokit: GitHub, context: Context): Promise<PullsListResponseItem | null> => {
+	public findPullRequest = async(branchName: string, octokit: GitHub, context: Context): Promise<PullsListResponseItem | null> => {
 		const response = await octokit.pulls.list({
 			owner: context.repo.owner,
 			repo: context.repo.repo,
-			head: `${context.repo.owner}:${branchName}`,
+			head: `${context.repo.owner}:${this.getBranch(branchName)}`,
 		});
 		if (response.data.length) {
 			return response.data[0];
@@ -320,7 +321,7 @@ export default class ApiHelper {
 	public pullsCreate = async(branchName: string, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<Response<PullsCreateResponse>> => octokit.pulls.create({
 		owner: context.repo.owner,
 		repo: context.repo.repo,
-		head: `${context.repo.owner}:${branchName}`,
+		head: `${context.repo.owner}:${this.getBranch(branchName)}`,
 		base: (await this.getRefForUpdate(false, octokit, context)).replace(/^heads\//, ''),
 		...detail,
 	});
@@ -342,6 +343,23 @@ export default class ApiHelper {
 	});
 
 	/**
+	 * @param {string} branch branch
+	 * @return {string} branch
+	 */
+	public getBranch = (branch: string): string => branch.replace(/^(refs\/)?heads/, '');
+
+	/**
+	 * @param {string} branch branch
+	 * @return {object} branch info
+	 */
+	public getBranchInfo = (branch: string): { branchName: string; headName: string; refName: string } => {
+		const branchName = this.getBranch(branch);
+		const headName   = `heads/${branchName}`;
+		const refName    = `refs/${headName}`;
+		return {branchName, headName, refName};
+	};
+
+	/**
 	 * @param {string} createBranchName branch name
 	 * @param {PullsCreateParams} detail detail
 	 * @param {GitHub} octokit octokit
@@ -349,19 +367,67 @@ export default class ApiHelper {
 	 * @return {Promise<PullsInfo>} info
 	 */
 	public pullsCreateOrUpdate = async(createBranchName: string, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<PullsInfo> => {
-		const branchName  = createBranchName.replace(/^(refs\/)?heads/, '');
-		const pullRequest = await this.findPullRequest(branchName, octokit, context);
+		const pullRequest = await this.findPullRequest(createBranchName, octokit, context);
 		if (pullRequest) {
-			this.logger.startProcess('Updating PullRequest... [%s] -> [%s]', branchName, await this.getRefForUpdate(false, octokit, context));
+			this.logger.startProcess('Updating PullRequest... [%s] -> [%s]', this.getBranch(createBranchName), await this.getRefForUpdate(false, octokit, context));
 			const updated = await this.pullsUpdate(pullRequest.number, detail, octokit, context);
 			this.logger.endProcess();
-			return updated.data;
+			return Object.assign({isPrCreated: false}, updated.data);
 		} else {
-			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', branchName, await this.getRefForUpdate(false, octokit, context));
-			const created = await this.pullsCreate(branchName, detail, octokit, context);
+			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', this.getBranch(createBranchName), await this.getRefForUpdate(false, octokit, context));
+			const created = await this.pullsCreate(createBranchName, detail, octokit, context);
 			this.logger.endProcess();
-			return created.data;
+			return Object.assign({isPrCreated: true}, created.data);
 		}
+	};
+
+	/**
+	 * @param {string} createBranchName branch name
+	 * @param {PullsCreateParams} detail detail
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<PullsInfo>} info
+	 */
+	public pullsCreateOrComment = async(createBranchName: string, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<PullsInfo> => {
+		const pullRequest = await this.findPullRequest(createBranchName, octokit, context);
+		if (pullRequest) {
+			this.logger.startProcess('Creating comment to PullRequest... [%s] -> [%s]', this.getBranch(createBranchName), await this.getRefForUpdate(false, octokit, context));
+			await this.createCommentToPr(createBranchName, detail.body, octokit, context);
+			this.logger.endProcess();
+			return Object.assign({isPrCreated: false}, pullRequest);
+		} else {
+			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', this.getBranch(createBranchName), await this.getRefForUpdate(false, octokit, context));
+			const created = await this.pullsCreate(createBranchName, detail, octokit, context);
+			this.logger.endProcess();
+			return Object.assign({isPrCreated: true}, created.data);
+		}
+	};
+
+	/**
+	 * @param {string} branch branch
+	 * @param {string} body body
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<boolean>} result
+	 */
+	public createCommentToPr = async(branch: string, body: string | undefined, octokit: GitHub, context: Context): Promise<boolean> => {
+		if (!body) {
+			return false;
+		}
+
+		const pullRequest = await this.findPullRequest(branch, octokit, context);
+		if (!pullRequest) {
+			return false;
+		}
+
+		await octokit.issues.createComment({
+			owner: context.repo.owner,
+			repo: context.repo.repo,
+			'issue_number': pullRequest.number,
+			body,
+		});
+
+		return true;
 	};
 
 	/**
@@ -442,12 +508,9 @@ export default class ApiHelper {
 			return false;
 		}
 
-		const branchName = createBranchName.replace(/^(refs\/)?heads/, '');
-		const headName   = `heads/${branchName}`;
-		const refName    = `refs/${headName}`;
-
-		const commit = await this.prepareCommit(rootDir, commitMessage, files, octokit, context);
-		const ref    = await this.getRef(headName, octokit, context);
+		const {branchName, headName, refName} = this.getBranchInfo(createBranchName);
+		const commit                          = await this.prepareCommit(rootDir, commitMessage, files, octokit, context);
+		const ref                             = await this.getRef(headName, octokit, context);
 		if (null === ref) {
 			this.logger.startProcess('Creating reference... [%s] [%s]', refName, commit.data.sha);
 			await this.createRef(commit, refName, octokit, context);
@@ -466,11 +529,8 @@ export default class ApiHelper {
 	 * @param {string} message message
 	 */
 	public closePR = async(createBranchName: string, octokit: GitHub, context: Context, message?: string): Promise<void> => {
-		const branchName = createBranchName.replace(/^(refs\/)?heads/, '');
-		const headName   = `heads/${branchName}`;
-		const refName    = `refs/${headName}`;
-
-		const pullRequest = await this.findPullRequest(branchName, octokit, context);
+		const {branchName, headName, refName} = this.getBranchInfo(createBranchName);
+		const pullRequest                     = await this.findPullRequest(branchName, octokit, context);
 		if (pullRequest) {
 			this.logger.startProcess('Closing PullRequest... [%s]', branchName);
 			await this.pullsUpdate(pullRequest.number, {
