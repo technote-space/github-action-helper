@@ -12,7 +12,6 @@ import {
 	spyOnStdout,
 	stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import { testLogger } from './util';
 import { ApiHelper, Logger } from '../src';
 
 const rootDir = path.resolve(__dirname, 'fixtures');
@@ -64,7 +63,9 @@ const createCommitResponse = createResponse<GitCreateCommitResponse>({
 describe('ApiHelper', () => {
 	disableNetConnect(nock);
 	testEnv();
-	testLogger();
+	beforeEach(() => {
+		Logger.resetForTesting();
+	});
 
 	const helper = new ApiHelper(new Logger());
 
@@ -725,7 +726,9 @@ describe('ApiHelper', () => {
 describe('ApiHelper with params', () => {
 	disableNetConnect(nock);
 	testEnv();
-	testLogger();
+	beforeEach(() => {
+		Logger.resetForTesting();
+	});
 
 	const helper = new ApiHelper(new Logger(), {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
 
