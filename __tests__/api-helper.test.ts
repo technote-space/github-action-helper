@@ -496,6 +496,28 @@ describe('ApiHelper', () => {
 		});
 	});
 
+	describe('createCommentToPr', () => {
+		it('should create comment to pull request', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Atest')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
+				.post('/repos/hello/world/issues/1347/comments')
+				.reply(201);
+
+			expect(await helper.createCommentToPr('test', octokit, context)).toBe(true);
+		});
+
+		it('should not create comment to pull request', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Atest')
+				.reply(200, () => []);
+
+			expect(await helper.createCommentToPr('test', octokit, context)).toBe(false);
+		});
+	});
+
 	describe('commit', () => {
 		it('should not commit', async() => {
 			const mockStdout = spyOnStdout();

@@ -382,6 +382,28 @@ export default class ApiHelper {
 	};
 
 	/**
+	 * @param {string} branch branch
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<boolean>} result
+	 */
+	public createCommentToPr = async(branch: string, octokit: GitHub, context: Context): Promise<boolean> => {
+		const pullRequest = await this.findPullRequest(branch, octokit, context);
+		if (!pullRequest) {
+			return false;
+		}
+
+		await octokit.issues.createComment({
+			owner: context.repo.owner,
+			repo: context.repo.repo,
+			'issue_number': pullRequest.number,
+			body: '',
+		});
+
+		return true;
+	};
+
+	/**
 	 * @param {Error} error error
 	 * @return {boolean} result
 	 */
@@ -460,8 +482,8 @@ export default class ApiHelper {
 		}
 
 		const {branchName, headName, refName} = this.getBranchInfo(createBranchName);
-		const commit = await this.prepareCommit(rootDir, commitMessage, files, octokit, context);
-		const ref    = await this.getRef(headName, octokit, context);
+		const commit                          = await this.prepareCommit(rootDir, commitMessage, files, octokit, context);
+		const ref                             = await this.getRef(headName, octokit, context);
 		if (null === ref) {
 			this.logger.startProcess('Creating reference... [%s] [%s]', refName, commit.data.sha);
 			await this.createRef(commit, refName, octokit, context);
@@ -481,7 +503,7 @@ export default class ApiHelper {
 	 */
 	public closePR = async(createBranchName: string, octokit: GitHub, context: Context, message?: string): Promise<void> => {
 		const {branchName, headName, refName} = this.getBranchInfo(createBranchName);
-		const pullRequest = await this.findPullRequest(branchName, octokit, context);
+		const pullRequest                     = await this.findPullRequest(branchName, octokit, context);
 		if (pullRequest) {
 			this.logger.startProcess('Closing PullRequest... [%s]', branchName);
 			await this.pullsUpdate(pullRequest.number, {
