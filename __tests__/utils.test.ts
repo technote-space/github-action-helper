@@ -6,7 +6,6 @@ import {
 } from '@technote-space/github-action-test-helper';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Logger, Utils } from '../src';
-import { testLogger } from './util';
 
 const {isRelease, isPush, isPr, isIssue, isCron, getWorkspace, getActor, getGitUrl, escapeRegExp, getBoolValue} = Utils;
 const {getRepository, getTagName, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getPrHeadRef, sleep}     = Utils;
@@ -407,7 +406,9 @@ describe('getBuildInfo', () => {
 });
 
 describe('showActionInfo', () => {
-	testLogger();
+	beforeEach(() => {
+		Logger.resetForTesting();
+	});
 
 	it('should show action info', () => {
 		const mockStdout = spyOnStdout();

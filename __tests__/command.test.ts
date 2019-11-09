@@ -8,11 +8,12 @@ import {
 	stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
 import { Logger, Command } from '../src';
-import { testLogger } from './util';
 
 describe('Command', () => {
-	testLogger();
 	testChildProcess();
+	beforeEach(() => {
+		Logger.resetForTesting();
+	});
 
 	const command = new Command(new Logger());
 

@@ -148,6 +148,18 @@ describe('GitHelper', () => {
 		});
 	});
 
+	describe('createBranch', () => {
+		it('should run git branch', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.createBranch(workDir, 'test-branch');
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} checkout -b "test-branch"`,
+			]);
+		});
+	});
+
 	describe('config', () => {
 		it('should run git config', async() => {
 			const mockExec = spyOnExec();

@@ -4,10 +4,11 @@ import {
 	stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
 import { Logger } from '../src';
-import { testLogger } from './util';
 
 describe('Logger', () => {
-	testLogger();
+	beforeEach(() => {
+		Logger.resetForTesting();
+	});
 
 	const logger = new Logger();
 
@@ -109,7 +110,9 @@ describe('Logger', () => {
 });
 
 describe('Logger with string array', () => {
-	testLogger();
+	beforeEach(() => {
+		Logger.resetForTesting();
+	});
 
 	const logger = new Logger();
 
@@ -169,7 +172,9 @@ describe('Logger with string array', () => {
 });
 
 describe('Logger with arguments', () => {
-	testLogger();
+	beforeEach(() => {
+		Logger.resetForTesting();
+	});
 
 	const logger = new Logger((string: string): string => string.replace('<replace target>', '<replaced>'), true);
 
@@ -202,7 +207,9 @@ describe('Logger with arguments', () => {
 });
 
 describe('Logger with mixed', () => {
-	testLogger();
+	beforeEach(() => {
+		Logger.resetForTesting();
+	});
 
 	const logger = new Logger((string: string): string => string.replace('<replace target>', '<replaced>'));
 
