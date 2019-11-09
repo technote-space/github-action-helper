@@ -496,6 +496,50 @@ describe('ApiHelper', () => {
 		});
 	});
 
+	describe('pullsCreateOrComment', () => {
+		it('should create pull request', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.reply(200, () => [])
+				.post('/repos/hello/world/pulls')
+				.reply(201, () => getApiFixture(rootDir, 'pulls.create'));
+
+			const info = await helper.pullsCreateOrComment('create/test', {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context);
+
+			expect(info).toHaveProperty('isPrCreated');
+			expect(info['isPrCreated']).toBe(true);
+		});
+
+		it('should create comment', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Acreate%2Ftest')
+				.reply(200, () => getApiFixture(rootDir, 'pulls.list'))
+				.post('/repos/hello/world/issues/1347/comments')
+				.reply(201);
+
+			const info = await helper.pullsCreateOrComment('create/test', {
+				body: [
+					'body1',
+					'body2',
+					'body3',
+				].join('\n'),
+				title: 'test title',
+			}, octokit, context);
+
+			expect(info).toHaveProperty('isPrCreated');
+			expect(info['isPrCreated']).toBe(false);
+		});
+	});
+
 	describe('createCommentToPr', () => {
 		it('should create comment to pull request', async() => {
 			nock('https://api.github.com')

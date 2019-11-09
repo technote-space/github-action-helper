@@ -382,6 +382,28 @@ export default class ApiHelper {
 	};
 
 	/**
+	 * @param {string} createBranchName branch name
+	 * @param {PullsCreateParams} detail detail
+	 * @param {GitHub} octokit octokit
+	 * @param {Context} context context
+	 * @return {Promise<PullsInfo>} info
+	 */
+	public pullsCreateOrComment = async(createBranchName: string, detail: PullsCreateParams, octokit: GitHub, context: Context): Promise<PullsInfo> => {
+		const pullRequest = await this.findPullRequest(createBranchName, octokit, context);
+		if (pullRequest) {
+			this.logger.startProcess('Creating comment to PullRequest... [%s] -> [%s]', this.getBranch(createBranchName), await this.getRefForUpdate(false, octokit, context));
+			await this.createCommentToPr(createBranchName, detail.body, octokit, context);
+			this.logger.endProcess();
+			return Object.assign({isPrCreated: false}, pullRequest);
+		} else {
+			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', this.getBranch(createBranchName), await this.getRefForUpdate(false, octokit, context));
+			const created = await this.pullsCreate(createBranchName, detail, octokit, context);
+			this.logger.endProcess();
+			return Object.assign({isPrCreated: true}, created.data);
+		}
+	};
+
+	/**
 	 * @param {string} branch branch
 	 * @param {string} body body
 	 * @param {GitHub} octokit octokit
