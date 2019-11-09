@@ -232,11 +232,31 @@ describe('GitHelper', () => {
 
 	describe('getRefDiff', () => {
 		it('should get diff', async() => {
+			const mockExec = spyOnExec();
 			setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
+
 			expect(await helper.getRefDiff(workDir, 'master', 'refs/pull/123/merge')).toEqual([
 				'file1',
 				'file2',
 				'file3',
+			]);
+			execCalledWith(mockExec, [
+				`git -C ${workDir} diff origin/master.../pull/123/merge --name-only`,
+			]);
+		});
+
+		it('should get diff', async() => {
+			const mockExec = spyOnExec();
+			setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
+
+			expect(await helper.getRefDiff(workDir, 'master', 'refs/pull/123/merge', 'AM')).toEqual([
+				'file1',
+				'file2',
+				'file3',
+			]);
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} diff origin/master.../pull/123/merge --name-only --diff-filter=AM`,
 			]);
 		});
 	});

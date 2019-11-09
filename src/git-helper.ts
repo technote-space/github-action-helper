@@ -188,12 +188,13 @@ export default class GitHelper {
 	 * @param {string} workDir work dir
 	 * @param {string} baseRef base ref
 	 * @param {string} compareRef compare ref
+	 * @param {string} diffFilter diff filter
 	 * @return {Promise<string[]>} diff
 	 */
-	public getRefDiff = async(workDir: string, baseRef: string, compareRef: string): Promise<string[]> => {
+	public getRefDiff = async(workDir: string, baseRef: string, compareRef: string, diffFilter?: string): Promise<string[]> => {
 		const toDiffRef = (ref: string): string => /^refs\/pull\/\d+\/(merge|head)$/.test(ref) ? ref.replace(/^refs/, '') : `origin/${ref.replace(/^(refs\/)?(heads\/|remotes\/origin\/)/, '')}`;
 		return (await this.command.execAsync({
-			command: `git -C ${workDir} diff ${toDiffRef(baseRef)}...${toDiffRef(compareRef)} --name-only`,
+			command: `git -C ${workDir} diff ${toDiffRef(baseRef)}...${toDiffRef(compareRef)} --name-only` + (diffFilter ? ` --diff-filter=${diffFilter}` : ''),
 			suppressOutput: true,
 		}))
 			.split(/\r?\n/).filter(item => !!item.trim());
