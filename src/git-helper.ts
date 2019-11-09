@@ -137,6 +137,15 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @param {string} branch branch
+	 * @return {Promise<void>} void
+	 */
+	public createBranch = async(workDir: string, branch: string): Promise<void> => {
+		await this.command.execAsync({command: `git -C ${workDir} checkout -b "${branch}"`});
+	};
+
+	/**
+	 * @param {string} workDir work dir
 	 * @param {string} name name
 	 * @param {string} email email
 	 * @return {Promise<void>} void
