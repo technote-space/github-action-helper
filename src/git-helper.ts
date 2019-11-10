@@ -138,6 +138,23 @@ export default class GitHelper {
 	/**
 	 * @param {string} workDir work dir
 	 * @param {string} branch branch
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public fetchBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
+		const url        = getGitUrl(context);
+		const branchName = branch.replace(/^(refs\/)?heads/, '');
+		await this.command.execAsync({
+			command: `git -C ${workDir} fetch --prune --no-recurse-submodules${this.cloneDepth} ${url} +refs/heads/${branchName}:refs/remotes/origin/${branchName}`,
+			quiet: true,
+			altCommand: `git fetch --prune --no-recurse-submodules${this.cloneDepth} origin +refs/heads/${branchName}:refs/remotes/origin/${branchName}`,
+			suppressError: true,
+		});
+	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @param {string} branch branch
 	 * @return {Promise<void>} void
 	 */
 	public createBranch = async(workDir: string, branch: string): Promise<void> => {

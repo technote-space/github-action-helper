@@ -148,6 +148,18 @@ describe('GitHelper', () => {
 		});
 	});
 
+	describe('fetchBranch', () => {
+		it('should run fetch', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.fetchBranch(workDir, 'test-branch', context());
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} fetch --prune --no-recurse-submodules --depth=3 https://octocat:token@github.com/hello/world.git +refs/heads/test-branch:refs/remotes/origin/test-branch > /dev/null 2>&1 || :`,
+			]);
+		});
+	});
+
 	describe('createBranch', () => {
 		it('should run git branch', async() => {
 			const mockExec = spyOnExec();
