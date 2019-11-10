@@ -7,9 +7,9 @@ import {
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Logger, Utils } from '../src';
 
-const {isRelease, isPush, isPr, isIssue, isCron, getWorkspace, getActor, getGitUrl, escapeRegExp, getBoolValue} = Utils;
-const {getRepository, getTagName, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getPrHeadRef, sleep}     = Utils;
-const {getBranch, getRefForUpdate, getSender, uniqueArray, getBuildInfo, showActionInfo, getArrayInput, useNpm} = Utils;
+const {isRelease, isPush, isPr, isIssue, isCron, getWorkspace, getActor, getGitUrl, escapeRegExp, getBoolValue}         = Utils;
+const {getRepository, getTagName, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getPrHeadRef, sleep, replaceAll} = Utils;
+const {getBranch, getRefForUpdate, getSender, uniqueArray, getBuildInfo, showActionInfo, getArrayInput, useNpm}         = Utils;
 
 jest.useFakeTimers();
 
@@ -707,5 +707,13 @@ describe('useNpm', () => {
 	it('should return false (explicitly specified yarn)', () => {
 		setExists(true);
 		expect(useNpm('test', 'yarn')).toBe(false);
+	});
+});
+
+describe('replaceAll', () => {
+	it('should replace all', () => {
+		expect(replaceAll('', ',', ' ')).toBe('');
+		expect(replaceAll('test1', ',', ' ')).toBe('test1');
+		expect(replaceAll('test1,test2,test3', ',', ' ')).toBe('test1 test2 test3');
 	});
 });
