@@ -134,3 +134,5 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 			!fs.existsSync(path.resolve(workDir, 'yarn.lock'))
 		)
 	);
+
+export const replaceAll = (string: string, key: string, value: string): string => string.split(key).join(value);
