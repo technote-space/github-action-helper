@@ -210,7 +210,10 @@ export default class GitHelper {
 	 * @return {Promise<string[]>} diff
 	 */
 	public getRefDiff = async(workDir: string, baseRef: string, compareRef: string, diffFilter?: string, dot?: '..' | '...'): Promise<string[]> => {
-		const toDiffRef = (ref: string): string => /^refs\/pull\/\d+\/(merge|head)$/.test(ref) ? ref.replace(/^refs/, '') : `origin/${ref.replace(/^(refs\/)?(heads\/|remotes\/origin\/)/, '')}`;
+		const toDiffRef = (ref: string): string => 
+			'HEAD' === ref ? 'HEAD' : (
+				/^refs\/pull\/\d+\/(merge|head)$/.test(ref) ? ref.replace(/^refs\//, '') : `origin/${ref.replace(/^(refs\/)?(heads\/|remotes\/origin\/)/, '')}`
+			);
 		return (await this.command.execAsync({
 			command: `git -C ${workDir} diff ${toDiffRef(baseRef)}${dot ? dot : '...'}${toDiffRef(compareRef)} --name-only${diffFilter ? ` --diff-filter=${diffFilter}` : ''}`,
 			suppressOutput: true,
