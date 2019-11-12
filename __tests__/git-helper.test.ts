@@ -257,7 +257,7 @@ describe('GitHelper', () => {
 			]);
 		});
 
-		it('should get diff', async() => {
+		it('should get diff with diffFilter', async() => {
 			const mockExec = spyOnExec();
 			setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
 
@@ -269,6 +269,21 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				`git -C ${workDir} diff origin/master.../pull/123/merge --name-only --diff-filter=AM`,
+			]);
+		});
+
+		it('should get diff with 2 dots', async() => {
+			const mockExec = spyOnExec();
+			setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
+
+			expect(await helper.getRefDiff(workDir, 'master', 'refs/pull/123/merge', undefined, '..')).toEqual([
+				'file1',
+				'file2',
+				'file3',
+			]);
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} diff origin/master../pull/123/merge --name-only`,
 			]);
 		});
 	});
