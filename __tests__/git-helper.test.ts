@@ -409,6 +409,18 @@ describe('GitHelper', () => {
 			]);
 		});
 	});
+
+	describe('forcePush', () => {
+		it('should run force push', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.forcePush(workDir, 'test-branch', context());
+
+			execCalledWith(mockExec, [
+				`git -C ${workDir} push --force "https://octocat:token@github.com/hello/world.git" "test-branch":"refs/heads/test-branch" > /dev/null 2>&1`,
+			]);
+		});
+	});
 });
 
 describe('GitHelper with params 1', () => {
