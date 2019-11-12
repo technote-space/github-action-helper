@@ -331,4 +331,19 @@ export default class GitHelper {
 			altCommand: `git push${tags} "${branch}":"refs/heads/${branch}"`,
 		});
 	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @param {string} branch branch
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public forcePush = async(workDir: string, branch: string, context: Context): Promise<void> => {
+		const url = getGitUrl(context);
+		await this.command.execAsync({
+			command: `git -C ${workDir} push --force "${url}" "${branch}":"refs/heads/${branch}"`,
+			quiet: true,
+			altCommand: `git push --force "${branch}":"refs/heads/${branch}"`,
+		});
+	};
 }
