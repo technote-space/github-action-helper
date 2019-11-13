@@ -15,7 +15,8 @@ import {
 } from '@octokit/rest';
 import { exportVariable } from '@actions/core';
 import { Logger } from './index';
-import { getSender, getRefForUpdate, isPrRef } from './utils';
+import { getRefForUpdate, isPrRef } from './utils';
+import { getSender } from './context-helper';
 
 type PullsUpdateParams = {
 	body?: string;
