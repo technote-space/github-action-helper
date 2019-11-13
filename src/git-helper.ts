@@ -137,7 +137,7 @@ export default class GitHelper {
 	 */
 	public fetchBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
 		const url        = getGitUrl(context);
-		const branchName = branch.replace(/^(refs\/)?heads/, '');
+		const branchName = getBranch(branch, false);
 		await this.command.execAsync({
 			command: `git -C ${workDir} fetch --prune --no-recurse-submodules${this.cloneDepth} ${url} +refs/heads/${branchName}:refs/remotes/origin/${branchName}`,
 			quiet: true,
@@ -206,7 +206,7 @@ export default class GitHelper {
 	public getRefDiff = async(workDir: string, baseRef: string, compareRef: string, diffFilter?: string, dot?: '..' | '...'): Promise<string[]> => {
 		const toDiffRef = (ref: string): string =>
 			'HEAD' === ref ? 'HEAD' : (
-				/^refs\/pull\/\d+\/(merge|head)$/.test(ref) ? ref.replace(/^refs\//, '') : `origin/${ref.replace(/^(refs\/)?(heads\/|remotes\/origin\/)/, '')}`
+				isPrRef(ref) ? ref.replace(/^refs\//, '') : `origin/${getBranch(ref, false)}`
 			);
 		return (await this.command.execAsync({
 			command: `git -C ${workDir} diff ${toDiffRef(baseRef)}${dot ? dot : '...'}${toDiffRef(compareRef)} --name-only${diffFilter ? ` --diff-filter=${diffFilter}` : ''}`,
