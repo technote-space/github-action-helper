@@ -195,24 +195,4 @@ describe('execAsync', () => {
 			'  >> stdout',
 		]);
 	});
-
-	it('should throw error', async() => {
-		/**
-		 * Logger
-		 */
-		class ThrowErrorLogger extends Logger {
-			/**
-			 * @return {void}
-			 */
-			public displayStdout = (): void => {
-				throw new Error('test');
-			};
-		}
-
-		const command = new Command(new ThrowErrorLogger());
-
-		await expect(command.execAsync({
-			command: 'test',
-		})).rejects.toThrow();
-	});
 });
