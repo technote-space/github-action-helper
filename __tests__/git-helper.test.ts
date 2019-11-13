@@ -242,8 +242,6 @@ describe('GitHelper', () => {
 		});
 
 		it('should throw error', async() => {
-			console.trace = jest.fn();
-
 			/**
 			 * Logger
 			 */
@@ -262,8 +260,6 @@ describe('GitHelper', () => {
 				'command2',
 				{command: 'command3'},
 			])).rejects.toThrow();
-
-			expect(console.trace).toBeCalledTimes(1);
 		});
 	});
 
