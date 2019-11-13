@@ -744,7 +744,7 @@ describe('ApiHelper', () => {
 				.patch('/repos/hello/world/pulls/1347')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.update'))
 				.delete('/repos/hello/world/git/refs/heads/close/test')
-				.reply(204, () => getApiFixture(rootDir, 'pulls.update'));
+				.reply(204);
 
 			await helper.closePR('close/test', octokit, context);
 
@@ -756,17 +756,40 @@ describe('ApiHelper', () => {
 			]);
 		});
 
-		it('should not close pull request', async() => {
+		it('should not close pull request, should delete reference', async() => {
 			const mockStdout = spyOnStdout();
 			nock('https://api.github.com')
 				.persist()
 				.get('/repos/hello/world/pulls?head=hello%3Aclose%2Ftest')
-				.reply(200, () => []);
+				.reply(200, () => [])
+				.get('/repos/hello/world/git/ref/heads/close/test')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.ref'))
+				.delete('/repos/hello/world/git/refs/heads/close/test')
+				.reply(204);
 
 			await helper.closePR('close/test', octokit, context);
 
 			stdoutCalledWith(mockStdout, [
 				'> There is no PullRequest named [close/test]',
+				'::group::Deleting reference... [refs/heads/close/test]',
+				'::endgroup::',
+			]);
+		});
+
+		it('should not close pull request, should not delete reference', async() => {
+			const mockStdout = spyOnStdout();
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/pulls?head=hello%3Aclose%2Ftest')
+				.reply(200, () => [])
+				.get('/repos/hello/world/git/ref/heads/close/test')
+				.reply(404);
+
+			await helper.closePR('close/test', octokit, context);
+
+			stdoutCalledWith(mockStdout, [
+				'> There is no PullRequest named [close/test]',
+				'> There is no reference named [refs/heads/close/test]',
 			]);
 		});
 	});

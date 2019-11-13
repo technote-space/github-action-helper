@@ -533,12 +533,18 @@ export default class ApiHelper {
 				state: 'closed',
 				base: undefined,
 			}, octokit, context);
-			this.logger.startProcess('Deleting reference... [%s]', refName);
-			await this.deleteRef(headName, octokit, context);
-			this.logger.endProcess();
 		} else {
 			this.logger.info('There is no PullRequest named [%s]', branchName);
+
+			const ref = await this.getRef(headName, octokit, context);
+			if (!ref) {
+				this.logger.info('There is no reference named [%s]', refName);
+				return;
+			}
 		}
+		this.logger.startProcess('Deleting reference... [%s]', refName);
+		await this.deleteRef(headName, octokit, context);
+		this.logger.endProcess();
 	};
 
 	/**
