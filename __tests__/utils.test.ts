@@ -188,6 +188,14 @@ describe('getBranch', () => {
 			ref: 'refs/pull/2/head',
 		}))).toBe('');
 	});
+
+	it('should not get branch 3', () => {
+		expect(getBranch('test')).toBe('');
+	});
+
+	it('should not get branch 4', () => {
+		expect(getBranch('test', false)).toBe('test');
+	});
 });
 
 describe('getRefForUpdate', () => {

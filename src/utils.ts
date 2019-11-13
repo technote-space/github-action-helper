@@ -40,9 +40,17 @@ export const getPrMergeRef = (ref: string | Context): string => getRef(ref).repl
 
 export const getPrHeadRef = (ref: string | Context): string => getRef(ref).replace(/^refs\/pull\/(\d+)\/(merge|head)$/, 'refs/pull/$1/head');
 
-export const getBranch = (ref: string | Context): string => isBranch(ref) ? getRef(ref).replace(/^(refs\/)?heads\//, '') : (isRemoteBranch(ref) ? getRef(ref).replace(/^(refs\/)?remotes\/origin\//, '') : '');
-
 export const getRefForUpdate = (ref: string | Context): string => getRef(ref).replace(/^refs\//, '');
+
+export const getBranch = (ref: string | Context, defaultIsEmpty = true): string =>
+	isBranch(ref) ?
+		getRef(ref).replace(/^(refs\/)?heads\//, '') :
+		(
+			isRemoteBranch(ref) ? getRef(ref).replace(/^(refs\/)?remotes\/origin\//, '') :
+				(
+					defaultIsEmpty ? '' : getRefForUpdate(ref)
+				)
+		);
 
 export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
 
