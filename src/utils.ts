@@ -58,6 +58,12 @@ export const getActor = (): string => process.env.GITHUB_ACTOR || '';
 
 export const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+export const getRegExp = (value: string): RegExp => new RegExp(escapeRegExp(value));
+
+export const getPrefixRegExp = (value: string): RegExp => new RegExp('^' + escapeRegExp(value));
+
+export const getSuffixRegExp = (value: string): RegExp => new RegExp(escapeRegExp(value) + '$');
+
 export const getBoolValue = (input: string): boolean => !['false', '0', ''].includes(input.trim().toLowerCase());
 
 export const uniqueArray = <T>(array: T[]): T[] => [...new Set<T>(array)];
