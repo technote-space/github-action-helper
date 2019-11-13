@@ -192,11 +192,13 @@ describe('GitHelper', () => {
 			await helper.runCommand(workDir, [
 				'command1',
 				'command2',
+				{command: 'command3'},
 			]);
 
 			execCalledWith(mockExec, [
 				['command1', {cwd: workDir}],
 				['command2', {cwd: workDir}],
+				['command3', {cwd: workDir}],
 			]);
 		});
 
@@ -207,6 +209,7 @@ describe('GitHelper', () => {
 			expect(await helper.runCommand(workDir, [
 				'command1',
 				'command2',
+				{command: 'command3', quiet: true},
 			])).toEqual([
 				{
 					command: 'command1',
@@ -222,11 +225,19 @@ describe('GitHelper', () => {
 						'test2',
 					],
 				},
+				{
+					command: 'command3',
+					stdout: [
+						'test1',
+						'test2',
+					],
+				},
 			]);
 
 			execCalledWith(mockExec, [
 				['command1', {cwd: workDir}],
 				['command2', {cwd: workDir}],
+				['command3 > /dev/null 2>&1', {cwd: workDir}],
 			]);
 		});
 	});
