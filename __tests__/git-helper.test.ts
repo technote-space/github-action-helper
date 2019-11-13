@@ -240,6 +240,31 @@ describe('GitHelper', () => {
 				['command3 > /dev/null 2>&1', {cwd: workDir}],
 			]);
 		});
+
+		it('should throw error', async() => {
+			console.trace = jest.fn();
+
+			/**
+			 * Logger
+			 */
+			class ThrowErrorLogger extends Logger {
+				/**
+				 * @return {void}
+				 */
+				public displayStdout = (): void => {
+					throw new Error('test');
+				};
+			}
+
+			const helper = new GitHelper(new ThrowErrorLogger());
+			await expect(helper.runCommand(workDir, [
+				'command1',
+				'command2',
+				{command: 'command3'},
+			])).rejects.toThrow();
+
+			expect(console.trace).toBeCalledTimes(1);
+		});
 	});
 
 	describe('getDiff', () => {

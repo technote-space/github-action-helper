@@ -209,7 +209,7 @@ export default class GitHelper {
 			return result;
 		} catch (error) {
 			console.log();
-			this.logger.error(error.message);
+			this.logger.info(error.message);
 			console.trace();
 			throw error;
 		}
