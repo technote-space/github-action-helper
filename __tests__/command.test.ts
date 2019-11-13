@@ -9,7 +9,7 @@ import {
 } from '@technote-space/github-action-test-helper';
 import { Logger, Command } from '../src';
 
-describe('Command', () => {
+describe('execAsync', () => {
 	testChildProcess();
 	beforeEach(() => {
 		Logger.resetForTesting();
@@ -194,5 +194,25 @@ describe('Command', () => {
 			'[command]test',
 			'  >> stdout',
 		]);
+	});
+
+	it('should throw error', async() => {
+		/**
+		 * Logger
+		 */
+		class ThrowErrorLogger extends Logger {
+			/**
+			 * @return {void}
+			 */
+			public displayStdout = (): void => {
+				throw new Error('test');
+			};
+		}
+
+		const command = new Command(new ThrowErrorLogger());
+
+		await expect(command.execAsync({
+			command: 'test',
+		})).rejects.toThrow();
 	});
 });
