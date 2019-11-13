@@ -159,9 +159,21 @@ describe('getBranch', () => {
 		}))).toBe('test');
 	});
 
-	it('should get branch 1', () => {
+	it('should get branch 2', () => {
 		expect(getBranch(getContext({
 			ref: 'refs/remotes/origin/test',
+		}))).toBe('test');
+	});
+
+	it('should get branch 3', () => {
+		expect(getBranch(getContext({
+			ref: 'heads/test',
+		}))).toBe('test');
+	});
+
+	it('should get branch 4', () => {
+		expect(getBranch(getContext({
+			ref: 'remotes/origin/test',
 		}))).toBe('test');
 	});
 

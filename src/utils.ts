@@ -30,9 +30,9 @@ export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve
 
 export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+(\.\d+)*$/i.test(tagName);
 
-export const isBranch = (ref: string | Context): boolean => /^refs\/heads\//.test(getRef(ref));
+export const isBranch = (ref: string | Context): boolean => /^(refs\/)?heads/.test(getRef(ref));
 
-export const isRemoteBranch = (ref: string | Context): boolean => /^refs\/remotes\/origin\//.test(getRef(ref));
+export const isRemoteBranch = (ref: string | Context): boolean => /^(refs\/)?remotes\/origin\//.test(getRef(ref));
 
 export const isPrRef = (ref: string | Context): boolean => /^refs\/pull\/\d+\/(merge|head)$/.test(getRef(ref));
 
@@ -40,7 +40,7 @@ export const getPrMergeRef = (ref: string | Context): string => getRef(ref).repl
 
 export const getPrHeadRef = (ref: string | Context): string => getRef(ref).replace(/^refs\/pull\/(\d+)\/(merge|head)$/, 'refs/pull/$1/head');
 
-export const getBranch = (ref: string | Context): string => isBranch(ref) ? getRef(ref).replace(/^refs\/heads\//, '') : (isRemoteBranch(ref) ? getRef(ref).replace(/^refs\/remotes\/origin\//, '') : '');
+export const getBranch = (ref: string | Context): string => isBranch(ref) ? getRef(ref).replace(/^(refs\/)?heads\//, '') : (isRemoteBranch(ref) ? getRef(ref).replace(/^(refs\/)?remotes\/origin\//, '') : '');
 
 export const getRefForUpdate = (ref: string | Context): string => getRef(ref).replace(/^refs\//, '');
 
