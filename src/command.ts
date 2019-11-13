@@ -109,10 +109,15 @@ export default class Command {
 			this.logger.displayCommand(command);
 		}
 
-		if (typeof cwd === 'undefined') {
-			exec(this.getCommand(command, quiet, suppressError), this.execCallback(command, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
-		} else {
-			exec(this.getCommand(command, quiet, suppressError), {cwd}, this.execCallback(command, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+		try {
+			if (typeof cwd === 'undefined') {
+				exec(this.getCommand(command, quiet, suppressError), this.execCallback(command, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+			} else {
+				exec(this.getCommand(command, quiet, suppressError), {cwd}, this.execCallback(command, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+			}
+		} catch (error) {
+			console.log(error);
+			throw error;
 		}
 	});
 }
