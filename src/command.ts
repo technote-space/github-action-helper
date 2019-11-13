@@ -103,10 +103,10 @@ export default class Command {
 	}): Promise<string> => new Promise<string>((resolve, reject): void => {
 		const {command, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false} = args;
 
-		if (undefined === altCommand) {
-			this.logger.displayCommand(command);
-		} else if (!quiet) {
+		if (undefined !== altCommand) {
 			this.logger.displayCommand(altCommand);
+		} else if (!quiet) {
+			this.logger.displayCommand(command);
 		}
 
 		if (typeof cwd === 'undefined') {
