@@ -3,9 +3,9 @@ import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getBoolValue, getPrHeadRef, sleep} = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, replaceAll, useNpm} = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, getArrayInput}    = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, sleep} = Utils;
+const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, useNpm}    = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, getArrayInput, getPrHeadRef}       = Utils;
 
 jest.useFakeTimers();
 
@@ -40,6 +40,27 @@ describe('getActor', () => {
 describe('escapeRegExp', () => {
 	it('should escape RegExp', () => {
 		expect(escapeRegExp('.*+?^${}()|[]\\')).toBe('\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\');
+	});
+});
+
+describe('getRegExp', () => {
+	it('should get RegExp', () => {
+		expect(getRegExp('?t*e^s$t*/abc').test('123/?t*e^s$t*/abc/xyz')).toBe(true);
+		expect(getRegExp('?t*e^s$t*/abc').test('123/?t*e^s$t*/xyz')).toBe(false);
+	});
+});
+
+describe('getPrefixRegExp', () => {
+	it('should get RegExp', () => {
+		expect(getPrefixRegExp('?t*e^s$t*/abc').test('?t*e^s$t*/abc/xyz')).toBe(true);
+		expect(getPrefixRegExp('?t*e^s$t*/abc').test('123/?t*e^s$t*/abc/xyz')).toBe(false);
+	});
+});
+
+describe('getSuffixRegExp', () => {
+	it('should get RegExp', () => {
+		expect(getSuffixRegExp('?t*e^s$t*/abc').test('123/?t*e^s$t*/abc')).toBe(true);
+		expect(getSuffixRegExp('?t*e^s$t*/abc').test('123/?t*e^s$t*/abc/xyz')).toBe(false);
 	});
 });
 
