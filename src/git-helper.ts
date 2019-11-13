@@ -209,7 +209,10 @@ export default class GitHelper {
 			return result;
 		} catch (error) {
 			console.log();
-			this.logger.info(error.message);
+			/* istanbul ignore next */
+			if (error.message) {
+				this.logger.info(error.message);
+			}
 			console.trace();
 			throw error;
 		}
