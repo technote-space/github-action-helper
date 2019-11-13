@@ -1,8 +1,8 @@
 import fs from 'fs';
-import path from 'path';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getGitUrl, getBranch, isBranch, isPrRef } from './utils';
+import { getBranch, isBranch, isPrRef, isCloned } from './utils';
+import { getGitUrl } from './context-helper';
 
 /**
  * Git Helper
@@ -35,16 +35,10 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
-	 * @return {boolean} is cloned?
-	 */
-	private isCloned = (workDir: string): boolean => fs.existsSync(path.resolve(workDir, '.git'));
-
-	/**
-	 * @param {string} workDir work dir
 	 * @return {Promise<string>} branch name
 	 */
 	public getCurrentBranchName = async(workDir: string): Promise<string> => {
-		if (!this.isCloned(workDir)) {
+		if (!isCloned(workDir)) {
 			return '';
 		}
 		return (await this.command.execAsync({command: `git -C ${workDir} branch -a | grep -E '^\\*' | cut -b 3-`})).trim();
@@ -89,7 +83,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public clone = async(workDir: string, context: Context): Promise<void> => {
-		if (this.isCloned(workDir)) {
+		if (isCloned(workDir)) {
 			return;
 		}
 
