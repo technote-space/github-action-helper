@@ -1,7 +1,7 @@
 # GitHub Action Helper
 
 [![npm version](https://badge.fury.io/js/%40technote-space%2Fgithub-action-helper.svg)](https://badge.fury.io/js/%40technote-space%2Fgithub-action-helper)
-[![Build Status](https://github.com/technote-space/github-action-helper/workflows/Build/badge.svg)](https://github.com/technote-space/github-action-helper/actions)
+[![CI Status](https://github.com/technote-space/github-action-helper/workflows/CI/badge.svg)](https://github.com/technote-space/github-action-helper/actions)
 [![codecov](https://codecov.io/gh/technote-space/github-action-helper/branch/master/graph/badge.svg)](https://codecov.io/gh/technote-space/github-action-helper)
 [![CodeFactor](https://www.codefactor.io/repository/github/technote-space/github-action-helper/badge)](https://www.codefactor.io/repository/github/technote-space/github-action-helper)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/technote-space/github-action-helper/blob/master/LICENSE)
