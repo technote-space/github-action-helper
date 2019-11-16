@@ -20,6 +20,7 @@ Helper for GitHub Actions.
   - [ApiHelper](#apihelper)
   - [GitHelper](#githelper)
   - [Utils](#utils)
+  - [ContextHelper](#contexthelper)
 - [Author](#author)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
