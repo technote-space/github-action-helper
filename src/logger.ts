@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { sprintf } from 'sprintf-js';
 import { info, debug, error, warning, startGroup, endGroup } from '@actions/core';
+import { split } from './utils';
 
 /**
  * Logger
@@ -22,7 +23,7 @@ export default class Logger {
 	 * @param {string} message message
 	 * @return {string[]} messages
 	 */
-	private splitMessage = (message: string): string[] => message.replace(/\r?\n$/, '').split(/\r?\n/);
+	private splitMessage = (message: string): string[] => split(message.replace(/\r?\n$/, ''));
 
 	/**
 	 * @param {string} message message
@@ -37,7 +38,11 @@ export default class Logger {
 	 * @param {string|string[]} message message
 	 * @param {any[]} args args
 	 */
-	private multiLineOutput = (output: (string) => void, replacer: null | ((string: string) => string), message: string | string[], ...args: any[]): void => {
+	private multiLineOutput = (output: (string) => void, replacer: null | ((string: string) => string), message?: string | string[], ...args: any[]): void => {
+		if (undefined === message || '' === message) {
+			output('');
+			return;
+		}
 		if ('string' !== typeof message) {
 			message.forEach(message => {
 				this.multiLineOutput(output, replacer, message, ...args);
@@ -53,7 +58,7 @@ export default class Logger {
 	 * @param {any[]} args args
 	 * @return {void}
 	 */
-	public log = (message: string | string[], ...args: any[]): void => this.multiLineOutput(info, null, message, ...args);
+	public log = (message?: string | string[], ...args: any[]): void => this.multiLineOutput(info, null, message, ...args);
 
 	/**
 	 * @param {string|string[]} message message
