@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getBranch, isBranch, isPrRef, isCloned } from './utils';
+import { getBranch, isBranch, isPrRef, isCloned, split } from './utils';
 import { getGitUrl } from './context-helper';
 
 type CommandType = string | {
@@ -50,7 +50,7 @@ export default class GitHelper {
 		if (!isCloned(workDir)) {
 			return '';
 		}
-		return (await this.runCommand(workDir, 'git branch -a | grep -E \'^\\*\' | cut -b 3-'))[0].stdout[0].trim();
+		return (await this.runCommand(workDir, 'git branch -a | grep -E \'^\\*\' | cut -b 3-'))[0].stdout[0]?.trim() ?? '';
 	};
 
 	/**
@@ -190,19 +190,23 @@ export default class GitHelper {
 	 * @param {string[]} commands commands
 	 * @return {Promise<{}[]>} void
 	 */
-	public runCommand = async(workDir: string, commands: CommandType | CommandType[]): Promise<{ command: string; stdout: string[] }[]> => {
-		const result: { command: string; stdout: string[] }[] = [];
+	public runCommand = async(workDir: string, commands: CommandType | CommandType[]): Promise<{ command: string; stdout: string[]; stderr: string[] }[]> => {
+		const result: { command: string; stdout: string[]; stderr: string[] }[] = [];
 		try {
 			for (const command of (Array.isArray(commands) ? commands : [commands])) {
 				if (typeof command === 'string') {
+					const output = (await this.command.execAsync({command, cwd: workDir}));
 					result.push({
 						command,
-						stdout: (await this.command.execAsync({command, cwd: workDir})).split(/\r?\n/),
+						stdout: split(output.stdout),
+						stderr: split(output.stderr),
 					});
 				} else {
+					const output = (await this.command.execAsync({cwd: workDir, ...command}));
 					result.push({
 						command: command.command,
-						stdout: (await this.command.execAsync({cwd: workDir, ...command})).split(/\r?\n/),
+						stdout: split(output.stdout),
+						stderr: split(output.stderr),
 					});
 				}
 			}
