@@ -217,6 +217,7 @@ describe('GitHelper', () => {
 						'test1',
 						'test2',
 					],
+					stderr: [],
 				},
 				{
 					command: 'command2',
@@ -224,6 +225,7 @@ describe('GitHelper', () => {
 						'test1',
 						'test2',
 					],
+					stderr: [],
 				},
 				{
 					command: 'command3',
@@ -231,6 +233,7 @@ describe('GitHelper', () => {
 						'test1',
 						'test2',
 					],
+					stderr: [],
 				},
 			]);
 

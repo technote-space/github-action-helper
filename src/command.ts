@@ -63,21 +63,23 @@ export default class Command {
 		if (error) {
 			reject(this.getRejectedErrorMessage(command, altCommand, quiet, error));
 		} else {
-			const trimmedStdout = stdout.trim();
+			let trimmedStdout = stdout.trim();
+			let trimmedStderr = stderr.trim();
 			if (!quiet && !suppressOutput) {
-				const trimmedStderr = stderr.trim();
 				if (trimmedStdout) {
 					this.logger.displayStdout(trimmedStdout);
 				}
 				if (trimmedStderr) {
 					if (stderrToStdout) {
 						this.logger.displayStdout(trimmedStderr);
+						trimmedStdout += `\n${trimmedStderr}`;
+						trimmedStderr = '';
 					} else {
 						this.logger.displayStderr(trimmedStderr);
 					}
 				}
 			}
-			resolve(trimmedStdout);
+			resolve({stdout: trimmedStdout, stderr: trimmedStderr});
 		}
 	};
 
@@ -90,7 +92,7 @@ export default class Command {
 	 * @param {boolean|undefined} args.suppressError suppress error?
 	 * @param {boolean|undefined} args.suppressOutput suppress output?
 	 * @param {boolean|undefined} args.stderrToStdout output to stdout instead of stderr
-	 * @return {Promise<string>} output
+	 * @return {Promise<object>} output
 	 */
 	public execAsync = (args: {
 		command: string;
@@ -100,7 +102,7 @@ export default class Command {
 		suppressError?: boolean;
 		suppressOutput?: boolean;
 		stderrToStdout?: boolean;
-	}): Promise<string> => new Promise<string>((resolve, reject): void => {
+	}): Promise<{ stdout: string; stderr: string }> => new Promise<{ stdout: string; stderr: string }>((resolve, reject): void => {
 		const {command, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false} = args;
 
 		if (undefined !== altCommand) {

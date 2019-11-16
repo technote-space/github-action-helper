@@ -3,9 +3,9 @@ import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, sleep} = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, useNpm}    = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, getArrayInput, getPrHeadRef}       = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm} = Utils;
+const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, sleep}      = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, getPrHeadRef} = Utils;
 
 jest.useFakeTimers();
 
@@ -275,6 +275,20 @@ describe('getBuildInfo', () => {
 
 	it('should return false 2', () => {
 		expect(getBuildInfo(path.resolve(__dirname, 'fixtures', 'build3.json'))).toBe(false);
+	});
+});
+
+describe('split', () => {
+	it('should return empty array', () => {
+		expect(split('')).toEqual([]);
+	});
+
+	it('should split string value', () => {
+		expect(split('test1\ntest2\n')).toEqual([
+			'test1',
+			'test2',
+			'',
+		]);
 	});
 });
 

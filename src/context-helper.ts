@@ -31,7 +31,7 @@ export const getGitUrl = (context: Context, accessTokenRequired = true): string 
 export const showActionInfo = (rootDir: string, logger: Logger, context: Context): void => {
 	const info    = getBuildInfo(path.resolve(rootDir, 'build.json'));
 	const tagName = getTagName(context);
-	logger.log('');
+	logger.log();
 	logger.log('==================================================');
 	if (false !== info) {
 		if ('owner' in info) {
@@ -57,12 +57,12 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	}
 	logger.log('owner:    %s', context.repo.owner);
 	logger.log('repo:     %s', context.repo.repo);
-	logger.log('');
+	logger.log();
 	logger.startProcess('Dump context');
 	console.log(context);
 	logger.startProcess('Dump Payload');
 	console.log(context.payload);
 	logger.endProcess();
 	logger.log('==================================================');
-	logger.log('');
+	logger.log();
 };

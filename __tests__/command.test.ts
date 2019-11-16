@@ -21,7 +21,7 @@ describe('execAsync', () => {
 		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
-		expect(await command.execAsync({command: 'test'})).toBe('stdout');
+		expect(await command.execAsync({command: 'test'})).toEqual({stdout: 'stdout', stderr: ''});
 
 		execCalledWith(mockExec, [
 			'test',
@@ -37,7 +37,7 @@ describe('execAsync', () => {
 		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
-		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toBe('stdout');
+		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toEqual({stdout: 'stdout', stderr: 'stderr'});
 
 		execCalledWith(mockExec, [
 			['test', {'cwd': 'dir'}],
@@ -54,7 +54,7 @@ describe('execAsync', () => {
 		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
-		expect(await command.execAsync({command: 'test'})).toBe('');
+		expect(await command.execAsync({command: 'test'})).toEqual({stdout: '', stderr: ''});
 
 		execCalledWith(mockExec, [
 			'test',
@@ -69,7 +69,7 @@ describe('execAsync', () => {
 		const mockExec   = spyOnExec();
 		const mockStdout = spyOnStdout();
 
-		expect(await command.execAsync({command: 'test'})).toBe('stdout');
+		expect(await command.execAsync({command: 'test'})).toEqual({stdout: 'stdout', stderr: ''});
 
 		execCalledWith(mockExec, [
 			'test',
