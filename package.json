@@ -27,9 +27,9 @@
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
-    "@technote-space/github-action-test-helper": "^0.0.19",
+    "@technote-space/github-action-test-helper": "^0.0.20",
     "@types/jest": "^24.0.23",
-    "@types/node": "^12.12.7",
+    "@types/node": "^12.12.8",
     "@typescript-eslint/eslint-plugin": "^2.7.0",
     "@typescript-eslint/parser": "^2.7.0",
     "eslint": "^6.6.0",
