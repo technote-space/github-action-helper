@@ -6,19 +6,14 @@ on:
 name: Publish Package
 
 jobs:
-  release:
-    name: Publish Package
+  test:
+    name: Test before publish
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@master
         with:
           fetch-depth: 3
-      - name: Check package version
-        uses: technote-space/package-version-check-action@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          COMMIT_DISABLED: 1
       - name: Cache node modules
         uses: actions/cache@v1
         with:
@@ -30,6 +25,52 @@ jobs:
         run: yarn install
       - name: Test
         run: yarn test
+      - uses: 8398a7/action-slack@v1
+        with:
+          type: failure
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: failure()
+
+  release:
+    name: Publish Package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: ['npm', 'gpr']
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 3
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+        if: matrix.target == 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://npm.pkg.github.com
+        if: matrix.target == 'gpr'
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Check package version
+        uses: technote-space/package-version-check-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_DISABLED: 1
+      - name: Install Package dependencies
+        run: yarn install
       - name: Build
         run: yarn build
       - name: Publish
@@ -38,6 +79,12 @@ jobs:
           npm publish
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        if: matrix.target == 'npm'
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: matrix.target == 'gpr'
       - uses: 8398a7/action-slack@v1
         with:
           type: failure
@@ -45,3 +92,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: failure()
+
+  slack:
+    name: Slack
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 8398a7/action-slack@v1
+        with:
+          type: success
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
