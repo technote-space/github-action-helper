@@ -142,7 +142,7 @@ export default class GitHelper {
 		fs.mkdirSync(workDir, {recursive: true});
 		await this.runCommand(workDir, [
 			{command: 'git init .'},
-			{command: `git checkout --orphan "${branch}"`},
+			{command: `git checkout --orphan "${branch}"`, stderrToStdout: true},
 		]);
 	};
 
@@ -169,7 +169,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public createBranch = async(workDir: string, branch: string): Promise<void> => {
-		await this.runCommand(workDir, {command: `git checkout -b "${branch}"`});
+		await this.runCommand(workDir, {command: `git checkout -b "${branch}"`, stderrToStdout: true});
 	};
 
 	/**
