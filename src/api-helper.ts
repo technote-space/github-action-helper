@@ -528,8 +528,10 @@ export default class ApiHelper {
 		const pullRequest                     = await this.findPullRequest(branchName, octokit, context);
 		if (pullRequest) {
 			this.logger.startProcess('Closing PullRequest... [%s]', branchName);
+			if (message) {
+				await this.createCommentToPr(branchName, message, octokit, context);
+			}
 			await this.pullsUpdate(pullRequest.number, {
-				body: message,
 				state: 'closed',
 				base: undefined,
 			}, octokit, context);
