@@ -3,6 +3,25 @@ import { sprintf } from 'sprintf-js';
 import { info, debug, error, warning, startGroup, endGroup } from '@actions/core';
 import { split } from './utils';
 
+export type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white';
+export type Attribute = undefined | 'none' | 'bold' | 'underline' | 'italic';
+const COLOR_MAP     = {
+	'black': 0,
+	'red': 1,
+	'green': 2,
+	'yellow': 3,
+	'blue': 4,
+	'magenta': 5,
+	'cyan': 6,
+	'white': 7,
+};
+const ATTRIBUTE_MAP = {
+	'none': 0,
+	'bold': 1,
+	'underline': 4,
+	'italic': 3,
+};
+
 /**
  * Logger
  */
@@ -134,6 +153,24 @@ export default class Logger {
 			Logger.isRequiredEndGroup = false;
 		}
 	};
+
+	/**
+	 * @param {string} string string
+	 * @param {Color} color color
+	 * @param {Color} backColor background color
+	 * @param {Attribute} attribute attribute
+	 * @return {string} color string
+	 */
+	public getColorString = (string: string, color: Color, backColor?: Color, attribute?: Attribute): string => sprintf('\x1b[3%d;4%d;%dm%s\x1b[0m', COLOR_MAP[color], COLOR_MAP[backColor ?? 'black'], ATTRIBUTE_MAP[attribute ?? 'none'], string);
+
+	/**
+	 * @param {string} string string
+	 * @param {Color} color color
+	 * @param {Color} backColor background color
+	 * @param {Attribute} attribute attribute
+	 * @return {string} color string
+	 */
+	public c = (string: string, color: Color, backColor?: Color, attribute?: Attribute): string => this.getColorString(string, color, backColor, attribute);
 
 	/**
 	 * @return {void}
