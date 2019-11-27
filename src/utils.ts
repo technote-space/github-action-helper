@@ -90,7 +90,7 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 
 export const replaceAll = (string: string, key: string, value: string): string => string.split(key).join(value);
 
-export const generateNewPatchTag = (lastTag: string): string => {
+export const generateNewPatchVersion = (lastTag: string): string => {
 	if (!/^v?\d+(\.\d+)*$/.test(lastTag)) {
 		throw new Error('Invalid tag');
 	}
