@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchTag } from './utils';
+import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchVersion } from './utils';
 import { getGitUrl } from './context-helper';
 
 type CommandType = string | {
@@ -397,5 +397,5 @@ export default class GitHelper {
 	 * @param {string} workDir work dir
 	 * @return {string} tag
 	 */
-	public getNewPatchTag = async(workDir: string): Promise<string> => generateNewPatchTag(await this.getLastTag(workDir));
+	public getNewPatchVersion = async(workDir: string): Promise<string> => generateNewPatchVersion(await this.getLastTag(workDir));
 }

@@ -3,9 +3,9 @@ import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, sleep} = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef}      = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchTag} = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, sleep}     = Utils;
+const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef}          = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion} = Utils;
 
 jest.useFakeTimers();
 
@@ -382,21 +382,21 @@ describe('replaceAll', () => {
 	});
 });
 
-describe('generateNewPatchTag', () => {
+describe('generateNewPatchVersion', () => {
 	it('should generate new patch tag', () => {
-		expect(generateNewPatchTag('v1.2.3')).toBe('v1.2.4');
-		expect(generateNewPatchTag('v1')).toBe('v1.0.1');
-		expect(generateNewPatchTag('v1.2')).toBe('v1.2.1');
-		expect(generateNewPatchTag('v1.2.3.4')).toBe('v1.2.3.5');
-		expect(generateNewPatchTag('1.2.3')).toBe('v1.2.4');
+		expect(generateNewPatchVersion('v1.2.3')).toBe('v1.2.4');
+		expect(generateNewPatchVersion('v1')).toBe('v1.0.1');
+		expect(generateNewPatchVersion('v1.2')).toBe('v1.2.1');
+		expect(generateNewPatchVersion('v1.2.3.4')).toBe('v1.2.3.5');
+		expect(generateNewPatchVersion('1.2.3')).toBe('v1.2.4');
 	});
 
 	it('should throw error', () => {
 		expect(() => {
-			generateNewPatchTag('');
+			generateNewPatchVersion('');
 		}).toThrow();
 		expect(() => {
-			generateNewPatchTag('test');
+			generateNewPatchVersion('test');
 		}).toThrow();
 	});
 });

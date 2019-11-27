@@ -517,12 +517,12 @@ describe('GitHelper', () => {
 		});
 	});
 
-	describe('getNewPatchTag', () => {
+	describe('getNewPatchVersion', () => {
 		it('should get new patch tag', async() => {
 			setChildProcessParams({stdout: '1.2.3'});
 			const mockExec = spyOnExec();
 
-			expect(await helper.getNewPatchTag(workDir)).toBe('v1.2.4');
+			expect(await helper.getNewPatchVersion(workDir)).toBe('v1.2.4');
 
 			execCalledWith(mockExec, [
 				'git tag | grep -e "^v\\?\\w\\+\\(\\.\\w\\+\\)*$" | sed -e "s/^v//" | sort -V | tail -n 1',
