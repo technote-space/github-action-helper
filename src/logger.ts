@@ -49,7 +49,7 @@ export default class Logger {
 	 * @param {any[]} args args
 	 * @return {string} output string
 	 */
-	private getOutputString = (message: string, ...args: any[]): string => sprintf(this.replacer(message), ...args.map(arg => 'string' === typeof arg ? this.replacer(arg) : arg));
+	private getOutputString = (message: string, ...args: any[]): string => args.length ? sprintf(this.replacer(message), ...args.map(arg => 'string' === typeof arg ? this.replacer(arg) : arg)) : this.replacer(message);
 
 	/**
 	 * @param {function} output output function
