@@ -195,6 +195,14 @@ describe('Logger with arguments', () => {
 		stdoutCalledWith(mockStdout, ['> message with args <replaced> 2: <replaced>']);
 	});
 
+	it('info should not replace placeholder', () => {
+		const mockStdout = spyOnStdout();
+
+		logger.info('message with args %s %d: <replace target>');
+
+		stdoutCalledWith(mockStdout, ['> message with args %s %d: <replaced>']);
+	});
+
 	it('displayCommand output command with args', () => {
 		const mockStdout = spyOnStdout();
 
