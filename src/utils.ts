@@ -89,3 +89,17 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 	);
 
 export const replaceAll = (string: string, key: string, value: string): string => string.split(key).join(value);
+
+export const generateNewPatchTag = (lastTag: string): string => {
+	if (!/^v?\d+(\.\d+)*$/.test(lastTag)) {
+		throw new Error('Invalid tag');
+	}
+	const fragments = split(lastTag.replace(/^v/, ''), '.');
+	// eslint-disable-next-line no-magic-numbers
+	while (fragments.length < 3) {
+		fragments.push('0');
+	}
+	// eslint-disable-next-line no-magic-numbers
+	fragments[fragments.length - 1] = (Number(fragments[fragments.length - 1]) + 1).toString();
+	return 'v' + fragments.join('.');
+};

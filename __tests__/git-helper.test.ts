@@ -486,6 +486,49 @@ describe('GitHelper', () => {
 			]);
 		});
 	});
+
+	describe('getLastTag', () => {
+		it('should get last tag', async() => {
+			setChildProcessParams({stdout: '1.2.3'});
+			const mockExec = spyOnExec();
+
+			expect(await helper.getLastTag(workDir)).toBe('v1.2.3');
+
+			execCalledWith(mockExec, [
+				'git tag | grep -e "^v\\?\\w\\+\\(\\.\\w\\+\\)*$" | sed -e "s/^v//" | sort -V | tail -n 1',
+			]);
+		});
+
+		it('should get initial tag', async() => {
+			setChildProcessParams({stdout: ''});
+			const mockExec = spyOnExec();
+
+			expect(await helper.getLastTag(workDir)).toBe('v0.0.0');
+
+			execCalledWith(mockExec, [
+				'git tag | grep -e "^v\\?\\w\\+\\(\\.\\w\\+\\)*$" | sed -e "s/^v//" | sort -V | tail -n 1',
+			]);
+		});
+
+		it('should throw error', async() => {
+			setExists(false);
+
+			await expect(helper.getLastTag(workDir)).rejects.toThrow('Not a git repository');
+		});
+	});
+
+	describe('getNewPatchTag', () => {
+		it('should get new patch tag', async() => {
+			setChildProcessParams({stdout: '1.2.3'});
+			const mockExec = spyOnExec();
+
+			expect(await helper.getNewPatchTag(workDir)).toBe('v1.2.4');
+
+			execCalledWith(mockExec, [
+				'git tag | grep -e "^v\\?\\w\\+\\(\\.\\w\\+\\)*$" | sed -e "s/^v//" | sort -V | tail -n 1',
+			]);
+		});
+	});
 });
 
 describe('GitHelper with params 1', () => {
