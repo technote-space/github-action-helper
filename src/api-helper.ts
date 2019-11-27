@@ -306,9 +306,7 @@ export default class ApiHelper {
 			if (!list.data.length) {
 				break;
 			}
-			for (const item of list.data) {
-				yield item;
-			}
+			yield* list.data;
 		}
 	}
 

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getBranch, isBranch, isPrRef, isCloned, split } from './utils';
+import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchTag } from './utils';
 import { getGitUrl } from './context-helper';
 
 type CommandType = string | {
@@ -381,4 +381,21 @@ export default class GitHelper {
 			altCommand: `git push --force origin "${branch}":"refs/heads/${branch}"`,
 		});
 	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @return {string} tag
+	 */
+	public getLastTag = async(workDir: string): Promise<string> => {
+		if (!isCloned(workDir)) {
+			throw new Error('Not a git repository');
+		}
+		return 'v' + ((await this.runCommand(workDir, 'git tag | grep -e "^v\\?\\w\\+\\(\\.\\w\\+\\)*$" | sed -e "s/^v//" | sort -V | tail -n 1'))[0].stdout[0]?.trim() ?? '0.0.0');
+	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @return {string} tag
+	 */
+	public getNewPatchTag = async(workDir: string): Promise<string> => generateNewPatchTag(await this.getLastTag(workDir));
 }
