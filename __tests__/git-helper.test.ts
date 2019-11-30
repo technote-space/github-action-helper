@@ -161,13 +161,25 @@ describe('GitHelper', () => {
 	});
 
 	describe('createBranch', () => {
-		it('should run git branch', async() => {
+		it('should run git checkout', async() => {
 			const mockExec = spyOnExec();
 
 			await helper.createBranch(workDir, 'test-branch');
 
 			execCalledWith(mockExec, [
 				'git checkout -b "test-branch"',
+			]);
+		});
+	});
+
+	describe('switchBranch', () => {
+		it('should run git checkout', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.switchBranch(workDir, 'test-branch');
+
+			execCalledWith(mockExec, [
+				'git checkout -b "test-branch" "origin/test-branch"',
 			]);
 		});
 	});
