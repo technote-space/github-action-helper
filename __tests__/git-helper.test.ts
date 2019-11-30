@@ -155,6 +155,8 @@ describe('GitHelper', () => {
 			await helper.addOrigin(workDir, context());
 
 			execCalledWith(mockExec, [
+				'rm -rdf .work',
+				'git init .',
 				'git remote add origin https://octocat:token@github.com/hello/world.git > /dev/null 2>&1 || :',
 			]);
 		});
@@ -167,6 +169,8 @@ describe('GitHelper', () => {
 			await helper.fetchOrigin(workDir, context());
 
 			execCalledWith(mockExec, [
+				'rm -rdf .work',
+				'git init .',
 				'git remote add origin https://octocat:token@github.com/hello/world.git > /dev/null 2>&1 || :',
 				'git fetch origin',
 			]);
