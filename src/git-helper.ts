@@ -148,6 +148,31 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public addOrigin = async(workDir: string, context: Context): Promise<void> => {
+		const url = getGitUrl(context);
+		await this.runCommand(workDir, {
+			command: `git remote add origin ${url}`,
+			quiet: true,
+			altCommand: 'git remote add origin',
+			suppressError: true,
+		});
+	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public fetchOrigin = async(workDir: string, context: Context): Promise<void> => {
+		await this.addOrigin(workDir, context);
+		await this.runCommand(workDir, 'git fetch origin');
+	};
+
+	/**
+	 * @param {string} workDir work dir
 	 * @param {string} branch branch
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
