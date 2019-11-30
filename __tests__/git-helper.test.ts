@@ -148,6 +148,31 @@ describe('GitHelper', () => {
 		});
 	});
 
+	describe('addOrigin', () => {
+		it('should run git remote add', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.addOrigin(workDir, context());
+
+			execCalledWith(mockExec, [
+				'git remote add origin https://octocat:token@github.com/hello/world.git > /dev/null 2>&1 || :',
+			]);
+		});
+	});
+
+	describe('fetchOrigin', () => {
+		it('should fetch origin', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.fetchOrigin(workDir, context());
+
+			execCalledWith(mockExec, [
+				'git remote add origin https://octocat:token@github.com/hello/world.git > /dev/null 2>&1 || :',
+				'git fetch origin',
+			]);
+		});
+	});
+
 	describe('fetchBranch', () => {
 		it('should run fetch', async() => {
 			const mockExec = spyOnExec();
