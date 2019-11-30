@@ -175,7 +175,7 @@ export default class GitHelper {
 	 */
 	public fetchOrigin = async(workDir: string, context: Context): Promise<void> => {
 		await this.addOrigin(workDir, context);
-		await this.runCommand(workDir, 'git fetch origin');
+		await this.runCommand(workDir, {command: 'git fetch origin', stderrToStdout: true});
 	};
 
 	/**
@@ -210,7 +210,10 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public switchBranch = async(workDir: string, branch: string): Promise<void> => {
-		await this.runCommand(workDir, {command: `git checkout -b "${branch}" "origin/${branch}"`, stderrToStdout: true});
+		await this.runCommand(workDir, {
+			command: `git checkout -b "${branch}" "origin/${branch}"`,
+			suppressError: true,
+		});
 	};
 
 	/**

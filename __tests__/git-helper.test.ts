@@ -208,7 +208,7 @@ describe('GitHelper', () => {
 			await helper.switchBranch(workDir, 'test-branch');
 
 			execCalledWith(mockExec, [
-				'git checkout -b "test-branch" "origin/test-branch"',
+				'git checkout -b "test-branch" "origin/test-branch" || :',
 			]);
 		});
 	});
