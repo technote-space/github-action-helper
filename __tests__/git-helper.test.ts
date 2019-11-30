@@ -161,7 +161,7 @@ describe('GitHelper', () => {
 	});
 
 	describe('createBranch', () => {
-		it('should run git branch', async() => {
+		it('should run git checkout', async() => {
 			const mockExec = spyOnExec();
 
 			await helper.createBranch(workDir, 'test-branch');
