@@ -134,16 +134,22 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @return {Promise<void>} void
+	 */
+	private initialize = async(workDir: string): Promise<void> => {
+		await this.runCommand(workDir, {command: `rm -rdf ${workDir}`});
+		fs.mkdirSync(workDir, {recursive: true});
+		await this.runCommand(workDir, {command: 'git init .'});
+	};
+
+	/**
+	 * @param {string} workDir work dir
 	 * @param {string} branch branch
 	 * @return {Promise<void>} void
 	 */
 	public gitInit = async(workDir: string, branch: string): Promise<void> => {
-		await this.runCommand(workDir, {command: `rm -rdf ${workDir}`});
-		fs.mkdirSync(workDir, {recursive: true});
-		await this.runCommand(workDir, [
-			{command: 'git init .'},
-			{command: `git checkout --orphan "${branch}"`, stderrToStdout: true},
-		]);
+		await this.initialize(workDir);
+		await this.runCommand(workDir, {command: `git checkout --orphan "${branch}"`, stderrToStdout: true});
 	};
 
 	/**
@@ -153,6 +159,7 @@ export default class GitHelper {
 	 */
 	public addOrigin = async(workDir: string, context: Context): Promise<void> => {
 		const url = getGitUrl(context);
+		await this.initialize(workDir);
 		await this.runCommand(workDir, {
 			command: `git remote add origin ${url}`,
 			quiet: true,
