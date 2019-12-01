@@ -213,6 +213,7 @@ export default class GitHelper {
 		await this.runCommand(workDir, {
 			command: `git checkout -b "${branch}" "origin/${branch}"`,
 			suppressError: true,
+			stderrToStdout: true,
 		});
 	};
 
