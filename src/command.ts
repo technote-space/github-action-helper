@@ -79,7 +79,7 @@ export default class Command {
 					}
 				}
 			}
-			resolve({stdout: trimmedStdout, stderr: trimmedStderr});
+			resolve({stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command});
 		}
 	};
 
@@ -104,7 +104,7 @@ export default class Command {
 		suppressError?: boolean;
 		suppressOutput?: boolean;
 		stderrToStdout?: boolean;
-	}): Promise<{ stdout: string; stderr: string }> => new Promise<{ stdout: string; stderr: string }>((resolve, reject): void => {
+	}): Promise<{ stdout: string; stderr: string; command: string }> => new Promise<{ stdout: string; stderr: string; command: string }>((resolve, reject): void => {
 		const {command, args, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false} = options;
 
 		const commandArgs     = undefined === args ? '' : (' ' + escape(args));
