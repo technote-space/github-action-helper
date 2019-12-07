@@ -49,6 +49,21 @@ describe('execAsync', () => {
 		]);
 	});
 
+	it('should run command with args', async() => {
+		const mockExec   = spyOnExec();
+		const mockStdout = spyOnStdout();
+
+		expect(await command.execAsync({command: 'test', args: ['hello!', 'how are you doing $USER', '"double"', '\'single\'']})).toEqual({stdout: 'stdout', stderr: ''});
+
+		execCalledWith(mockExec, [
+			'test \'hello!\' \'how are you doing $USER\' \'"double"\' \\\'\'single\'\\\'',
+		]);
+		stdoutCalledWith(mockStdout, [
+			'[command]test \'hello!\' \'how are you doing $USER\' \'"double"\' \\\'\'single\'\\\'',
+			'  >> stdout',
+		]);
+	});
+
 	it('should not output empty stdout', async() => {
 		setChildProcessParams({stdout: ' \n\n  \n'});
 		const mockExec   = spyOnExec();
