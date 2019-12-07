@@ -6,6 +6,7 @@ import { getGitUrl } from './context-helper';
 
 type CommandType = string | {
 	command: string;
+	args?: string[];
 	quiet?: boolean;
 	altCommand?: string;
 	suppressError?: boolean;
@@ -31,9 +32,9 @@ export default class GitHelper {
 	constructor(private readonly logger: Logger, options?: { depth?: number; filter?: (string: string) => boolean }) {
 		this.command = new Command(logger);
 		if (options && options.depth) {
-			this.cloneDepth = options.depth > 0 ? ` --depth=${options.depth}` : ''; // eslint-disable-line no-magic-numbers
+			this.cloneDepth = options.depth > 0 ? `--depth=${options.depth}` : ''; // eslint-disable-line no-magic-numbers
 		} else {
-			this.cloneDepth = ' --depth=3';
+			this.cloneDepth = '--depth=3';
 		}
 		if (options && options.filter) {
 			this.filter = options.filter;
@@ -44,13 +45,47 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @param {string[]} commands commands
+	 * @return {Promise<{}[]>} void
+	 */
+	public runCommand = async(workDir: string, commands: CommandType | CommandType[]): Promise<{ command: string; stdout: string[]; stderr: string[] }[]> => {
+		const result: { command: string; stdout: string[]; stderr: string[] }[] = [];
+		try {
+			for (const command of (Array.isArray(commands) ? commands : [commands])) {
+				if (typeof command === 'string') {
+					const output = (await this.command.execAsync({command, cwd: workDir}));
+					result.push({
+						command: output.command,
+						stdout: split(output.stdout),
+						stderr: split(output.stderr),
+					});
+				} else {
+					const output = (await this.command.execAsync({cwd: workDir, ...command}));
+					result.push({
+						command: output.command,
+						stdout: split(output.stdout),
+						stderr: split(output.stderr),
+					});
+				}
+			}
+			return result;
+		} catch (error) {
+			console.log();
+			console.log(error);
+			throw error;
+		}
+	};
+
+	/**
+	 * @param {string} workDir work dir
 	 * @return {Promise<string>} branch name
 	 */
 	public getCurrentBranchName = async(workDir: string): Promise<string> => {
 		if (!isCloned(workDir)) {
 			return '';
 		}
-		return (await this.runCommand(workDir, 'git branch -a | grep -E \'^\\*\' | cut -b 3-'))[0].stdout[0]?.trim() ?? '';
+		// eslint-disable-next-line no-magic-numbers
+		return (await this.runCommand(workDir, {command: 'git branch', args: ['-a']}))[0].stdout.find(branch => branch.startsWith('*'))?.slice(2).trim() ?? '';
 	};
 
 	/**
@@ -62,9 +97,10 @@ export default class GitHelper {
 	public cloneBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
 		const url = getGitUrl(context);
 		await this.runCommand(workDir, {
-			command: `git clone --branch=${branch}${this.cloneDepth} ${url} .`,
+			command: 'git clone',
+			args: [`--branch=${branch}`, this.cloneDepth, url, '.'],
 			quiet: true,
-			altCommand: `git clone --branch=${branch}${this.cloneDepth}`,
+			altCommand: `git clone --branch=${branch}`,
 			suppressError: true,
 		});
 	};
@@ -78,12 +114,17 @@ export default class GitHelper {
 		const url = getGitUrl(context);
 		await this.runCommand(workDir, [
 			{
-				command: `git clone${this.cloneDepth} ${url} .`,
+				command: 'git clone',
+				args: [this.cloneDepth, url, '.'],
 				quiet: true,
-				altCommand: `git clone${this.cloneDepth}`,
+				altCommand: 'git clone',
 				suppressError: true,
 			},
-			{command: `git fetch origin +${context.ref}`, stderrToStdout: true},
+			{
+				command: 'git fetch',
+				args: ['origin', `+${context.ref}`],
+				stderrToStdout: true,
+			},
 			'git checkout -qf FETCH_HEAD',
 		]);
 	};
@@ -116,9 +157,22 @@ export default class GitHelper {
 		const url = getGitUrl(context);
 		if (this.cloneDepth && context.sha) {
 			await this.runCommand(workDir, [
-				{command: `git clone${this.cloneDepth} ${url} .`, quiet: true, altCommand: `git clone${this.cloneDepth}`},
-				{command: `git fetch ${url} ${context.ref}`, quiet: true, altCommand: `git fetch origin ${context.ref}`},
-				{command: `git checkout -qf ${context.sha}`},
+				{
+					command: 'git clone',
+					args: [this.cloneDepth, url, '.'],
+					quiet: true,
+					altCommand: 'git clone',
+				},
+				{
+					command: 'git fetch',
+					args: [url, context.ref],
+					quiet: true,
+					altCommand: `git fetch origin ${context.ref}`,
+				},
+				{
+					command: 'git checkout',
+					args: ['-qf', context.sha],
+				},
 			]);
 		} else {
 			const checkout = context.sha || getBranch(context) || context.ref;
@@ -126,8 +180,16 @@ export default class GitHelper {
 				throw new Error('Invalid context.');
 			}
 			await this.runCommand(workDir, [
-				{command: `git clone ${url} .`, quiet: true, altCommand: 'git clone'},
-				{command: `git checkout -qf ${checkout}`},
+				{
+					command: 'git clone',
+					args: [url, '.'],
+					quiet: true,
+					altCommand: 'git clone',
+				},
+				{
+					command: 'git checkout',
+					args: ['-qf', checkout],
+				},
 			]);
 		}
 	};
@@ -137,9 +199,9 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	private initialize = async(workDir: string): Promise<void> => {
-		await this.runCommand(workDir, {command: `rm -rdf ${workDir}`});
+		await this.runCommand(workDir, {command: 'rm', args: ['-rdf', workDir]});
 		fs.mkdirSync(workDir, {recursive: true});
-		await this.runCommand(workDir, {command: 'git init .'});
+		await this.runCommand(workDir, {command: 'git init', args: ['.']});
 	};
 
 	/**
@@ -149,7 +211,7 @@ export default class GitHelper {
 	 */
 	public gitInit = async(workDir: string, branch: string): Promise<void> => {
 		await this.initialize(workDir);
-		await this.runCommand(workDir, {command: `git checkout --orphan "${branch}"`, stderrToStdout: true});
+		await this.runCommand(workDir, {command: 'git checkout', args: ['--orphan', branch], stderrToStdout: true});
 	};
 
 	/**
@@ -161,7 +223,8 @@ export default class GitHelper {
 		const url = getGitUrl(context);
 		await this.initialize(workDir);
 		await this.runCommand(workDir, {
-			command: `git remote add origin ${url}`,
+			command: 'git remote add',
+			args: ['origin', url],
 			quiet: true,
 			altCommand: 'git remote add origin',
 			suppressError: true,
@@ -175,7 +238,7 @@ export default class GitHelper {
 	 */
 	public fetchOrigin = async(workDir: string, context: Context): Promise<void> => {
 		await this.addOrigin(workDir, context);
-		await this.runCommand(workDir, {command: 'git fetch origin', stderrToStdout: true});
+		await this.runCommand(workDir, {command: 'git fetch', args: ['origin'], stderrToStdout: true});
 	};
 
 	/**
@@ -188,7 +251,8 @@ export default class GitHelper {
 		const url        = getGitUrl(context);
 		const branchName = getBranch(branch, false);
 		await this.runCommand(workDir, {
-			command: `git fetch --prune --no-recurse-submodules${this.cloneDepth} ${url} +refs/heads/${branchName}:refs/remotes/origin/${branchName}`,
+			command: 'git fetch',
+			args: ['--prune', '--no-recurse-submodules', this.cloneDepth, url, `+refs/heads/${branchName}:refs/remotes/origin/${branchName}`],
 			quiet: true,
 			altCommand: `git fetch --prune --no-recurse-submodules${this.cloneDepth} origin +refs/heads/${branchName}:refs/remotes/origin/${branchName}`,
 			suppressError: true,
@@ -201,7 +265,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public createBranch = async(workDir: string, branch: string): Promise<void> => {
-		await this.runCommand(workDir, {command: `git checkout -b "${branch}"`, stderrToStdout: true});
+		await this.runCommand(workDir, {command: 'git checkout', args: ['-b', branch], stderrToStdout: true});
 	};
 
 	/**
@@ -211,7 +275,8 @@ export default class GitHelper {
 	 */
 	public switchBranch = async(workDir: string, branch: string): Promise<void> => {
 		await this.runCommand(workDir, {
-			command: `git checkout -b "${branch}" "origin/${branch}"`,
+			command: 'git checkout',
+			args: ['-b', branch, `origin/${branch}`],
 			suppressError: true,
 			stderrToStdout: true,
 		});
@@ -225,42 +290,15 @@ export default class GitHelper {
 	 */
 	public config = async(workDir: string, name: string, email: string): Promise<void> => {
 		await this.runCommand(workDir, [
-			{command: `git config user.name "${name}"`},
-			{command: `git config user.email "${email}"`},
+			{
+				command: 'git config',
+				args: ['user.name', name],
+			},
+			{
+				command: 'git config',
+				args: ['user.email', email],
+			},
 		]);
-	};
-
-	/**
-	 * @param {string} workDir work dir
-	 * @param {string[]} commands commands
-	 * @return {Promise<{}[]>} void
-	 */
-	public runCommand = async(workDir: string, commands: CommandType | CommandType[]): Promise<{ command: string; stdout: string[]; stderr: string[] }[]> => {
-		const result: { command: string; stdout: string[]; stderr: string[] }[] = [];
-		try {
-			for (const command of (Array.isArray(commands) ? commands : [commands])) {
-				if (typeof command === 'string') {
-					const output = (await this.command.execAsync({command, cwd: workDir}));
-					result.push({
-						command,
-						stdout: split(output.stdout),
-						stderr: split(output.stderr),
-					});
-				} else {
-					const output = (await this.command.execAsync({cwd: workDir, ...command}));
-					result.push({
-						command: command.command,
-						stdout: split(output.stdout),
-						stderr: split(output.stderr),
-					});
-				}
-			}
-			return result;
-		} catch (error) {
-			console.log();
-			console.log(error);
-			throw error;
-		}
 	};
 
 	/**
@@ -268,7 +306,8 @@ export default class GitHelper {
 	 * @return {Promise<string[]>} diff
 	 */
 	public getDiff = async(workDir: string): Promise<string[]> => (await this.runCommand(workDir, {
-		command: 'git status --short -uno',
+		command: 'git status',
+		args: ['--short', '-uno'],
 		suppressOutput: true,
 	}))[0].stdout.filter(line => line.match(/^[MDA]\s+/)).filter(this.filter).map(line => line.replace(/^[MDA]\s+/, ''));
 
@@ -286,7 +325,8 @@ export default class GitHelper {
 				isPrRef(ref) ? ref.replace(/^refs\//, '') : `origin/${getBranch(ref, false)}`
 			);
 		return (await this.runCommand(workDir, {
-			command: `git diff ${toDiffRef(baseRef)}${dot ? dot : '...'}${toDiffRef(compareRef)} --name-only${diffFilter ? ` --diff-filter=${diffFilter}` : ''}`,
+			command: 'git diff',
+			args: [`${toDiffRef(baseRef)}${dot ? dot : '...'}${toDiffRef(compareRef)}`, `--name-only${diffFilter ? ` --diff-filter=${diffFilter}` : ''}`],
 			suppressOutput: true,
 		}))[0].stdout.filter(item => !!item.trim());
 	};
@@ -302,7 +342,7 @@ export default class GitHelper {
 	 * @param {string} message message
 	 */
 	public commit = async(workDir: string, message: string): Promise<boolean> => {
-		await this.runCommand(workDir, {command: 'git add --all'});
+		await this.runCommand(workDir, {command: 'git add', args: ['--all']});
 
 		if (!await this.checkDiff(workDir)) {
 			this.logger.info('There is no diff.');
@@ -320,21 +360,44 @@ export default class GitHelper {
 	 */
 	public makeCommit = async(workDir: string, message: string, count = 10): Promise<void> => { // eslint-disable-line no-magic-numbers
 		await this.runCommand(workDir, [
-			{command: `git commit -qm "${message.replace('"', '\\"')}"`},
-			{command: `git show --stat-count=${count} HEAD`},
+			{
+				command: 'git commit',
+				args: ['-qm', message],
+			},
+			{
+				command: 'git show',
+				args: [`--stat-count=${count}`, 'HEAD'],
+			},
 		]);
 	};
 
 	/**
 	 * @param {string} workDir work dir
+	 * @return {Promise<string[]>} tags
+	 */
+	public getTags = async(workDir: string): Promise<string[]> => (await this.runCommand(workDir, {
+		command: 'git tag', args: ['-l'],
+	}))[0].stdout;
+
+	/**
+	 * @param {string} workDir work dir
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
+	 * @see https://qiita.com/ngyuki/items/ca7bed067d7e538fd0cd
 	 */
 	public fetchTags = async(workDir: string, context: Context): Promise<void> => {
 		const url = getGitUrl(context);
 		await this.runCommand(workDir, [
-			{command: 'git tag -l | xargs git tag -d'},
-			{command: `git fetch ${url} --tags`, quiet: true, altCommand: 'git fetch origin --tags'},
+			{
+				command: 'git tag',
+				args: ['-d', ...await this.getTags(workDir)],
+			},
+			{
+				command: 'git fetch',
+				args: [url, '--tags'],
+				quiet: true,
+				altCommand: 'git fetch origin --tags',
+			},
 		]);
 	};
 
@@ -348,7 +411,8 @@ export default class GitHelper {
 		if ('string' === typeof tags) {
 			const url = getGitUrl(context);
 			await this.runCommand(workDir, {
-				command: `git push --delete ${url} tag ${tags}`,
+				command: 'git push',
+				args: ['--delete', url, 'tag', tags],
 				quiet: true,
 				altCommand: `git push --delete origin tag ${tags}`,
 				suppressError: true,
@@ -371,11 +435,15 @@ export default class GitHelper {
 		const url = getGitUrl(context);
 		await this.deleteTag(workDir, newTag, context);
 		await this.runCommand(workDir, [
-			{command: `git tag ${newTag} ${fromTag}`},
 			{
-				command: `git push ${url} "refs/tags/${newTag}"`,
+				command: 'git tag',
+				args: [newTag, fromTag],
+			},
+			{
+				command: 'git push',
+				args: [url, `refs/tags/${newTag}`],
 				quiet: true,
-				altCommand: `git push origin "refs/tags/${newTag}"`,
+				altCommand: `git push origin refs/tags/${newTag}`,
 			},
 		]);
 	};
@@ -387,7 +455,7 @@ export default class GitHelper {
 	 */
 	public addLocalTag = async(workDir: string, tags: string | string[]): Promise<void> => {
 		if ('string' === typeof tags) {
-			await this.runCommand(workDir, {command: `git tag ${tags}`});
+			await this.runCommand(workDir, {command: 'git tag', args: [tags]});
 		} else {
 			for (const tag of tags) {
 				await this.addLocalTag(workDir, tag);
@@ -406,9 +474,10 @@ export default class GitHelper {
 		const url  = getGitUrl(context);
 		const tags = withTag ? ' --tags' : '';
 		await this.runCommand(workDir, {
-			command: `git push${tags} ${url} "${branch}":"refs/heads/${branch}"`,
+			command: 'git push',
+			args: [withTag ? '--tags' : '', url, `${branch}:refs/heads/${branch}`],
 			quiet: true,
-			altCommand: `git push${tags} origin "${branch}":"refs/heads/${branch}"`,
+			altCommand: `git push${tags} origin ${branch}:refs/heads/${branch}`,
 		});
 	};
 
@@ -421,9 +490,10 @@ export default class GitHelper {
 	public forcePush = async(workDir: string, branch: string, context: Context): Promise<void> => {
 		const url = getGitUrl(context);
 		await this.runCommand(workDir, {
-			command: `git push --force ${url} "${branch}":"refs/heads/${branch}"`,
+			command: 'git push',
+			args: ['--force', url, `${branch}:refs/heads/${branch}`],
 			quiet: true,
-			altCommand: `git push --force origin "${branch}":"refs/heads/${branch}"`,
+			altCommand: `git push --force origin ${branch}:refs/heads/${branch}`,
 		});
 	};
 
@@ -435,7 +505,20 @@ export default class GitHelper {
 		if (!isCloned(workDir)) {
 			throw new Error('Not a git repository');
 		}
-		return 'v' + ((await this.runCommand(workDir, 'git tag | grep -e "^v\\?\\w\\+\\(\\.\\w\\+\\)*$" | sed -e "s/^v//" | sort -V | tail -n 1'))[0].stdout[0]?.trim() ?? '0.0.0');
+		const tags       = (await this.getTags(workDir)).filter(tag => /^v?\d+(\.\d)*$/.test(tag)).map(tag => tag.replace(/^v/, ''));
+		const splitTag   = (tag: string): number[] => tag.split('.').map(item => Number(item));
+		// eslint-disable-next-line no-magic-numbers
+		const compare    = (tag1: number[], tag2: number[], num = 0): number => {
+			if (tag1.length < num && tag2.length < num) {
+				return Math.sign(tag2.length - tag1.length);
+			}
+
+			// eslint-disable-next-line no-magic-numbers
+			const val1 = tag1[num] ?? 0, val2 = tag2[num] ?? 0;
+			return val1 === val2 ? compare(tag1, tag2, ++num) : Math.sign(val2 - val1);
+		};
+		const compareTag = (tag1: string, tag2: string): number => compare(splitTag(tag1), splitTag(tag2));
+		return 'v' + (tags.slice().sort(compareTag)[0] ?? '0.0.0');
 	};
 
 	/**
