@@ -505,11 +505,11 @@ export default class GitHelper {
 		if (!isCloned(workDir)) {
 			throw new Error('Not a git repository');
 		}
-		const tags       = (await this.getTags(workDir)).filter(tag => /^v?\d+(\.\d)*$/.test(tag)).map(tag => tag.replace(/^v/, ''));
+		const tags       = (await this.getTags(workDir)).filter(tag => /^v?\d+(\.\d+)*$/.test(tag)).map(tag => tag.replace(/^v/, ''));
 		const splitTag   = (tag: string): number[] => tag.split('.').map(item => Number(item));
 		// eslint-disable-next-line no-magic-numbers
 		const compare    = (tag1: number[], tag2: number[], num = 0): number => {
-			if (tag1.length < num && tag2.length < num) {
+			if (tag1.length <= num && tag2.length <= num) {
 				return Math.sign(tag2.length - tag1.length);
 			}
 
