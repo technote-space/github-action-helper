@@ -1,4 +1,5 @@
 import { exec, ExecException } from 'child_process';
+import escape from 'shell-escape';
 import { Logger } from './index';
 
 /**
@@ -10,7 +11,6 @@ export default class Command {
 	 * @param {Logger} logger logger
 	 */
 	constructor(private logger: Logger) {
-
 	}
 
 	/**
@@ -79,42 +79,46 @@ export default class Command {
 					}
 				}
 			}
-			resolve({stdout: trimmedStdout, stderr: trimmedStderr});
+			resolve({stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command});
 		}
 	};
 
 	/**
-	 * @param {object} args args
-	 * @param {string} args.command command
-	 * @param {string|undefined} args.cwd cwd
-	 * @param {boolean|undefined} args.quiet quiet?
-	 * @param {string|undefined} args.altCommand alt command
-	 * @param {boolean|undefined} args.suppressError suppress error?
-	 * @param {boolean|undefined} args.suppressOutput suppress output?
-	 * @param {boolean|undefined} args.stderrToStdout output to stdout instead of stderr
+	 * @param {object} options options
+	 * @param {string} options.command command
+	 * @param {string[]|undefined} options.args command
+	 * @param {string|undefined} options.cwd cwd
+	 * @param {boolean|undefined} options.quiet quiet?
+	 * @param {string|undefined} options.altCommand alt command
+	 * @param {boolean|undefined} options.suppressError suppress error?
+	 * @param {boolean|undefined} options.suppressOutput suppress output?
+	 * @param {boolean|undefined} options.stderrToStdout output to stdout instead of stderr
 	 * @return {Promise<object>} output
 	 */
-	public execAsync = (args: {
+	public execAsync = (options: {
 		command: string;
+		args?: string[];
 		cwd?: string;
 		quiet?: boolean;
 		altCommand?: string;
 		suppressError?: boolean;
 		suppressOutput?: boolean;
 		stderrToStdout?: boolean;
-	}): Promise<{ stdout: string; stderr: string }> => new Promise<{ stdout: string; stderr: string }>((resolve, reject): void => {
-		const {command, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false} = args;
+	}): Promise<{ stdout: string; stderr: string; command: string }> => new Promise<{ stdout: string; stderr: string; command: string }>((resolve, reject): void => {
+		const {command, args, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false} = options;
 
+		const commandArgs     = undefined === args ? '' : (' ' + escape(args));
+		const commandWithArgs = command + commandArgs;
 		if (undefined !== altCommand) {
 			this.logger.displayCommand(altCommand);
 		} else if (!quiet) {
-			this.logger.displayCommand(command);
+			this.logger.displayCommand(commandWithArgs);
 		}
 
 		if (typeof cwd === 'undefined') {
-			exec(this.getCommand(command, quiet, suppressError), this.execCallback(command, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+			exec(this.getCommand(commandWithArgs, quiet, suppressError), this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
 		} else {
-			exec(this.getCommand(command, quiet, suppressError), {cwd}, this.execCallback(command, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+			exec(this.getCommand(commandWithArgs, quiet, suppressError), {cwd}, this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
 		}
 	});
 }
