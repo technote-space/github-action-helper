@@ -564,6 +564,17 @@ describe('GitHelper', () => {
 			]);
 		});
 
+		it('should get last tag 4', async() => {
+			setChildProcessParams({stdout: 'v1.0.9\nv1.0.11\nv1.0.10.1'});
+			const mockExec = spyOnExec();
+
+			expect(await helper.getLastTag(workDir)).toBe('v1.0.11');
+
+			execCalledWith(mockExec, [
+				'git tag -l',
+			]);
+		});
+
 		it('should get initial tag', async() => {
 			setChildProcessParams({stdout: ''});
 			const mockExec = spyOnExec();
