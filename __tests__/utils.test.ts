@@ -417,16 +417,16 @@ describe('versionCompare', () => {
 	});
 
 	it('should return 1', () => {
-		expect(versionCompare('v1.2.3', 'v1.2.4')).toBe(1);
-		expect(versionCompare('v1.2.3', '1.2.4')).toBe(1);
-		expect(versionCompare('v1.2', 'v1.2.3')).toBe(1);
-		expect(versionCompare('v1.2.3', 'v1.2.3.0')).toBe(1);
+		expect(versionCompare('v1.2.3', 'v1.2.2')).toBe(1);
+		expect(versionCompare('v1.2.3', '1.2.2')).toBe(1);
+		expect(versionCompare('v1.2.3', 'v1.2')).toBe(1);
+		expect(versionCompare('v1.2.3.0', 'v1.2.3')).toBe(1);
 	});
 
 	it('should return -1', () => {
-		expect(versionCompare('v1.2.3', 'v1.2.2')).toBe(-1);
-		expect(versionCompare('v1.2.3', '1.2.2')).toBe(-1);
-		expect(versionCompare('v1.2.3', 'v1.2')).toBe(-1);
-		expect(versionCompare('v1.2.3.0', 'v1.2.3')).toBe(-1);
+		expect(versionCompare('v1.2.3', 'v1.2.4')).toBe(-1);
+		expect(versionCompare('v1.2.3', '1.2.4')).toBe(-1);
+		expect(versionCompare('v1.2', 'v1.2.3')).toBe(-1);
+		expect(versionCompare('v1.2.3', 'v1.2.3.0')).toBe(-1);
 	});
 });
