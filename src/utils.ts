@@ -118,12 +118,12 @@ export const versionCompare = (version1: string, version2: string): number => {
 	// eslint-disable-next-line no-magic-numbers
 	const compare      = (version1: number[], version2: number[], num = 0): number => {
 		if (version1.length <= num && version2.length <= num) {
-			return Math.sign(version2.length - version1.length);
+			return Math.sign(version1.length - version2.length);
 		}
 
 		// eslint-disable-next-line no-magic-numbers
 		const val1 = version1[num] ?? 0, val2 = version2[num] ?? 0;
-		return val1 === val2 ? compare(version1, version2, ++num) : Math.sign(val2 - val1);
+		return val1 === val2 ? compare(version1, version2, ++num) : Math.sign(val1 - val2);
 	};
 	return compare(splitVersion(version1.replace(/^v/, '')), splitVersion(version2.replace(/^v/, '')));
 };
