@@ -419,15 +419,29 @@ describe('GitHelper', () => {
 	});
 
 	describe('fetchTags', () => {
-		it('should run fetch tags', async() => {
-			setChildProcessParams({stdout: 'v1.2.3\nv1.2.4'});
+		it('should run fetch tags 1', async() => {
+			setChildProcessParams({stdout: 'v1.2.3\nv1.2.4\nv1.2.5\nv1.2.6'});
 			const mockExec = spyOnExec();
 
 			await helper.fetchTags(workDir, context());
 
 			execCalledWith(mockExec, [
 				'git tag -l',
-				'git tag -d \'v1.2.3\' \'v1.2.4\'',
+				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' \'v1.2.6\'',
+				'git fetch \'https://octocat:token@github.com/hello/world.git\' --tags > /dev/null 2>&1',
+			]);
+		});
+
+		it('should run fetch tags 2', async() => {
+			setChildProcessParams({stdout: 'v1.2.3\nv1.2.4\nv1.2.5\nv1.2.6'});
+			const mockExec = spyOnExec();
+
+			await helper.fetchTags(workDir, context(), 3);
+
+			execCalledWith(mockExec, [
+				'git tag -l',
+				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\'',
+				'git tag -d \'v1.2.6\'',
 				'git fetch \'https://octocat:token@github.com/hello/world.git\' --tags > /dev/null 2>&1',
 			]);
 		});
