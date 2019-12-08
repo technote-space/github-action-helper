@@ -103,3 +103,12 @@ export const generateNewPatchVersion = (lastTag: string): string => {
 	fragments[fragments.length - 1] = (Number(fragments[fragments.length - 1]) + 1).toString();
 	return 'v' + fragments.join('.');
 };
+
+// eslint-disable-next-line no-magic-numbers
+export const arrayChunk = <T>(array: T[], size = 100): T[][] => {
+	const result: T[][] = [], length = array.length;
+	for (let index = 0; index < length; index += size) {
+		result.push(array.slice(index, index + size));
+	}
+	return result;
+};

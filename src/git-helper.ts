@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchVersion } from './utils';
+import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchVersion, arrayChunk } from './utils';
 import { getGitUrl } from './context-helper';
 
 type CommandType = string | {
@@ -382,16 +382,17 @@ export default class GitHelper {
 	/**
 	 * @param {string} workDir work dir
 	 * @param {Context} context context
+	 * @param {number} splitSize split size
 	 * @return {Promise<void>} void
 	 * @see https://qiita.com/ngyuki/items/ca7bed067d7e538fd0cd
 	 */
-	public fetchTags = async(workDir: string, context: Context): Promise<void> => {
+	public fetchTags = async(workDir: string, context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
 		const url = getGitUrl(context);
 		await this.runCommand(workDir, [
-			{
+			...arrayChunk(await this.getTags(workDir), splitSize).map(tags => ({
 				command: 'git tag',
-				args: ['-d', ...await this.getTags(workDir)],
-			},
+				args: ['-d', ...tags],
+			})),
 			{
 				command: 'git fetch',
 				args: [url, '--tags'],
