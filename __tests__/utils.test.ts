@@ -3,9 +3,9 @@ import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, sleep}     = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef}          = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion} = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, sleep}        = Utils;
+const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk} = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion}    = Utils;
 
 jest.useFakeTimers();
 
@@ -398,5 +398,13 @@ describe('generateNewPatchVersion', () => {
 		expect(() => {
 			generateNewPatchVersion('test');
 		}).toThrow();
+	});
+});
+
+describe('arrayChunk', () => {
+	it('should split array', () => {
+		expect(arrayChunk([])).toEqual([]);
+		expect(arrayChunk([1, 2, 3])).toEqual([[1, 2, 3]]);
+		expect(arrayChunk([1, 2, 3, 4, 5, 6, 7], 3)).toEqual([[1, 2, 3], [4, 5, 6], [7]]);
 	});
 });
