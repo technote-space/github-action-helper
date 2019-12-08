@@ -379,6 +379,7 @@ describe('replaceAll', () => {
 		expect(replaceAll('', ',', ' ')).toBe('');
 		expect(replaceAll('test1', ',', ' ')).toBe('test1');
 		expect(replaceAll('test1,test2,test3', ',', ' ')).toBe('test1 test2 test3');
+		expect(replaceAll('test1;test2\\;test3', /[^/];/, '\\;')).toBe('test\\;test2\\;test3');
 	});
 });
 

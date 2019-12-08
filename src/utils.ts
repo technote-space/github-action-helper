@@ -88,7 +88,7 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 		)
 	);
 
-export const replaceAll = (string: string, key: string, value: string): string => string.split(key).join(value);
+export const replaceAll = (string: string, key: string | RegExp, value: string): string => string.split(key).join(value);
 
 export const generateNewPatchVersion = (lastTag: string): string => {
 	if (!/^v?\d+(\.\d+)*$/.test(lastTag)) {
