@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchVersion, arrayChunk } from './utils';
+import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchVersion, arrayChunk, versionCompare } from './utils';
 import { getGitUrl } from './context-helper';
 
 type CommandType = string | {
@@ -506,20 +506,9 @@ export default class GitHelper {
 		if (!isCloned(workDir)) {
 			throw new Error('Not a git repository');
 		}
-		const tags       = (await this.getTags(workDir)).filter(tag => /^v?\d+(\.\d+)*$/.test(tag)).map(tag => tag.replace(/^v/, ''));
-		const splitTag   = (tag: string): number[] => tag.split('.').map(item => Number(item));
-		// eslint-disable-next-line no-magic-numbers
-		const compare    = (tag1: number[], tag2: number[], num = 0): number => {
-			if (tag1.length <= num && tag2.length <= num) {
-				return Math.sign(tag2.length - tag1.length);
-			}
-
-			// eslint-disable-next-line no-magic-numbers
-			const val1 = tag1[num] ?? 0, val2 = tag2[num] ?? 0;
-			return val1 === val2 ? compare(tag1, tag2, ++num) : Math.sign(val2 - val1);
-		};
-		const compareTag = (tag1: string, tag2: string): number => compare(splitTag(tag1), splitTag(tag2));
-		return 'v' + (tags.slice().sort(compareTag)[0] ?? '0.0.0');
+		const tags       = (await this.getTags(workDir)).filter(tag => /^v?\d+(\.\d+)*$/.test(tag));
+		const compareTag = (tag1: string, tag2: string): number => versionCompare(tag1, tag2);
+		return 'v' + (tags.slice().sort(compareTag)[0]?.replace(/^v/, '') ?? '0.0.0');
 	};
 
 	/**
