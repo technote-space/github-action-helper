@@ -3,9 +3,9 @@ import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, sleep}        = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk} = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion}    = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare}   = Utils;
+const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk}     = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, sleep} = Utils;
 
 jest.useFakeTimers();
 
@@ -379,7 +379,7 @@ describe('replaceAll', () => {
 		expect(replaceAll('', ',', ' ')).toBe('');
 		expect(replaceAll('test1', ',', ' ')).toBe('test1');
 		expect(replaceAll('test1,test2,test3', ',', ' ')).toBe('test1 test2 test3');
-		expect(replaceAll('test1;test2\\;test3', /[^/];/, '\\;')).toBe('test\\;test2\\;test3');
+		expect(replaceAll('test1;test2\\;test3', /[^\\];/, '\\;')).toBe('test\\;test2\\;test3');
 	});
 });
 
@@ -407,5 +407,26 @@ describe('arrayChunk', () => {
 		expect(arrayChunk([])).toEqual([]);
 		expect(arrayChunk([1, 2, 3])).toEqual([[1, 2, 3]]);
 		expect(arrayChunk([1, 2, 3, 4, 5, 6, 7], 3)).toEqual([[1, 2, 3], [4, 5, 6], [7]]);
+	});
+});
+
+describe('versionCompare', () => {
+	it('should return 0', () => {
+		expect(versionCompare('v1.2.3', 'v1.2.3')).toBe(0);
+		expect(versionCompare('v1.2.3', '1.2.3')).toBe(0);
+	});
+
+	it('should return 1', () => {
+		expect(versionCompare('v1.2.3', 'v1.2.4')).toBe(1);
+		expect(versionCompare('v1.2.3', '1.2.4')).toBe(1);
+		expect(versionCompare('v1.2', 'v1.2.3')).toBe(1);
+		expect(versionCompare('v1.2.3', 'v1.2.3.0')).toBe(1);
+	});
+
+	it('should return -1', () => {
+		expect(versionCompare('v1.2.3', 'v1.2.2')).toBe(-1);
+		expect(versionCompare('v1.2.3', '1.2.2')).toBe(-1);
+		expect(versionCompare('v1.2.3', 'v1.2')).toBe(-1);
+		expect(versionCompare('v1.2.3.0', 'v1.2.3')).toBe(-1);
 	});
 });

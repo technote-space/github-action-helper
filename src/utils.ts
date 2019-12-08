@@ -64,7 +64,7 @@ export const getPrefixRegExp = (value: string): RegExp => new RegExp('^' + escap
 
 export const getSuffixRegExp = (value: string): RegExp => new RegExp(escapeRegExp(value) + '$');
 
-export const getBoolValue = (input: string): boolean => !['false', '0', ''].includes(input.trim().toLowerCase());
+export const getBoolValue = (input: string): boolean => !['false', '0', '', 'no', 'n'].includes(input.trim().toLowerCase());
 
 export const uniqueArray = <T>(array: T[]): T[] => [...new Set<T>(array)];
 
@@ -111,4 +111,19 @@ export const arrayChunk = <T>(array: T[], size = 100): T[][] => {
 		result.push(array.slice(index, index + size));
 	}
 	return result;
+};
+
+export const versionCompare = (version1: string, version2: string): number => {
+	const splitVersion = (version: string): number[] => version.split('.').map(item => Number(item));
+	// eslint-disable-next-line no-magic-numbers
+	const compare      = (version1: number[], version2: number[], num = 0): number => {
+		if (version1.length <= num && version2.length <= num) {
+			return Math.sign(version2.length - version1.length);
+		}
+
+		// eslint-disable-next-line no-magic-numbers
+		const val1 = version1[num] ?? 0, val2 = version2[num] ?? 0;
+		return val1 === val2 ? compare(version1, version2, ++num) : Math.sign(val2 - val1);
+	};
+	return compare(splitVersion(version1.replace(/^v/, '')), splitVersion(version2.replace(/^v/, '')));
 };
