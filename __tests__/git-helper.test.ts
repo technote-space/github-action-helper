@@ -455,6 +455,7 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag > /dev/null 2>&1 || :',
+				'git tag -d delete-tag > /dev/null 2>&1 || :',
 			]);
 		});
 
@@ -468,6 +469,7 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag1 tags/delete-tag2 > /dev/null 2>&1 || :',
+				'git tag -d delete-tag1 delete-tag2 > /dev/null 2>&1 || :',
 			]);
 		});
 
@@ -485,6 +487,8 @@ describe('GitHelper', () => {
 			execCalledWith(mockExec, [
 				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag1 tags/delete-tag2 tags/delete-tag3 > /dev/null 2>&1 || :',
 				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag4 refs/tags/delete-tag5 > /dev/null 2>&1 || :',
+				'git tag -d delete-tag1 delete-tag2 delete-tag3 > /dev/null 2>&1 || :',
+				'git tag -d delete-tag4 delete-tag5 > /dev/null 2>&1 || :',
 			]);
 		});
 	});
@@ -497,6 +501,7 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/new-tag > /dev/null 2>&1 || :',
+				'git tag -d new-tag > /dev/null 2>&1 || :',
 				'git tag new-tag from-tag',
 				'git push \'https://octocat:token@github.com/hello/world.git\' refs/tags/new-tag > /dev/null 2>&1',
 			]);

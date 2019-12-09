@@ -411,14 +411,24 @@ export default class GitHelper {
 	 */
 	public deleteTag = async(workDir: string, tags: string | string[], context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
 		const url       = getGitUrl(context);
-		const getTagRef = (tag: string): string => /^(refs\/)?tags\//.test(tag) ? tag : `tags/${tag}`;
-		await this.runCommand(workDir, arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTagRef), splitSize).map(tags => ({
-			command: 'git push',
-			args: [url, '--delete', ...tags],
-			quiet: true,
-			altCommand: `git push origin --delete ${tags.join(' ')}`,
-			suppressError: true,
-		})));
+		const regexp    = /^(refs\/)?tags\//;
+		const getTagRef = (tag: string): string => regexp.test(tag) ? tag : `tags/${tag}`;
+		const getTag    = (tag: string): string => tag.replace(regexp, '');
+		await this.runCommand(workDir, [
+			...arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTagRef), splitSize).map(tags => ({
+				command: 'git push',
+				args: [url, '--delete', ...tags],
+				quiet: true,
+				altCommand: `git push origin --delete ${tags.join(' ')}`,
+				suppressError: true,
+			})),
+			...arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTag), splitSize).map(tags => ({
+				command: 'git tag',
+				args: ['-d', ...tags],
+				quiet: true,
+				suppressError: true,
+			})),
+		]);
 	};
 
 	/**
