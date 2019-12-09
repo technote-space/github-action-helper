@@ -454,7 +454,7 @@ describe('GitHelper', () => {
 			await helper.deleteTag(workDir, 'delete-tag', context());
 
 			execCalledWith(mockExec, [
-				'git push --delete \'https://octocat:token@github.com/hello/world.git\' tag delete-tag > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag > /dev/null 2>&1 || :',
 			]);
 		});
 
@@ -467,8 +467,24 @@ describe('GitHelper', () => {
 			], context());
 
 			execCalledWith(mockExec, [
-				'git push --delete \'https://octocat:token@github.com/hello/world.git\' tag delete-tag1 > /dev/null 2>&1 || :',
-				'git push --delete \'https://octocat:token@github.com/hello/world.git\' tag delete-tag2 > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag1 tags/delete-tag2 > /dev/null 2>&1 || :',
+			]);
+		});
+
+		it('should chunk delete tags', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.deleteTag(workDir, [
+				'delete-tag1',
+				'delete-tag2',
+				'delete-tag3',
+				'tags/delete-tag4',
+				'refs/tags/delete-tag5',
+			], context(), 3);
+
+			execCalledWith(mockExec, [
+				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag1 tags/delete-tag2 tags/delete-tag3 > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag4 refs/tags/delete-tag5 > /dev/null 2>&1 || :',
 			]);
 		});
 	});
@@ -480,7 +496,7 @@ describe('GitHelper', () => {
 			await helper.copyTag(workDir, 'new-tag', 'from-tag', context());
 
 			execCalledWith(mockExec, [
-				'git push --delete \'https://octocat:token@github.com/hello/world.git\' tag new-tag > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/new-tag > /dev/null 2>&1 || :',
 				'git tag new-tag from-tag',
 				'git push \'https://octocat:token@github.com/hello/world.git\' refs/tags/new-tag > /dev/null 2>&1',
 			]);
