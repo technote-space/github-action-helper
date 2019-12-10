@@ -22,7 +22,8 @@ export default class GitHelper {
 	private readonly command: Command;
 	private readonly cloneDepth: string;
 	private readonly filter: (string) => boolean;
-	private origin?: string = undefined;
+	private origin?: string  = undefined;
+	private quietIfNotOrigin = true;
 
 	/**
 	 * @param {Logger} logger logger
@@ -88,7 +89,7 @@ export default class GitHelper {
 		await this.runCommand(workDir, {
 			command: 'git remote add',
 			args: ['origin', url],
-			quiet: true,
+			quiet: this.isQuiet(),
 			altCommand: 'git remote add origin',
 			suppressError: true,
 		});
@@ -96,16 +97,25 @@ export default class GitHelper {
 
 	/**
 	 * @param {string|boolean} origin origin
+	 * @param {boolean} quiet quiet?
 	 */
-	public useOrigin = (origin: string | boolean): void => {
+	public useOrigin = (origin: string | boolean, quiet?: boolean): void => {
 		this.origin = typeof origin === 'boolean' ? (origin ? 'origin' : undefined) : origin;
+		if (quiet !== undefined) {
+			this.quietIfNotOrigin = quiet;
+		}
 	};
+
+	/**
+	 * @return {boolean} is quiet?
+	 */
+	private isQuiet = (): boolean => !this.origin || this.quietIfNotOrigin;
 
 	/**
 	 * @param {Context} context context
 	 * @return {string} origin
 	 */
-	private getOrigin = (context: Context): string => this.origin ?? getGitUrl(context);
+	private getOrigin = (context: Context): string => !this.origin ? getGitUrl(context) : this.origin;
 
 	/**
 	 * @param {string} workDir work dir
@@ -130,7 +140,7 @@ export default class GitHelper {
 		await this.runCommand(workDir, {
 			command: 'git clone',
 			args: [`--branch=${branch}`, this.cloneDepth, url, '.'],
-			quiet: true,
+			quiet: this.isQuiet(),
 			altCommand: `git clone --branch=${branch}`,
 			suppressError: true,
 		});
@@ -147,13 +157,15 @@ export default class GitHelper {
 			{
 				command: 'git clone',
 				args: [this.cloneDepth, url, '.'],
-				quiet: true,
+				quiet: this.isQuiet(),
 				altCommand: 'git clone',
 				suppressError: true,
 			},
 			{
 				command: 'git fetch',
-				args: ['origin', `+${context.ref}`],
+				args: [url, `+${context.ref}`],
+				quiet: this.isQuiet(),
+				altCommand: `git fetch origin ${context.ref}`,
 				stderrToStdout: true,
 			},
 			'git checkout -qf FETCH_HEAD',
@@ -191,13 +203,13 @@ export default class GitHelper {
 				{
 					command: 'git clone',
 					args: [this.cloneDepth, url, '.'],
-					quiet: true,
+					quiet: this.isQuiet(),
 					altCommand: 'git clone',
 				},
 				{
 					command: 'git fetch',
 					args: [url, context.ref],
-					quiet: true,
+					quiet: this.isQuiet(),
 					altCommand: `git fetch origin ${context.ref}`,
 				},
 				{
@@ -214,7 +226,7 @@ export default class GitHelper {
 				{
 					command: 'git clone',
 					args: [url, '.'],
-					quiet: true,
+					quiet: this.isQuiet(),
 					altCommand: 'git clone',
 				},
 				{
@@ -267,7 +279,7 @@ export default class GitHelper {
 		await this.runCommand(workDir, {
 			command: 'git fetch',
 			args: ['--prune', '--no-recurse-submodules', this.cloneDepth, url, `+refs/heads/${branchName}:refs/remotes/origin/${branchName}`],
-			quiet: true,
+			quiet: this.isQuiet(),
 			altCommand: `git fetch --prune --no-recurse-submodules${this.cloneDepth} origin +refs/heads/${branchName}:refs/remotes/origin/${branchName}`,
 			suppressError: true,
 		});
@@ -410,7 +422,7 @@ export default class GitHelper {
 			{
 				command: 'git fetch',
 				args: [url, '--tags'],
-				quiet: true,
+				quiet: this.isQuiet(),
 				altCommand: 'git fetch origin --tags',
 			},
 		]);
@@ -432,7 +444,7 @@ export default class GitHelper {
 			...arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTagRef), splitSize).map(tags => ({
 				command: 'git push',
 				args: [url, '--delete', ...tags],
-				quiet: true,
+				quiet: this.isQuiet(),
 				altCommand: `git push origin --delete ${tags.join(' ')}`,
 				suppressError: true,
 			})),
@@ -462,7 +474,7 @@ export default class GitHelper {
 			{
 				command: 'git push',
 				args: [url, `refs/tags/${newTag}`],
-				quiet: true,
+				quiet: this.isQuiet(),
 				altCommand: `git push origin refs/tags/${newTag}`,
 			},
 		]);
@@ -496,7 +508,7 @@ export default class GitHelper {
 		await this.runCommand(workDir, {
 			command: 'git push',
 			args: [withTag ? '--tags' : '', url, `${branch}:refs/heads/${branch}`],
-			quiet: true,
+			quiet: this.isQuiet(),
 			altCommand: `git push${tags} origin ${branch}:refs/heads/${branch}`,
 		});
 	};
@@ -512,7 +524,7 @@ export default class GitHelper {
 		await this.runCommand(workDir, {
 			command: 'git push',
 			args: ['--force', url, `${branch}:refs/heads/${branch}`],
-			quiet: true,
+			quiet: this.isQuiet(),
 			altCommand: `git push --force origin ${branch}:refs/heads/${branch}`,
 		});
 	};

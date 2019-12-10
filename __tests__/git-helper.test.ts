@@ -83,7 +83,7 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				'git clone \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
-				'git fetch origin \'+refs/pull/123/merge\'',
+				'git fetch \'https://octocat:token@github.com/hello/world.git\' \'+refs/pull/123/merge\' > /dev/null 2>&1',
 				'git checkout -qf FETCH_HEAD',
 			]);
 		});
@@ -657,6 +657,10 @@ describe('GitHelper', () => {
 			await helper.clone(workDir, context({
 				ref: 'refs/heads/test',
 			}));
+			helper.useOrigin(true, false);
+			await helper.clone(workDir, context({
+				ref: 'refs/heads/test',
+			}));
 			helper.useOrigin(false);
 			await helper.clone(workDir, context({
 				ref: 'refs/heads/test',
@@ -666,6 +670,7 @@ describe('GitHelper', () => {
 				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
 				'git clone \'--branch=test\' \'--depth=3\' origin \'.\' > /dev/null 2>&1 || :',
 				'git clone \'--branch=test\' \'--depth=3\' test \'.\' > /dev/null 2>&1 || :',
+				'git clone \'--branch=test\' \'--depth=3\' origin \'.\' || :',
 				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
 			]);
 		});
