@@ -22,6 +22,7 @@ export default class GitHelper {
 	private readonly command: Command;
 	private readonly cloneDepth: string;
 	private readonly filter: (string) => boolean;
+	private origin?: string = undefined;
 
 	/**
 	 * @param {Logger} logger logger
@@ -78,6 +79,36 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public addOrigin = async(workDir: string, context: Context): Promise<void> => {
+		const url = this.getOrigin(context);
+		await this.initialize(workDir);
+		await this.runCommand(workDir, {
+			command: 'git remote add',
+			args: ['origin', url],
+			quiet: true,
+			altCommand: 'git remote add origin',
+			suppressError: true,
+		});
+	};
+
+	/**
+	 * @param {string|boolean} origin origin
+	 */
+	public useOrigin = (origin: string | boolean): void => {
+		this.origin = typeof origin === 'boolean' ? (origin ? 'origin' : undefined) : origin;
+	};
+
+	/**
+	 * @param {Context} context context
+	 * @return {string} origin
+	 */
+	private getOrigin = (context: Context): string => this.origin ?? getGitUrl(context);
+
+	/**
+	 * @param {string} workDir work dir
 	 * @return {Promise<string>} branch name
 	 */
 	public getCurrentBranchName = async(workDir: string): Promise<string> => {
@@ -95,7 +126,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public cloneBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
-		const url = getGitUrl(context);
+		const url = this.getOrigin(context);
 		await this.runCommand(workDir, {
 			command: 'git clone',
 			args: [`--branch=${branch}`, this.cloneDepth, url, '.'],
@@ -111,7 +142,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	private clonePR = async(workDir: string, context: Context): Promise<void> => {
-		const url = getGitUrl(context);
+		const url = this.getOrigin(context);
 		await this.runCommand(workDir, [
 			{
 				command: 'git clone',
@@ -154,7 +185,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public checkout = async(workDir: string, context: Context): Promise<void> => {
-		const url = getGitUrl(context);
+		const url = this.getOrigin(context);
 		if (this.cloneDepth && context.sha) {
 			await this.runCommand(workDir, [
 				{
@@ -219,23 +250,6 @@ export default class GitHelper {
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
 	 */
-	public addOrigin = async(workDir: string, context: Context): Promise<void> => {
-		const url = getGitUrl(context);
-		await this.initialize(workDir);
-		await this.runCommand(workDir, {
-			command: 'git remote add',
-			args: ['origin', url],
-			quiet: true,
-			altCommand: 'git remote add origin',
-			suppressError: true,
-		});
-	};
-
-	/**
-	 * @param {string} workDir work dir
-	 * @param {Context} context context
-	 * @return {Promise<void>} void
-	 */
 	public fetchOrigin = async(workDir: string, context: Context): Promise<void> => {
 		await this.addOrigin(workDir, context);
 		await this.runCommand(workDir, {command: 'git fetch', args: ['origin'], stderrToStdout: true});
@@ -248,7 +262,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public fetchBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
-		const url        = getGitUrl(context);
+		const url        = this.getOrigin(context);
 		const branchName = getBranch(branch, false);
 		await this.runCommand(workDir, {
 			command: 'git fetch',
@@ -387,7 +401,7 @@ export default class GitHelper {
 	 * @see https://qiita.com/ngyuki/items/ca7bed067d7e538fd0cd
 	 */
 	public fetchTags = async(workDir: string, context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
-		const url = getGitUrl(context);
+		const url = this.getOrigin(context);
 		await this.runCommand(workDir, [
 			...arrayChunk(await this.getTags(workDir), splitSize).map(tags => ({
 				command: 'git tag',
@@ -410,7 +424,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public deleteTag = async(workDir: string, tags: string | string[], context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
-		const url       = getGitUrl(context);
+		const url       = this.getOrigin(context);
 		const regexp    = /^(refs\/)?tags\//;
 		const getTagRef = (tag: string): string => regexp.test(tag) ? tag : `tags/${tag}`;
 		const getTag    = (tag: string): string => tag.replace(regexp, '');
@@ -425,7 +439,6 @@ export default class GitHelper {
 			...arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTag), splitSize).map(tags => ({
 				command: 'git tag',
 				args: ['-d', ...tags],
-				quiet: true,
 				suppressError: true,
 			})),
 		]);
@@ -439,7 +452,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public copyTag = async(workDir: string, newTag: string, fromTag: string, context: Context): Promise<void> => {
-		const url = getGitUrl(context);
+		const url = this.getOrigin(context);
 		await this.deleteTag(workDir, newTag, context);
 		await this.runCommand(workDir, [
 			{
@@ -478,7 +491,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public push = async(workDir: string, branch: string, withTag: boolean, context: Context): Promise<void> => {
-		const url  = getGitUrl(context);
+		const url  = this.getOrigin(context);
 		const tags = withTag ? ' --tags' : '';
 		await this.runCommand(workDir, {
 			command: 'git push',
@@ -495,7 +508,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public forcePush = async(workDir: string, branch: string, context: Context): Promise<void> => {
-		const url = getGitUrl(context);
+		const url = this.getOrigin(context);
 		await this.runCommand(workDir, {
 			command: 'git push',
 			args: ['--force', url, `${branch}:refs/heads/${branch}`],
