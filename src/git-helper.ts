@@ -262,11 +262,19 @@ export default class GitHelper {
 	/**
 	 * @param {string} workDir work dir
 	 * @param {Context} context context
+	 * @param {string[]} refspec refspec
 	 * @return {Promise<void>} void
 	 */
-	public fetchOrigin = async(workDir: string, context: Context): Promise<void> => {
+	public fetchOrigin = async(workDir: string, context: Context, refspec?: string[]): Promise<void> => {
 		await this.addOrigin(workDir, context);
-		await this.runCommand(workDir, {command: 'git fetch', args: ['origin'], stderrToStdout: true});
+		await this.runCommand(workDir, {
+			command: 'git fetch',
+			args: [
+				'origin',
+				...(refspec ?? []),
+			],
+			stderrToStdout: true,
+		});
 	};
 
 	/**
@@ -421,6 +429,7 @@ export default class GitHelper {
 				command: 'git tag',
 				args: ['-d', ...tags],
 				suppressError: true,
+				stderrToStdout: true,
 			})),
 			{
 				command: 'git fetch',
@@ -455,6 +464,7 @@ export default class GitHelper {
 				command: 'git tag',
 				args: ['-d', ...tags],
 				suppressError: true,
+				stderrToStdout: true,
 			})),
 		]);
 	};

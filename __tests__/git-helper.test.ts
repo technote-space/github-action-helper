@@ -187,6 +187,19 @@ describe('GitHelper', () => {
 				'git fetch origin',
 			]);
 		});
+
+		it('should fetch origin with refspec', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.fetchOrigin(workDir, context(), ['+refs/pull/*/merge:refs/remotes/pull/*/merge', '+refs/heads/hoge:refs/remotes/origin/hoge']);
+
+			execCalledWith(mockExec, [
+				`rm -rdf '${workDir}'`,
+				'git init \'.\'',
+				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git fetch origin \'+refs/pull/*/merge:refs/remotes/pull/*/merge\' \'+refs/heads/hoge:refs/remotes/origin/hoge\'',
+			]);
+		});
 	});
 
 	describe('fetchBranch', () => {
