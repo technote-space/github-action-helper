@@ -344,7 +344,7 @@ describe('GitHelper', () => {
 			]);
 
 			execCalledWith(mockExec, [
-				'git diff \'origin/master...pull/123/merge\' \'--name-only --diff-filter=AM\'',
+				'git diff \'origin/master...pull/123/merge\' --name-only \'--diff-filter=AM\'',
 			]);
 		});
 
@@ -548,7 +548,7 @@ describe('GitHelper', () => {
 			await helper.push(workDir, 'test-branch', false, context());
 
 			execCalledWith(mockExec, [
-				'git push  \'https://octocat:token@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
+				'git push \'https://octocat:token@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
 			]);
 		});
 	});
@@ -730,7 +730,7 @@ describe('GitHelper with params 2', () => {
 			}));
 
 			execCalledWith(mockExec, [
-				'git clone \'--branch=test\'  \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git clone \'--branch=test\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
 			]);
 		});
 	});
