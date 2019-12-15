@@ -418,6 +418,7 @@ export default class GitHelper {
 			...arrayChunk(await this.getTags(workDir), splitSize).map(tags => ({
 				command: 'git tag',
 				args: ['-d', ...tags],
+				suppressError: true,
 			})),
 			{
 				command: 'git fetch',
