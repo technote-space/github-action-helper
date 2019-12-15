@@ -107,8 +107,8 @@ export default class Command {
 	}): Promise<{ stdout: string; stderr: string; command: string }> => new Promise<{ stdout: string; stderr: string; command: string }>((resolve, reject): void => {
 		const {command, args, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false} = options;
 
-		const commandArgs     = undefined === args ? '' : (' ' + escape(args));
-		const commandWithArgs = command + commandArgs;
+		const commandArgs     = undefined === args ? '' : escape(args.map(item => item.trim()).filter(item => item.length));
+		const commandWithArgs = command + (commandArgs.length ? ' ' + commandArgs : '');
 		if (undefined !== altCommand) {
 			this.logger.displayCommand(altCommand);
 		} else if (!quiet) {

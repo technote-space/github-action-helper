@@ -352,7 +352,7 @@ export default class GitHelper {
 			);
 		return (await this.runCommand(workDir, {
 			command: 'git diff',
-			args: [`${toDiffRef(baseRef)}${dot ? dot : '...'}${toDiffRef(compareRef)}`, `--name-only${diffFilter ? ` --diff-filter=${diffFilter}` : ''}`],
+			args: [`${toDiffRef(baseRef)}${dot ? dot : '...'}${toDiffRef(compareRef)}`, '--name-only', diffFilter ? `--diff-filter=${diffFilter}` : ''],
 			suppressOutput: true,
 		}))[0].stdout.filter(item => !!item.trim());
 	};
