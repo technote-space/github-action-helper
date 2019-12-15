@@ -242,7 +242,9 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	private initialize = async(workDir: string): Promise<void> => {
-		await this.runCommand(workDir, {command: 'rm', args: ['-rdf', workDir]});
+		if (fs.existsSync(workDir)) {
+			await this.runCommand(workDir, {command: 'rm', args: ['-rdf', workDir]});
+		}
 		fs.mkdirSync(workDir, {recursive: true});
 		await this.runCommand(workDir, {command: 'git init', args: ['.']});
 	};
@@ -418,6 +420,7 @@ export default class GitHelper {
 			...arrayChunk(await this.getTags(workDir), splitSize).map(tags => ({
 				command: 'git tag',
 				args: ['-d', ...tags],
+				suppressError: true,
 			})),
 			{
 				command: 'git fetch',
