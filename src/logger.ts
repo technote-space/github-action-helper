@@ -58,7 +58,7 @@ export default class Logger {
 	 * @param {any[]} args args
 	 */
 	private multiLineOutput = (output: (string) => void, replacer: null | ((string: string) => string), message?: string | string[], ...args: any[]): void => {
-		if (undefined === message || '' === message) {
+		if (!message) {
 			output('');
 			return;
 		}
