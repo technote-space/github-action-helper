@@ -427,7 +427,7 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				'git tag -l',
-				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' \'v1.2.6\'',
+				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' \'v1.2.6\' || :',
 				'git fetch \'https://octocat:token@github.com/hello/world.git\' --tags > /dev/null 2>&1',
 			]);
 		});
@@ -440,8 +440,8 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				'git tag -l',
-				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\'',
-				'git tag -d \'v1.2.6\'',
+				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' || :',
+				'git tag -d \'v1.2.6\' || :',
 				'git fetch \'https://octocat:token@github.com/hello/world.git\' --tags > /dev/null 2>&1',
 			]);
 		});
