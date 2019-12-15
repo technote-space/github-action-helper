@@ -146,6 +146,18 @@ describe('GitHelper', () => {
 				'git checkout --orphan test-branch',
 			]);
 		});
+
+		it('should run git init without rm dir', async() => {
+			const mockExec = spyOnExec();
+			setExists(false);
+
+			await helper.gitInit(workDir, 'test-branch');
+
+			execCalledWith(mockExec, [
+				'git init \'.\'',
+				'git checkout --orphan test-branch',
+			]);
+		});
 	});
 
 	describe('addOrigin', () => {
