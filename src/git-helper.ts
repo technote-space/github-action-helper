@@ -115,7 +115,7 @@ export default class GitHelper {
 	 * @param {Context} context context
 	 * @return {string} origin
 	 */
-	private getOrigin = (context: Context): string => !this.origin ? getGitUrl(context) : this.origin;
+	private getOrigin = (context: Context): string => this.origin ?? getGitUrl(context);
 
 	/**
 	 * @param {string} workDir work dir
@@ -354,7 +354,7 @@ export default class GitHelper {
 			);
 		return (await this.runCommand(workDir, {
 			command: 'git diff',
-			args: [`${toDiffRef(baseRef)}${dot ? dot : '...'}${toDiffRef(compareRef)}`, '--name-only', diffFilter ? `--diff-filter=${diffFilter}` : ''],
+			args: [`${toDiffRef(baseRef)}${dot ?? '...'}${toDiffRef(compareRef)}`, '--name-only', diffFilter ? `--diff-filter=${diffFilter}` : ''],
 			suppressOutput: true,
 		}))[0].stdout.filter(item => !!item.trim());
 	};
