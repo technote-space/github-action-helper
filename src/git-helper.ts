@@ -421,6 +421,7 @@ export default class GitHelper {
 				command: 'git tag',
 				args: ['-d', ...tags],
 				suppressError: true,
+				stderrToStdout: true,
 			})),
 			{
 				command: 'git fetch',
@@ -455,6 +456,7 @@ export default class GitHelper {
 				command: 'git tag',
 				args: ['-d', ...tags],
 				suppressError: true,
+				stderrToStdout: true,
 			})),
 		]);
 	};
