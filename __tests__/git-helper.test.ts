@@ -188,10 +188,23 @@ describe('GitHelper', () => {
 			]);
 		});
 
+		it('should fetch origin with options', async() => {
+			const mockExec = spyOnExec();
+
+			await helper.fetchOrigin(workDir, context(), ['--no-tags']);
+
+			execCalledWith(mockExec, [
+				`rm -rdf '${workDir}'`,
+				'git init \'.\'',
+				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git fetch --no-tags origin',
+			]);
+		});
+
 		it('should fetch origin with refspec', async() => {
 			const mockExec = spyOnExec();
 
-			await helper.fetchOrigin(workDir, context(), ['+refs/pull/*/merge:refs/remotes/pull/*/merge', '+refs/heads/hoge:refs/remotes/origin/hoge']);
+			await helper.fetchOrigin(workDir, context(), undefined, ['+refs/pull/*/merge:refs/remotes/pull/*/merge', '+refs/heads/hoge:refs/remotes/origin/hoge']);
 
 			execCalledWith(mockExec, [
 				`rm -rdf '${workDir}'`,
