@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { sprintf } from 'sprintf-js';
-import { info, debug, error, warning, startGroup, endGroup } from '@actions/core';
-import { split } from './utils';
+import {sprintf} from 'sprintf-js';
+import {info, debug, error, warning, startGroup, endGroup} from '@actions/core';
+import {split} from './utils';
 
 export type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white';
 export type Attribute = undefined | 'none' | 'bold' | 'underline' | 'italic';
-const COLOR_MAP     = {
+const COLOR_MAP = {
 	'black': 0,
 	'red': 1,
 	'green': 2,
@@ -156,21 +156,21 @@ export default class Logger {
 
 	/**
 	 * @param {string} string string
-	 * @param {Color} color color
-	 * @param {Color} backColor background color
-	 * @param {Attribute} attribute attribute
+	 * @param {Color|undefined} color color
+	 * @param {Color|undefined} backColor background color
+	 * @param {Attribute|undefined} attribute attribute
 	 * @return {string} color string
 	 */
-	public getColorString = (string: string, color: Color, backColor?: Color, attribute?: Attribute): string => sprintf('\x1b[3%d;4%d;%dm%s\x1b[0m', COLOR_MAP[color], COLOR_MAP[backColor ?? 'black'], ATTRIBUTE_MAP[attribute ?? 'none'], string);
+	public getColorString = (string: string, color?: Color, backColor?: Color, attribute?: Attribute): string => sprintf('\x1b[3%d;4%d;%dm%s\x1b[0m', COLOR_MAP[color ?? 'white'], COLOR_MAP[backColor ?? 'black'], ATTRIBUTE_MAP[attribute ?? 'none'], string);
 
 	/**
 	 * @param {string} string string
-	 * @param {Color} color color
-	 * @param {Color} backColor background color
-	 * @param {Attribute} attribute attribute
+	 * @param {Color|undefined} color color
+	 * @param {Color|undefined} backColor background color
+	 * @param {Attribute|undefined} attribute attribute
 	 * @return {string} color string
 	 */
-	public c = (string: string, color: Color, backColor?: Color, attribute?: Attribute): string => this.getColorString(string, color, backColor, attribute);
+	public c = (string: string, color?: Color, backColor?: Color, attribute?: Attribute): string => this.getColorString(string, color, backColor, attribute);
 
 	/**
 	 * @return {void}
