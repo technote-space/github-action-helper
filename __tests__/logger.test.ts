@@ -3,7 +3,7 @@ import {
 	spyOnStdout,
 	stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import { Logger } from '../src';
+import {Logger} from '../src';
 
 describe('Logger', () => {
 	beforeEach(() => {
@@ -110,12 +110,12 @@ describe('Logger', () => {
 
 	describe('getColorString', () => {
 		it('should return color string', () => {
-			expect(logger.getColorString('Hello World!!!', 'blue', 'red', 'bold')).toBe('\x1b[34;41;1mHello World!!!\x1b[0m');
+			expect(logger.getColorString('Hello World!!!', {color: 'blue', backColor: 'red', attribute: 'bold'})).toBe('\x1b[34;41;1mHello World!!!\x1b[0m');
 			expect(logger.getColorString('Hello World!!!')).toBe('\x1b[37;40;0mHello World!!!\x1b[0m');
-			expect(logger.getColorString('Hello World!!!', 'green')).toBe('\x1b[32;40;0mHello World!!!\x1b[0m');
+			expect(logger.getColorString('Hello World!!!', {color: 'green'})).toBe('\x1b[32;40;0mHello World!!!\x1b[0m');
 			expect(logger.c('Hello World!!!')).toBe('\x1b[37;40;0mHello World!!!\x1b[0m');
-			expect(logger.c('Hello World!!!', 'green')).toBe('\x1b[32;40;0mHello World!!!\x1b[0m');
-			expect(logger.c('Hello World!!!', 'yellow', undefined, 'underline')).toBe('\x1b[33;40;4mHello World!!!\x1b[0m');
+			expect(logger.c('Hello World!!!', {color: 'green'})).toBe('\x1b[32;40;0mHello World!!!\x1b[0m');
+			expect(logger.c('Hello World!!!', {color: 'yellow', attribute: 'underline'})).toBe('\x1b[33;40;4mHello World!!!\x1b[0m');
 		});
 	});
 });

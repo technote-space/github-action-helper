@@ -3,8 +3,6 @@ import {sprintf} from 'sprintf-js';
 import {info, debug, error, warning, startGroup, endGroup} from '@actions/core';
 import {split} from './utils';
 
-export type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white';
-export type Attribute = undefined | 'none' | 'bold' | 'underline' | 'italic';
 const COLOR_MAP = {
 	'black': 0,
 	'red': 1,
@@ -20,6 +18,13 @@ const ATTRIBUTE_MAP = {
 	'bold': 1,
 	'underline': 4,
 	'italic': 3,
+};
+type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white';
+type Attribute = undefined | 'none' | 'bold' | 'underline' | 'italic';
+type Setting = {
+	color?: Color;
+	backColor?: Color;
+	attribute?: Attribute;
 };
 
 /**
@@ -156,21 +161,17 @@ export default class Logger {
 
 	/**
 	 * @param {string} string string
-	 * @param {Color|undefined} color color
-	 * @param {Color|undefined} backColor background color
-	 * @param {Attribute|undefined} attribute attribute
+	 * @param {Setting|undefined} setting setting
 	 * @return {string} color string
 	 */
-	public getColorString = (string: string, color?: Color, backColor?: Color, attribute?: Attribute): string => sprintf('\x1b[3%d;4%d;%dm%s\x1b[0m', COLOR_MAP[color ?? 'white'], COLOR_MAP[backColor ?? 'black'], ATTRIBUTE_MAP[attribute ?? 'none'], string);
+	public getColorString = (string: string, setting?: Setting): string => sprintf('\x1b[3%d;4%d;%dm%s\x1b[0m', COLOR_MAP[setting?.color ?? 'white'], COLOR_MAP[setting?.backColor ?? 'black'], ATTRIBUTE_MAP[setting?.attribute ?? 'none'], string);
 
 	/**
 	 * @param {string} string string
-	 * @param {Color|undefined} color color
-	 * @param {Color|undefined} backColor background color
-	 * @param {Attribute|undefined} attribute attribute
+	 * @param {Setting|undefined} setting setting
 	 * @return {string} color string
 	 */
-	public c = (string: string, color?: Color, backColor?: Color, attribute?: Attribute): string => this.getColorString(string, color, backColor, attribute);
+	public c = (string: string, setting?: Setting): string => this.getColorString(string, setting);
 
 	/**
 	 * @return {void}
