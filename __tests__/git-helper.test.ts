@@ -184,7 +184,7 @@ describe('GitHelper', () => {
 				`rm -rdf '${workDir}'`,
 				'git init \'.\'',
 				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
-				'git fetch origin',
+				'git fetch origin || :',
 			]);
 		});
 
@@ -197,7 +197,7 @@ describe('GitHelper', () => {
 				`rm -rdf '${workDir}'`,
 				'git init \'.\'',
 				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
-				'git fetch --no-tags origin',
+				'git fetch --no-tags origin || :',
 			]);
 		});
 
@@ -210,7 +210,7 @@ describe('GitHelper', () => {
 				`rm -rdf '${workDir}'`,
 				'git init \'.\'',
 				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
-				'git fetch origin \'+refs/pull/*/merge:refs/remotes/pull/*/merge\' \'+refs/heads/hoge:refs/remotes/origin/hoge\'',
+				'git fetch origin \'+refs/pull/*/merge:refs/remotes/pull/*/merge\' \'+refs/heads/hoge:refs/remotes/origin/hoge\' || :',
 			]);
 		});
 	});

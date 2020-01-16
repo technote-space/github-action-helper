@@ -20,7 +20,7 @@ const ATTRIBUTE_MAP = {
 	'italic': 3,
 };
 type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white';
-type Attribute = undefined | 'none' | 'bold' | 'underline' | 'italic';
+type Attribute = 'none' | 'bold' | 'underline' | 'italic';
 type Setting = {
 	color?: Color;
 	backColor?: Color;

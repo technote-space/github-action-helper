@@ -275,6 +275,7 @@ export default class GitHelper {
 				'origin',
 				...(refspec ?? []),
 			],
+			suppressError: true,
 			stderrToStdout: true,
 		});
 	};
