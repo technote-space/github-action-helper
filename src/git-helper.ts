@@ -125,8 +125,7 @@ export default class GitHelper {
 		if (!isCloned(workDir)) {
 			return '';
 		}
-		// eslint-disable-next-line no-magic-numbers
-		return (await this.runCommand(workDir, {command: 'git branch', args: ['-a']}))[0].stdout.find(branch => branch.startsWith('*'))?.slice(2).trim() ?? '';
+		return (await this.runCommand(workDir, {command: 'git rev-parse', args: ['--abbrev-ref', 'HEAD']}))[0].stdout[0]?.trim() ?? '';
 	};
 
 	/**
