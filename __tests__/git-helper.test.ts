@@ -43,7 +43,7 @@ describe('GitHelper', () => {
 		});
 
 		it('should get current branch name', async() => {
-			setChildProcessParams({stdout: '  master\n* test-branch\n  develop'});
+			setChildProcessParams({stdout: 'test-branch'});
 			expect(await helper.getCurrentBranchName(workDir)).toBe('test-branch');
 		});
 	});

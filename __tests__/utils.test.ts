@@ -3,9 +3,9 @@ import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare}   = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk}     = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, sleep} = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare}         = Utils;
+const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep}    = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, getPrBranch} = Utils;
 
 jest.useFakeTimers();
 
@@ -216,6 +216,24 @@ describe('getBranch', () => {
 
 	it('should not get branch 4', () => {
 		expect(getBranch('test', false)).toBe('test');
+	});
+});
+
+describe('getPrBranch', () => {
+	it('should get pr branch', () => {
+		expect(getPrBranch(getContext({
+			payload: {
+				'pull_request': {
+					head: {
+						ref: 'test/abc',
+					},
+				},
+			},
+		}))).toBe('test/abc');
+	});
+
+	it('should not get pr branch', () => {
+		expect(getPrBranch(getContext({}))).toBe('');
 	});
 });
 
