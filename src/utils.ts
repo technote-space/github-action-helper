@@ -52,6 +52,8 @@ export const getBranch = (ref: string | Context, defaultIsEmpty = true): string 
 				)
 		);
 
+export const getPrBranch = (context: Context): string => context.payload.pull_request?.head.ref ?? '';
+
 export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
 
 export const getActor = (): string => process.env.GITHUB_ACTOR || '';
