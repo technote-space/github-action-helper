@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Assign issues to project
-        uses: alex-page/github-project-automation-plus@v0.0.3
+        uses: alex-page/github-project-automation-plus@v0.1.2
         with:
           project: Backlog
           column: To do
