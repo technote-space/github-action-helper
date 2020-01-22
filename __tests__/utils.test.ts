@@ -337,6 +337,18 @@ describe('getArrayInput', () => {
 		expect(getArrayInput('test', false, '')).toEqual(['test1', 'test2 && test3', 'test4']);
 	});
 
+	it('should unique', () => {
+		process.env.INPUT_TEST = 'test1\ntest2 && test3\n\ntest2';
+
+		expect(getArrayInput('test', false, '&&')).toEqual(['test1', 'test2', 'test3']);
+	});
+
+	it('should not unique', () => {
+		process.env.INPUT_TEST = 'test1\ntest2 && test3\n\ntest2';
+
+		expect(getArrayInput('test', false, '&&', false)).toEqual(['test1', 'test2', 'test3', 'test2']);
+	});
+
 	it('should throw error', () => {
 		expect(() => {
 			getArrayInput('test', true);

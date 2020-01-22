@@ -125,7 +125,12 @@ export default class GitHelper {
 		if (!isCloned(workDir)) {
 			return '';
 		}
-		return (await this.runCommand(workDir, {command: 'git rev-parse', args: ['--abbrev-ref', 'HEAD']}))[0].stdout[0]?.trim() ?? '';
+		return (await this.runCommand(workDir, {
+			command: 'git rev-parse',
+			args: ['--abbrev-ref', 'HEAD'],
+			suppressError: true,
+			stderrToStdout: true,
+		}))[0].stdout[0]?.trim() ?? '';
 	};
 
 	/**

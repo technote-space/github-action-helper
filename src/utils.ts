@@ -74,10 +74,13 @@ export const getWorkspace = (): string => process.env.GITHUB_WORKSPACE || '';
 
 export const split = (value: string, separator: string | RegExp = /\r?\n/, limit?: number): string[] => value.length ? value.split(separator, limit) : [];
 
-export const getArrayInput = (name: string, required = false, separator = ','): string[] => uniqueArray<string>(getInput(name, {required}).split(/\r?\n/).reduce<string[]>(
-	(acc, line) => acc.concat(separator ? line.split(separator) : line).filter(item => item).map(item => item.trim()),
-	[],
-));
+export const getArrayInput = (name: string, required = false, separator = ',', unique = true): string[] => {
+	const arrayInput = getInput(name, {required}).split(/\r?\n/).reduce<string[]>(
+		(acc, line) => acc.concat(separator ? line.split(separator) : line).filter(item => item).map(item => item.trim()),
+		[],
+	);
+	return unique ? uniqueArray<string>(arrayInput) : arrayInput;
+};
 
 export const sleep = async(millisecond: number): Promise<void> => new Promise(resolve => setTimeout(resolve, millisecond));
 
