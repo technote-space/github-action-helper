@@ -7,7 +7,7 @@ import {
 import { testEnv, getContext } from '@technote-space/github-action-test-helper';
 import { Logger, ContextHelper } from '../src';
 
-const {isRelease, isPush, isPr, isIssue, isCron, getGitUrl, getRepository, getTagName, getSender, showActionInfo} = ContextHelper;
+const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, getGitUrl, getRepository, getTagName, getSender, showActionInfo} = ContextHelper;
 
 describe('isRelease', () => {
 	it('should return true', () => {
@@ -74,6 +74,20 @@ describe('isCron', () => {
 
 	it('should return false', () => {
 		expect(isCron(getContext({
+			eventName: 'release',
+		}))).toBe(false);
+	});
+});
+
+describe('isCustomEvent', () => {
+	it('should return true', () => {
+		expect(isCustomEvent(getContext({
+			eventName: 'repository_dispatch',
+		}))).toBe(true);
+	});
+
+	it('should return false', () => {
+		expect(isCustomEvent(getContext({
 			eventName: 'release',
 		}))).toBe(false);
 	});
