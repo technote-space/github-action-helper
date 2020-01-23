@@ -464,7 +464,7 @@ describe('GitHelper', () => {
 			await helper.fetchTags(workDir, context());
 
 			execCalledWith(mockExec, [
-				'git tag -l',
+				'git tag',
 				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' \'v1.2.6\' || :',
 				'git fetch \'https://octocat:token@github.com/hello/world.git\' --tags > /dev/null 2>&1',
 			]);
@@ -477,7 +477,7 @@ describe('GitHelper', () => {
 			await helper.fetchTags(workDir, context(), 3);
 
 			execCalledWith(mockExec, [
-				'git tag -l',
+				'git tag',
 				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' || :',
 				'git tag -d \'v1.2.6\' || :',
 				'git fetch \'https://octocat:token@github.com/hello/world.git\' --tags > /dev/null 2>&1',
@@ -611,7 +611,7 @@ describe('GitHelper', () => {
 			expect(await helper.getLastTag(workDir)).toBe('v1.2.5');
 
 			execCalledWith(mockExec, [
-				'git tag -l',
+				'git tag',
 			]);
 		});
 
@@ -622,7 +622,7 @@ describe('GitHelper', () => {
 			expect(await helper.getLastTag(workDir)).toBe('v1.2.3');
 
 			execCalledWith(mockExec, [
-				'git tag -l',
+				'git tag',
 			]);
 		});
 
@@ -633,7 +633,7 @@ describe('GitHelper', () => {
 			expect(await helper.getLastTag(workDir)).toBe('v1.0.0');
 
 			execCalledWith(mockExec, [
-				'git tag -l',
+				'git tag',
 			]);
 		});
 
@@ -644,7 +644,7 @@ describe('GitHelper', () => {
 			expect(await helper.getLastTag(workDir)).toBe('v1.0.11');
 
 			execCalledWith(mockExec, [
-				'git tag -l',
+				'git tag',
 			]);
 		});
 
@@ -655,7 +655,7 @@ describe('GitHelper', () => {
 			expect(await helper.getLastTag(workDir)).toBe('v0.0.0');
 
 			execCalledWith(mockExec, [
-				'git tag -l',
+				'git tag',
 			]);
 		});
 
@@ -674,7 +674,7 @@ describe('GitHelper', () => {
 			expect(await helper.getNewPatchVersion(workDir)).toBe('v1.2.4');
 
 			execCalledWith(mockExec, [
-				'git tag -l',
+				'git tag',
 			]);
 		});
 	});

@@ -419,7 +419,7 @@ export default class GitHelper {
 	 * @return {Promise<string[]>} tags
 	 */
 	public getTags = async(workDir: string): Promise<string[]> => (await this.runCommand(workDir, {
-		command: 'git tag', args: ['-l'],
+		command: 'git tag',
 	}))[0].stdout;
 
 	/**
