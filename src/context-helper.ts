@@ -21,20 +21,19 @@ export const getSender = (context: Context): string | false => context.payload.s
 
 export const getRepository = (context: Context): string => `${context.repo.owner}/${context.repo.repo}`;
 
-export const getGitUrl = (context: Context, accessTokenRequired = true): string => {
-	const token = getAccessToken(accessTokenRequired);
-	if (token) {
-		return `https://${getActor()}:${token}@github.com/${context.repo.owner}/${context.repo.repo}.git`;
-	} else {
-		return `https://github.com/${context.repo.owner}/${context.repo.repo}.git`;
-	}
-};
+const getGitUrlAuthInfo = (token: string | undefined): string => token ? `${getActor()}:${token}@` : '';
+
+export const getGitUrlWithToken = (context: Context, token?: string | undefined): string => `https://${getGitUrlAuthInfo(token)}github.com/${context.repo.owner}/${context.repo.repo}.git`;
+
+export const getGitUrl = (context: Context, accessTokenRequired = true): string => getGitUrlWithToken(context, getAccessToken(accessTokenRequired));
 
 export const showActionInfo = (rootDir: string, logger: Logger, context: Context): void => {
-	const info    = getBuildInfo(path.resolve(rootDir, 'build.json'));
-	const tagName = getTagName(context);
+	const info      = getBuildInfo(path.resolve(rootDir, 'build.json'));
+	const tagName   = getTagName(context);
+	const separator = '==================================================';
+
 	logger.log();
-	logger.log('==================================================');
+	logger.log(separator);
 	if (false !== info) {
 		if ('owner' in info) {
 			logger.log('Version:  %s/%s@%s', info.owner, info.repo, info.tagName);
@@ -65,6 +64,6 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	logger.startProcess('Dump Payload');
 	console.log(context.payload);
 	logger.endProcess();
-	logger.log('==================================================');
+	logger.log(separator);
 	logger.log();
 };
