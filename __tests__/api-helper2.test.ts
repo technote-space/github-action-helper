@@ -31,6 +31,7 @@ const context = getContext({
 	},
 });
 const octokit = new GitHub('');
+const logger  = new Logger();
 
 const createCommitResponse = createResponse<GitCreateCommitResponse>({
 	author: {
@@ -67,7 +68,7 @@ describe('ApiHelper with params', () => {
 		Logger.resetForTesting();
 	});
 
-	const helper = new ApiHelper(new Logger(), {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
+	const helper = new ApiHelper(octokit, context, logger, {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
 
 	describe('updateRef', () => {
 		it('should output warning 1', async() => {
@@ -81,7 +82,7 @@ describe('ApiHelper with params', () => {
 					'message': 'Required status check "Test" is expected.',
 				});
 
-			await helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context);
+			await helper.updateRef(createCommitResponse, 'test-ref', false);
 
 			stdoutCalledWith(mockStdout, [
 				'::warning::Branch is protected.',
@@ -99,7 +100,7 @@ describe('ApiHelper with params', () => {
 					'message': '5 of 5 required status checks are expected.',
 				});
 
-			await helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context);
+			await helper.updateRef(createCommitResponse, 'test-ref', false);
 
 			stdoutCalledWith(mockStdout, [
 				'::warning::Branch is protected.',
@@ -116,7 +117,7 @@ describe('ApiHelper with params', () => {
 					'message': 'Not Found',
 				});
 
-			await expect(helper.updateRef(createCommitResponse, 'test-ref', false, octokit, context)).rejects.toThrow('Not Found');
+			await expect(helper.updateRef(createCommitResponse, 'test-ref', false)).rejects.toThrow('Not Found');
 		});
 	});
 
@@ -148,7 +149,7 @@ describe('ApiHelper with params', () => {
 					return {'message': 'Required status check "Test" is expected.'};
 				});
 
-			expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBe(true);
+			expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'])).toBe(true);
 			expect(fn1).not.toBeCalled();
 			expect(fn2).toBeCalledTimes(1);
 			stdoutCalledWith(mockStdout, [
@@ -182,7 +183,7 @@ describe('ApiHelper with params', () => {
 					return getApiFixture(rootDir, 'users.get');
 				});
 
-			const user = await helper.getUser(octokit, context);
+			const user = await helper.getUser();
 			expect(fn1).not.toBeCalled();
 			expect(fn2).toBeCalledTimes(1);
 			expect(user.login).toBe('octocat');

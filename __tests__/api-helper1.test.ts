@@ -31,6 +31,7 @@ const context = getContext({
 	},
 });
 const octokit = new GitHub('');
+const logger  = new Logger();
 
 const createCommitResponse = createResponse<GitCreateCommitResponse>({
 	author: {
@@ -67,11 +68,11 @@ describe('ApiHelper', () => {
 		Logger.resetForTesting();
 	});
 
-	const helper = new ApiHelper(new Logger());
+	const helper = new ApiHelper(octokit, context, logger);
 
 	describe('filesToBlobs', () => {
 		it('should return empty', async() => {
-			expect(await helper.filesToBlobs(rootDir, [], new GitHub(''), context)).toHaveLength(0);
+			expect(await helper.filesToBlobs(rootDir, [])).toHaveLength(0);
 		});
 
 		it('should return blobs', async() => {
@@ -90,7 +91,7 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'repos.git.blobs');
 				});
 
-			const blobs = await helper.filesToBlobs(rootDir, ['build1.json', 'build2.json'], octokit, context);
+			const blobs = await helper.filesToBlobs(rootDir, ['build1.json', 'build2.json']);
 			expect(blobs).toHaveLength(2);
 			expect(fn1).toBeCalledTimes(2);
 			expect(fn2).toBeCalledTimes(2);
@@ -129,7 +130,7 @@ describe('ApiHelper', () => {
 					path: 'test-path2',
 					sha: 'test-sha2',
 				},
-			], octokit, context);
+			]);
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -163,7 +164,7 @@ describe('ApiHelper', () => {
 				sha: 'tree-sha',
 				tree: [],
 				url: '',
-			}), octokit, context);
+			}));
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -186,11 +187,7 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'repos.git.commits');
 				});
 
-			const commit = await helper.createCommit('test commit message', createResponse<GitCreateTreeResponse>({
-				sha: 'tree-sha',
-				tree: [],
-				url: '',
-			}), octokit, Object.assign({}, context, {
+			const helper = new ApiHelper(octokit, Object.assign({}, context, {
 				ref: 'refs/pull/123/merge',
 				payload: {
 					'pull_request': {
@@ -199,6 +196,11 @@ describe('ApiHelper', () => {
 						},
 					},
 				},
+			}), logger);
+			const commit = await helper.createCommit('test commit message', createResponse<GitCreateTreeResponse>({
+				sha: 'tree-sha',
+				tree: [],
+				url: '',
 			}));
 
 			expect(fn).toBeCalledTimes(1);
@@ -221,7 +223,7 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'repos.git.refs.update');
 				});
 
-			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true, octokit, context), false, octokit, context);
+			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true), false);
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -250,7 +252,8 @@ describe('ApiHelper', () => {
 			const _context = Object.assign({}, context, {
 				ref: 'refs/pull/123/merge',
 			});
-			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true, octokit, _context), false, octokit, _context);
+			const helper   = new ApiHelper(octokit, _context, logger);
+			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true), false);
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -273,9 +276,12 @@ describe('ApiHelper', () => {
 			const _context = Object.assign({}, context, {
 				ref: 'refs/pull/123/merge',
 			});
-			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true, octokit, _context), false, octokit, _context);
+			const helper   = new ApiHelper(octokit, _context, logger);
+			await helper.getRefForUpdate(true);
+			await helper.getRefForUpdate(true);
+			await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true), false);
 
-			expect(fn).toBeCalledTimes(0);
+			expect(fn).toBeCalledTimes(1);
 		});
 
 		it('should output warning', async() => {
@@ -288,7 +294,7 @@ describe('ApiHelper', () => {
 					'message': 'Required status check "Test" is expected.',
 				});
 
-			await expect(helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true, octokit, context), false, octokit, context)).rejects.toThrow('Required status check "Test" is expected.');
+			await expect(helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true), false)).rejects.toThrow('Required status check "Test" is expected.');
 		});
 	});
 
@@ -309,7 +315,7 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'repos.git.refs.create');
 				});
 
-			await helper.createRef(createCommitResponse, 'refs/heads/featureA', octokit, context);
+			await helper.createRef(createCommitResponse, 'refs/heads/featureA');
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -326,7 +332,7 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'repos.git.refs.create');
 				});
 
-			await helper.deleteRef('heads/featureA', octokit, context);
+			await helper.deleteRef('heads/featureA');
 
 			expect(fn).toBeCalledTimes(1);
 		});
@@ -339,7 +345,7 @@ describe('ApiHelper', () => {
 				.get('/repos/hello/world/pulls?head=hello%3Atest')
 				.reply(200, () => []);
 
-			expect(await helper.findPullRequest('test', octokit, context)).toBeNull();
+			expect(await helper.findPullRequest('test')).toBeNull();
 		});
 
 		it('should return PR', async() => {
@@ -348,7 +354,7 @@ describe('ApiHelper', () => {
 				.get('/repos/hello/world/pulls?head=hello%3Atest')
 				.reply(200, () => getApiFixture(rootDir, 'pulls.list'));
 
-			const pr = await helper.findPullRequest('test', octokit, context);
+			const pr = await helper.findPullRequest('test');
 
 			expect(pr).toHaveProperty('id');
 			expect(pr).toHaveProperty('number');
@@ -380,7 +386,7 @@ describe('ApiHelper', () => {
 			const generator = helper.pullsList({
 				sort: 'created',
 				direction: 'desc',
-			}, octokit, context);
+			});
 
 			let count = 0;
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -422,7 +428,7 @@ describe('ApiHelper', () => {
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context);
+			});
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -456,7 +462,7 @@ describe('ApiHelper', () => {
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context);
+			});
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -489,7 +495,7 @@ describe('ApiHelper', () => {
 				].join('\n'),
 				title: 'test title',
 				state: 'closed',
-			}, octokit, context);
+			});
 
 			expect(fn1).toBeCalledTimes(1);
 			expect(fn2).toBeCalledTimes(1);
@@ -512,7 +518,7 @@ describe('ApiHelper', () => {
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context);
+			});
 
 			expect(info).toHaveProperty('isPrCreated');
 			expect(info['isPrCreated']).toBe(true);
@@ -533,7 +539,7 @@ describe('ApiHelper', () => {
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context);
+			});
 
 			expect(info).toHaveProperty('isPrCreated');
 			expect(info['isPrCreated']).toBe(false);
@@ -549,11 +555,11 @@ describe('ApiHelper', () => {
 				.post('/repos/hello/world/issues/1347/comments')
 				.reply(201);
 
-			expect(await helper.createCommentToPr('test', 'test body', octokit, context)).toBe(true);
+			expect(await helper.createCommentToPr('test', 'test body')).toBe(true);
 		});
 
 		it('should not create comment to pull request 1', async() => {
-			expect(await helper.createCommentToPr('test', undefined, octokit, context)).toBe(false);
+			expect(await helper.createCommentToPr('test', undefined)).toBe(false);
 		});
 
 		it('should not create comment to pull request 2', async() => {
@@ -562,7 +568,7 @@ describe('ApiHelper', () => {
 				.get('/repos/hello/world/pulls?head=hello%3Atest')
 				.reply(200, () => []);
 
-			expect(await helper.createCommentToPr('test', 'test body', octokit, context)).toBe(false);
+			expect(await helper.createCommentToPr('test', 'test body')).toBe(false);
 		});
 	});
 
@@ -570,7 +576,7 @@ describe('ApiHelper', () => {
 		it('should not commit', async() => {
 			const mockStdout = spyOnStdout();
 
-			expect(await helper.commit(path.resolve(__dirname, '..'), 'test commit message', [], octokit, context)).toBe(false);
+			expect(await helper.commit(path.resolve(__dirname, '..'), 'test commit message', [])).toBe(false);
 
 			stdoutCalledWith(mockStdout, [
 				'> There is no diff.',
@@ -595,7 +601,7 @@ describe('ApiHelper', () => {
 				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'))
 				.reply(200, () => getApiFixture(rootDir, 'repos.git.refs.update'));
 
-			expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'], octokit, context)).toBe(true);
+			expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'])).toBe(true);
 			stdoutCalledWith(mockStdout, [
 				'::group::Creating blobs...',
 				'::endgroup::',
@@ -620,7 +626,7 @@ describe('ApiHelper', () => {
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context)).toBe(false);
+			})).toBe(false);
 		});
 
 		it('should update pull request', async() => {
@@ -654,7 +660,7 @@ describe('ApiHelper', () => {
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context);
+			});
 			expect(info).toHaveProperty('html_url');
 			expect(info).toHaveProperty('commits_url');
 			expect(info).toHaveProperty('comments_url');
@@ -710,7 +716,7 @@ describe('ApiHelper', () => {
 					'body3',
 				].join('\n'),
 				title: 'test title',
-			}, octokit, context);
+			});
 			expect(info).toHaveProperty('html_url');
 			expect(info).toHaveProperty('commits_url');
 			expect(info).toHaveProperty('comments_url');
@@ -746,7 +752,7 @@ describe('ApiHelper', () => {
 				.delete('/repos/hello/world/git/refs/heads/close/test')
 				.reply(204);
 
-			await helper.closePR('close/test', octokit, context);
+			await helper.closePR('close/test');
 
 			stdoutCalledWith(mockStdout, [
 				'::group::Closing PullRequest... [close/test]',
@@ -769,7 +775,7 @@ describe('ApiHelper', () => {
 				.delete('/repos/hello/world/git/refs/heads/close/test')
 				.reply(204);
 
-			await helper.closePR('close/test', octokit, context, 'close message');
+			await helper.closePR('close/test', 'close message');
 
 			stdoutCalledWith(mockStdout, [
 				'::group::Closing PullRequest... [close/test]',
@@ -790,7 +796,7 @@ describe('ApiHelper', () => {
 				.delete('/repos/hello/world/git/refs/heads/close/test')
 				.reply(204);
 
-			await helper.closePR('close/test', octokit, context);
+			await helper.closePR('close/test');
 
 			stdoutCalledWith(mockStdout, [
 				'> There is no PullRequest named [close/test]',
@@ -808,7 +814,7 @@ describe('ApiHelper', () => {
 				.get('/repos/hello/world/git/ref/heads/close/test')
 				.reply(404);
 
-			await helper.closePR('close/test', octokit, context);
+			await helper.closePR('close/test');
 
 			stdoutCalledWith(mockStdout, [
 				'> There is no PullRequest named [close/test]',
@@ -828,7 +834,8 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'users.get');
 				});
 
-			await expect(helper.getUser(octokit, getContext({}))).rejects.toThrow('Sender is not valid.');
+			const helper = new ApiHelper(octokit, getContext({}), logger);
+			await expect(helper.getUser()).rejects.toThrow('Sender is not valid.');
 			expect(fn1).not.toBeCalled();
 		});
 
@@ -842,7 +849,7 @@ describe('ApiHelper', () => {
 					return JSON.parse('{"message": "Not Found", "documentation_url": "https://developer.github.com/v3/users/#get-a-single-user"}');
 				});
 
-			await expect(helper.getUser(octokit, context)).rejects.toThrow('Not Found');
+			await expect(helper.getUser()).rejects.toThrow('Not Found');
 			expect(fn1).toBeCalledTimes(1);
 		});
 
@@ -856,7 +863,7 @@ describe('ApiHelper', () => {
 					return getApiFixture(rootDir, 'users.get');
 				});
 
-			const user = await helper.getUser(octokit, context);
+			const user = await helper.getUser();
 			expect(fn1).toBeCalledTimes(1);
 			expect(user.login).toBe('octocat');
 			expect(user.email).toBe('octocat@github.com');
