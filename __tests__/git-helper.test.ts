@@ -25,11 +25,8 @@ const context   = (override: object = {}): Context => getContext(Object.assign({
 describe('GitHelper', () => {
 	testEnv();
 	testChildProcess();
-	beforeEach(() => {
-		process.env.INPUT_GITHUB_TOKEN = 'token';
-	});
 
-	const helper = new GitHelper(new Logger());
+	const helper = new GitHelper(new Logger(), {token: 'token1'});
 
 	describe('getCurrentBranchName', () => {
 		it('should return empty 1', async() => {
@@ -69,7 +66,7 @@ describe('GitHelper', () => {
 			}));
 
 			execCalledWith(mockExec, [
-				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
 			]);
 		});
 
@@ -82,8 +79,8 @@ describe('GitHelper', () => {
 			})));
 
 			execCalledWith(mockExec, [
-				'git clone \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
-				'git fetch \'https://octocat:token@github.com/hello/world.git\' \'+refs/pull/123/merge\' > /dev/null 2>&1',
+				'git clone \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git fetch \'https://octocat:token1@github.com/hello/world.git\' \'+refs/pull/123/merge\' > /dev/null 2>&1',
 				'git checkout -qf FETCH_HEAD',
 			]);
 		});
@@ -105,8 +102,8 @@ describe('GitHelper', () => {
 			await helper.checkout(workDir, context());
 
 			execCalledWith(mockExec, [
-				'git clone \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
-				'git fetch \'https://octocat:token@github.com/hello/world.git\' refs/heads/test-ref > /dev/null 2>&1',
+				'git clone \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
+				'git fetch \'https://octocat:token1@github.com/hello/world.git\' refs/heads/test-ref > /dev/null 2>&1',
 				'git checkout -qf test-sha',
 			]);
 		});
@@ -117,7 +114,7 @@ describe('GitHelper', () => {
 			await helper.checkout(workDir, context({sha: ''}));
 
 			execCalledWith(mockExec, [
-				'git clone \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
+				'git clone \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
 				'git checkout -qf test-ref',
 			]);
 		});
@@ -128,7 +125,7 @@ describe('GitHelper', () => {
 			await helper.checkout(workDir, context({sha: '', ref: 'refs/tags/test-tag'}));
 
 			execCalledWith(mockExec, [
-				'git clone \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
+				'git clone \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
 				'git checkout -qf refs/tags/test-tag',
 			]);
 		});
@@ -169,7 +166,7 @@ describe('GitHelper', () => {
 			execCalledWith(mockExec, [
 				`rm -rdf '${workDir}'`,
 				'git init \'.\'',
-				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 			]);
 		});
 	});
@@ -183,7 +180,7 @@ describe('GitHelper', () => {
 			execCalledWith(mockExec, [
 				`rm -rdf '${workDir}'`,
 				'git init \'.\'',
-				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch origin || :',
 			]);
 		});
@@ -196,7 +193,7 @@ describe('GitHelper', () => {
 			execCalledWith(mockExec, [
 				`rm -rdf '${workDir}'`,
 				'git init \'.\'',
-				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch --no-tags origin || :',
 			]);
 		});
@@ -209,7 +206,7 @@ describe('GitHelper', () => {
 			execCalledWith(mockExec, [
 				`rm -rdf '${workDir}'`,
 				'git init \'.\'',
-				'git remote add origin \'https://octocat:token@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch origin \'+refs/pull/*/merge:refs/remotes/pull/*/merge\' \'+refs/heads/hoge:refs/remotes/origin/hoge\' || :',
 			]);
 		});
@@ -222,7 +219,7 @@ describe('GitHelper', () => {
 			await helper.fetchBranch(workDir, 'test-branch', context());
 
 			execCalledWith(mockExec, [
-				'git fetch --prune --no-recurse-submodules \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'+refs/heads/test-branch:refs/remotes/origin/test-branch\' > /dev/null 2>&1 || :',
+				'git fetch --prune --no-recurse-submodules \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'+refs/heads/test-branch:refs/remotes/origin/test-branch\' > /dev/null 2>&1 || :',
 			]);
 		});
 	});
@@ -336,7 +333,7 @@ describe('GitHelper', () => {
 				};
 			}
 
-			const helper = new GitHelper(new ThrowErrorLogger());
+			const helper = new GitHelper(new ThrowErrorLogger(), {token: 'token'});
 			await expect(helper.runCommand(workDir, [
 				'command1',
 				'command2',
@@ -466,7 +463,7 @@ describe('GitHelper', () => {
 			execCalledWith(mockExec, [
 				'git tag',
 				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' \'v1.2.6\' || :',
-				'git fetch \'https://octocat:token@github.com/hello/world.git\' --tags > /dev/null 2>&1',
+				'git fetch \'https://octocat:token1@github.com/hello/world.git\' --tags > /dev/null 2>&1',
 			]);
 		});
 
@@ -480,7 +477,7 @@ describe('GitHelper', () => {
 				'git tag',
 				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' || :',
 				'git tag -d \'v1.2.6\' || :',
-				'git fetch \'https://octocat:token@github.com/hello/world.git\' --tags > /dev/null 2>&1',
+				'git fetch \'https://octocat:token1@github.com/hello/world.git\' --tags > /dev/null 2>&1',
 			]);
 		});
 	});
@@ -492,7 +489,7 @@ describe('GitHelper', () => {
 			await helper.deleteTag(workDir, 'delete-tag', context());
 
 			execCalledWith(mockExec, [
-				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token1@github.com/hello/world.git\' --delete tags/delete-tag > /dev/null 2>&1 || :',
 				'git tag -d delete-tag || :',
 			]);
 		});
@@ -506,7 +503,7 @@ describe('GitHelper', () => {
 			], context());
 
 			execCalledWith(mockExec, [
-				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag1 tags/delete-tag2 > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token1@github.com/hello/world.git\' --delete tags/delete-tag1 tags/delete-tag2 > /dev/null 2>&1 || :',
 				'git tag -d delete-tag1 delete-tag2 || :',
 			]);
 		});
@@ -523,8 +520,8 @@ describe('GitHelper', () => {
 			], context(), 3);
 
 			execCalledWith(mockExec, [
-				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag1 tags/delete-tag2 tags/delete-tag3 > /dev/null 2>&1 || :',
-				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/delete-tag4 refs/tags/delete-tag5 > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token1@github.com/hello/world.git\' --delete tags/delete-tag1 tags/delete-tag2 tags/delete-tag3 > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token1@github.com/hello/world.git\' --delete tags/delete-tag4 refs/tags/delete-tag5 > /dev/null 2>&1 || :',
 				'git tag -d delete-tag1 delete-tag2 delete-tag3 || :',
 				'git tag -d delete-tag4 delete-tag5 || :',
 			]);
@@ -538,10 +535,10 @@ describe('GitHelper', () => {
 			await helper.copyTag(workDir, 'new-tag', 'from-tag', context());
 
 			execCalledWith(mockExec, [
-				'git push \'https://octocat:token@github.com/hello/world.git\' --delete tags/new-tag > /dev/null 2>&1 || :',
+				'git push \'https://octocat:token1@github.com/hello/world.git\' --delete tags/new-tag > /dev/null 2>&1 || :',
 				'git tag -d new-tag || :',
 				'git tag new-tag from-tag',
-				'git push \'https://octocat:token@github.com/hello/world.git\' refs/tags/new-tag > /dev/null 2>&1',
+				'git push \'https://octocat:token1@github.com/hello/world.git\' refs/tags/new-tag > /dev/null 2>&1',
 			]);
 		});
 	});
@@ -576,7 +573,7 @@ describe('GitHelper', () => {
 			await helper.push(workDir, 'test-branch', true, context());
 
 			execCalledWith(mockExec, [
-				'git push --tags \'https://octocat:token@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
+				'git push --tags \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
 			]);
 		});
 
@@ -586,7 +583,7 @@ describe('GitHelper', () => {
 			await helper.push(workDir, 'test-branch', false, context());
 
 			execCalledWith(mockExec, [
-				'git push \'https://octocat:token@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
+				'git push \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
 			]);
 		});
 	});
@@ -598,7 +595,7 @@ describe('GitHelper', () => {
 			await helper.forcePush(workDir, 'test-branch', context());
 
 			execCalledWith(mockExec, [
-				'git push --force \'https://octocat:token@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
+				'git push --force \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
 			]);
 		});
 	});
@@ -705,11 +702,11 @@ describe('GitHelper', () => {
 			}));
 
 			execCalledWith(mockExec, [
-				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
 				'git clone \'--branch=test\' \'--depth=3\' origin \'.\' > /dev/null 2>&1 || :',
 				'git clone \'--branch=test\' \'--depth=3\' test \'.\' > /dev/null 2>&1 || :',
 				'git clone \'--branch=test\' \'--depth=3\' origin \'.\' || :',
-				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
 			]);
 		});
 	});
@@ -718,11 +715,8 @@ describe('GitHelper', () => {
 describe('GitHelper with params 1', () => {
 	testEnv();
 	testChildProcess();
-	beforeEach(() => {
-		process.env.INPUT_GITHUB_TOKEN = 'token';
-	});
 
-	const helper = new GitHelper(new Logger(), {depth: 1, filter: (line: string): boolean => line.endsWith('.md')});
+	const helper = new GitHelper(new Logger(), {depth: 1, filter: (line: string): boolean => line.endsWith('.md'), token: 'token2'});
 
 	describe('clone', () => {
 		it('should run git clone', async() => {
@@ -734,7 +728,7 @@ describe('GitHelper with params 1', () => {
 			}));
 
 			execCalledWith(mockExec, [
-				'git clone \'--branch=test\' \'--depth=1\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git clone \'--branch=test\' \'--depth=1\' \'https://octocat:token2@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
 			]);
 		});
 	});
@@ -752,14 +746,11 @@ describe('GitHelper with params 1', () => {
 describe('GitHelper with params 2', () => {
 	testEnv();
 	testChildProcess();
-	beforeEach(() => {
-		process.env.INPUT_GITHUB_TOKEN = 'token';
-	});
-
-	const helper = new GitHelper(new Logger(), {depth: -1});
 
 	describe('clone', () => {
 		it('should run git clone', async() => {
+			process.env.INPUT_GITHUB_TOKEN = 'token3';
+			const helper                   = new GitHelper(new Logger(), {depth: -1});
 			setExists(false);
 			const mockExec = spyOnExec();
 
@@ -768,7 +759,29 @@ describe('GitHelper with params 2', () => {
 			}));
 
 			execCalledWith(mockExec, [
-				'git clone \'--branch=test\' \'https://octocat:token@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git clone \'--branch=test\' \'https://octocat:token3@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+			]);
+		});
+	});
+});
+
+describe('GitHelper without params', () => {
+	testEnv();
+	testChildProcess();
+
+	describe('clone', () => {
+		it('should run git clone', async() => {
+			process.env.INPUT_GITHUB_TOKEN = 'token4';
+			const helper                   = new GitHelper(new Logger());
+			setExists(false);
+			const mockExec = spyOnExec();
+
+			await helper.clone(workDir, context({
+				ref: 'refs/heads/test',
+			}));
+
+			execCalledWith(mockExec, [
+				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token4@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
 			]);
 		});
 	});
