@@ -30,7 +30,7 @@ const context = getContext({
 		number: 123,
 	},
 });
-const octokit = new GitHub('');
+const octokit = new GitHub('test-token');
 const logger  = new Logger();
 
 const createCommitResponse = createResponse<GitCreateCommitResponse>({
