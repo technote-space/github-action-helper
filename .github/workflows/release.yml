@@ -3,11 +3,11 @@ on:
     tags:
       - 'v*'
 
-name: Publish Package
+name: Release
 
 jobs:
   test:
-    name: Test before publish
+    name: Test before release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -101,7 +101,7 @@ jobs:
 
   slack:
     name: Slack
-    needs: release
+    needs: [release]
     runs-on: ubuntu-latest
     steps:
       - uses: 8398a7/action-slack@v1
