@@ -65,7 +65,9 @@ jobs:
           PREFIX_FILTER: |
             src/
             __tests__/
-          SUFFIX_FILTER: .ts
+          SUFFIX_FILTER: |
+            .ts
+            .snap
           FILES: |
             yarn.lock
             jest.config.js
