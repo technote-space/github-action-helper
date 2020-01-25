@@ -1,8 +1,8 @@
 import fs from 'fs';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchVersion, arrayChunk, versionCompare } from './utils';
-import { getGitUrl } from './context-helper';
+import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchVersion, arrayChunk, versionCompare, getAccessToken } from './utils';
+import { getGitUrlWithToken } from './context-helper';
 
 type CommandType = string | {
 	command: string;
@@ -22,6 +22,7 @@ export default class GitHelper {
 	private readonly command: Command;
 	private readonly cloneDepth: string;
 	private readonly filter: (string) => boolean;
+	private readonly token: string;
 	private origin?: string  = undefined;
 	private quietIfNotOrigin = true;
 
@@ -31,13 +32,16 @@ export default class GitHelper {
 	 * @param {number|undefined} options.depth depth
 	 * @param {function|undefined} options.filter filter
 	 */
-	constructor(private readonly logger: Logger, options?: { depth?: number; filter?: (string: string) => boolean }) {
+	constructor(private readonly logger: Logger, options?: { depth?: number; filter?: (string: string) => boolean; token?: string }) {
 		this.command = new Command(logger);
+		this.token   = options?.token ?? getAccessToken(true);
+
 		if (options && options.depth) {
 			this.cloneDepth = options.depth > 0 ? `--depth=${options.depth}` : ''; // eslint-disable-line no-magic-numbers
 		} else {
 			this.cloneDepth = '--depth=3';
 		}
+
 		if (options && options.filter) {
 			this.filter = options.filter;
 		} else {
@@ -115,7 +119,7 @@ export default class GitHelper {
 	 * @param {Context} context context
 	 * @return {string} origin
 	 */
-	private getOrigin = (context: Context): string => this.origin ?? getGitUrl(context);
+	private getOrigin = (context: Context): string => this.origin ?? getGitUrlWithToken(context, this.token);
 
 	/**
 	 * @param {string} workDir work dir
