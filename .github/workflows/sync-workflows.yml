@@ -18,12 +18,11 @@ jobs:
           EXECUTE_COMMANDS: |
             rm -rdf .github/workflows/.tmp
             mkdir -p .github/workflows/.tmp
-            cp -f .github/workflows/sync-workflows.yml .github/workflows/.tmp/ > /dev/null 2>&1 || :
-            rm -f .github/workflows/*.yml
             git clone --depth=1 https://github.com/technote-space/github-actions-workflows.git .github/workflows/.tmp/workflows
-            cp .github/workflows/.tmp/workflows/ts-repo/*.yml .github/workflows/
-            cp -f .github/workflows/.tmp/sync-workflows.yml .github/workflows/sync-workflows.yml > /dev/null 2>&1 || :
-            sed -i 's/cron:.\+$/cron: 0 17 * * */' .github/workflows/update-dependencies.yml
+
+            bash .github/workflows/.tmp/workflows/ts-repo/copy.sh release
+            sed -i 's/cron:.\+$/cron: 0 9 * * 2,5/' .github/workflows/update-dependencies.yml
+
             rm -rdf .github/workflows/.tmp
           COMMIT_MESSAGE: 'chore: sync workflows'
           PR_BRANCH_PREFIX: chore/
