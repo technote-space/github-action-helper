@@ -1,18 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { GitHub } from '@actions/github/lib/github';
 import { Context } from '@actions/github/lib/context';
-import {
-	Response,
-	AnyResponse,
-	GitCreateTreeResponse,
-	GitCreateCommitResponse,
-	GitGetCommitResponse,
-	PullsGetResponse,
-	PullsListResponseItem,
-	PullsCreateResponse,
-	PullsUpdateResponse,
-} from '@octokit/rest';
+import { Octokit } from '@octokit/rest';
 import { exportVariable } from '@actions/core';
 import { Logger } from './index';
 import { getRefForUpdate, isPrRef, getBranch } from './utils';
@@ -55,10 +44,10 @@ export default class ApiHelper {
 	private readonly sender?: string | undefined                   = undefined;
 	private readonly suppressBPError?: boolean | undefined         = undefined;
 	private readonly refForUpdate?: string | undefined             = undefined;
-	private prCache: { [key: number]: Response<PullsGetResponse> } = {};
+	private prCache: { [key: number]: Octokit.Response<Octokit.PullsGetResponse> } = {};
 
 	/**
-	 * @param {GitHub} octokit octokit
+	 * @param {Octokit} octokit octokit
 	 * @param {Context} context context
 	 * @param {Logger} logger logger
 	 * @param {object} options options
@@ -68,7 +57,7 @@ export default class ApiHelper {
 	 * @param {boolean|undefined} options.suppressBPError suppress branch protection error?
 	 */
 	constructor(
-		private readonly octokit: GitHub,
+		private readonly octokit: Octokit,
 		private readonly context: Context,
 		private readonly logger: Logger,
 		options?: { branch?: string; sender?: string; refForUpdate?: string; suppressBPError?: boolean },
@@ -120,18 +109,18 @@ export default class ApiHelper {
 	private getCommitSha = (): string => isPrRef(this.context) && this.context.payload.pull_request ? this.context.payload.pull_request.head.sha : this.context.sha;
 
 	/**
-	 * @return {Promise<Response<GitGetCommitResponse>>} commit
+	 * @return {Promise<Octokit.Response<Octokit.GitGetCommitResponse>>} commit
 	 */
-	private getCommit = async(): Promise<Response<GitGetCommitResponse>> => this.octokit.git.getCommit({
+	private getCommit = async(): Promise<Octokit.Response<Octokit.GitGetCommitResponse>> => this.octokit.git.getCommit({
 		owner: this.context.repo.owner,
 		repo: this.context.repo.repo,
 		'commit_sha': this.getCommitSha(),
 	});
 
 	/**
-	 * @return {Promise<Response<PullsGetResponse>>} commit
+	 * @return {Promise<Octokit.Response<Octokit.PullsGetResponse>>} commit
 	 */
-	private getPR = async(): Promise<Response<PullsGetResponse>> => {
+	private getPR = async(): Promise<Octokit.Response<Octokit.PullsGetResponse>> => {
 		const key = parseInt(this.context.payload.number, 10);
 		if (!(key in this.prCache)) {
 			this.prCache[key] = await this.octokit.pulls.get({
@@ -153,9 +142,9 @@ export default class ApiHelper {
 
 	/**
 	 * @param {{ path: string, sha: string }[]} blobs blobs
-	 * @return {Promise<Response<GitCreateTreeResponse>>} tree
+	 * @return {Promise<Octokit.Response<Octokit.GitCreateTreeResponse>>} tree
 	 */
-	public createTree = async(blobs: { path: string; sha: string }[]): Promise<Response<GitCreateTreeResponse>> => this.octokit.git.createTree({
+	public createTree = async(blobs: { path: string; sha: string }[]): Promise<Octokit.Response<Octokit.GitCreateTreeResponse>> => this.octokit.git.createTree({
 		owner: this.context.repo.owner,
 		repo: this.context.repo.repo,
 		'base_tree': (await this.getCommit()).data.tree.sha,
@@ -169,10 +158,10 @@ export default class ApiHelper {
 
 	/**
 	 * @param {string} commitMessage commit message
-	 * @param {Response<GitCreateTreeResponse>} tree tree
-	 * @return {Promise<Response<GitCreateCommitResponse>>} commit
+	 * @param {Octokit.Response<Octokit.GitCreateTreeResponse>} tree tree
+	 * @return {Promise<Octokit.Response<Octokit.GitCreateCommitResponse>>} commit
 	 */
-	public createCommit = async(commitMessage: string, tree: Response<GitCreateTreeResponse>): Promise<Response<GitCreateCommitResponse>> => this.octokit.git.createCommit({
+	public createCommit = async(commitMessage: string, tree: Octokit.Response<Octokit.GitCreateTreeResponse>): Promise<Octokit.Response<Octokit.GitCreateCommitResponse>> => this.octokit.git.createCommit({
 		owner: this.context.repo.owner,
 		repo: this.context.repo.repo,
 		tree: tree.data.sha,
@@ -182,9 +171,9 @@ export default class ApiHelper {
 
 	/**
 	 * @param {string} refName refName
-	 * @return {Promise<AnyResponse|null>} refName
+	 * @return {Promise<Octokit.AnyResponse|null>} refName
 	 */
-	private getRef = async(refName: string): Promise<AnyResponse | null> => {
+	private getRef = async(refName: string): Promise<Octokit.AnyResponse | null> => {
 		try {
 			return await this.octokit.git.getRef({
 				owner: this.context.repo.owner,
@@ -197,12 +186,12 @@ export default class ApiHelper {
 	};
 
 	/**
-	 * @param {Response<GitCreateCommitResponse>} commit commit
+	 * @param {Octokit.Response<Octokit.GitCreateCommitResponse>} commit commit
 	 * @param {string} refName refName
 	 * @param {boolean} force force
 	 * @return {Promise<void>} void
 	 */
-	public updateRef = async(commit: Response<GitCreateCommitResponse>, refName: string, force: boolean): Promise<boolean> => {
+	public updateRef = async(commit: Octokit.Response<Octokit.GitCreateCommitResponse>, refName: string, force: boolean): Promise<boolean> => {
 		try {
 			await this.octokit.git.updateRef({
 				owner: this.context.repo.owner,
@@ -225,11 +214,11 @@ export default class ApiHelper {
 	};
 
 	/**
-	 * @param {Response<GitCreateCommitResponse>} commit commit
+	 * @param {Octokit.Response<Octokit.GitCreateCommitResponse>} commit commit
 	 * @param {string} refName refName
 	 * @return {Promise<void>} void
 	 */
-	public createRef = async(commit: Response<GitCreateCommitResponse>, refName: string): Promise<void> => {
+	public createRef = async(commit: Octokit.Response<Octokit.GitCreateCommitResponse>, refName: string): Promise<void> => {
 		await this.octokit.git.createRef({
 			owner: this.context.repo.owner,
 			repo: this.context.repo.repo,
@@ -252,9 +241,9 @@ export default class ApiHelper {
 
 	/**
 	 * @param {string} branchName branch name
-	 * @return {Promise<PullsListResponseItem>} pull request
+	 * @return {Promise<Octokit.PullsListResponseItem>} pull request
 	 */
-	public findPullRequest = async(branchName: string): Promise<PullsListResponseItem | null> => {
+	public findPullRequest = async(branchName: string): Promise<Octokit.PullsListResponseItem | null> => {
 		const response = await this.octokit.pulls.list({
 			owner: this.context.repo.owner,
 			repo: this.context.repo.repo,
@@ -269,9 +258,9 @@ export default class ApiHelper {
 
 	/**
 	 * @param {PullsListParams} params params
-	 * @return {AsyncIterable<PullsListResponseItem>} pull request list
+	 * @return {AsyncIterable<Octokit.PullsListResponseItem>} pull request list
 	 */
-	public async* pullsList(params: PullsListParams): AsyncIterable<PullsListResponseItem> {
+	public async* pullsList(params: PullsListParams): AsyncIterable<Octokit.PullsListResponseItem> {
 		const perPage = 100;
 		let page      = 1;
 		while (true) {
@@ -295,9 +284,9 @@ export default class ApiHelper {
 	/**
 	 * @param {string} branchName branch name
 	 * @param {PullsCreateParams} detail detail
-	 * @return {Promise<PullsCreateResponse>} pull
+	 * @return {Promise<Octokit.Response<Octokit.PullsCreateResponse>>} pull
 	 */
-	public pullsCreate = async(branchName: string, detail: PullsCreateParams): Promise<Response<PullsCreateResponse>> => this.octokit.pulls.create({
+	public pullsCreate = async(branchName: string, detail: PullsCreateParams): Promise<Octokit.Response<Octokit.PullsCreateResponse>> => this.octokit.pulls.create({
 		owner: this.context.repo.owner,
 		repo: this.context.repo.repo,
 		head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
@@ -308,9 +297,9 @@ export default class ApiHelper {
 	/**
 	 * @param {number} number pull number
 	 * @param {PullsUpdateParams} detail detail
-	 * @return {Promise<PullsUpdateResponse>} pull
+	 * @return {Promise<Octokit.Response<Octokit.PullsUpdateResponse>>} pull
 	 */
-	public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<Response<PullsUpdateResponse>> => this.octokit.pulls.update({
+	public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<Octokit.Response<Octokit.PullsUpdateResponse>> => this.octokit.pulls.update({
 		owner: this.context.repo.owner,
 		repo: this.context.repo.repo,
 		'pull_number': number,
@@ -418,9 +407,9 @@ export default class ApiHelper {
 	 * @param {string} rootDir root dir
 	 * @param {string} commitMessage commit message
 	 * @param {string[]} files files
-	 * @return {Promise<Response<GitCreateCommitResponse>>} commit
+	 * @return {Promise<Octokit.Response<Octokit.GitCreateCommitResponse>>} commit
 	 */
-	private prepareCommit = async(rootDir: string, commitMessage: string, files: string[]): Promise<Response<GitCreateCommitResponse>> => {
+	private prepareCommit = async(rootDir: string, commitMessage: string, files: string[]): Promise<Octokit.Response<Octokit.GitCreateCommitResponse>> => {
 		this.logger.startProcess('Creating blobs...');
 		const blobs = await this.filesToBlobs(rootDir, files);
 

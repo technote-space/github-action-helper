@@ -1,8 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import nock from 'nock';
 import path from 'path';
-import { GitHub } from '@actions/github' ;
-import { GitCreateCommitResponse } from '@octokit/rest';
+import { Octokit } from '@octokit/rest';
 import {
 	disableNetConnect,
 	testEnv,
@@ -30,10 +29,10 @@ const context = getContext({
 		number: 123,
 	},
 });
-const octokit = new GitHub('test-token');
+const octokit = new Octokit({auth: 'token test-token'});
 const logger  = new Logger();
 
-const createCommitResponse = createResponse<GitCreateCommitResponse>({
+const createCommitResponse = createResponse<Octokit.GitCreateCommitResponse>({
 	author: {
 		date: '',
 		email: '',
