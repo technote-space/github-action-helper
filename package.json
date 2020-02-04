@@ -2,7 +2,11 @@
   "name": "@technote-space/github-action-helper",
   "version": "0.8.3",
   "description": "Helper to filter GitHub Action.",
-  "author": "Technote <technote.space@gmail.com> (https://technote.space)",
+  "author": {
+    "name": "Technote",
+    "email": "technote.space@gmail.com",
+    "url": "https://technote.space"
+  },
   "license": "MIT",
   "keywords": [
     "github",
