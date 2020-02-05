@@ -2,6 +2,7 @@
 import nock from 'nock';
 import path from 'path';
 import { Octokit } from '@octokit/rest';
+import { Utils } from '../src';
 import {
 	disableNetConnect,
 	testEnv,
@@ -29,7 +30,7 @@ const context = getContext({
 		number: 123,
 	},
 });
-const octokit = new Octokit({auth: 'token test-token'});
+const octokit = Utils.getOctokit('test-token');
 const logger  = new Logger();
 
 const createCommitResponse = createResponse<Octokit.GitCreateCommitResponse>({

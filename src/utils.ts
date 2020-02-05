@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { getInput } from '@actions/core' ;
+import { GitHub } from '@actions/github';
 import { Context } from '@actions/github/lib/context';
+import { Octokit } from '@octokit/rest';
 
 const getRef = (ref: string | Context): string => typeof ref === 'string' ? ref : ref.ref;
 
@@ -55,6 +57,16 @@ export const getBranch = (ref: string | Context, defaultIsEmpty = true): string 
 export const getPrBranch = (context: Context): string => context.payload.pull_request?.head.ref ?? '';
 
 export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore
+export const getOctokit = (token?: string): Octokit => new GitHub(token ?? getAccessToken(true), {
+	log: {
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		warn: function(): void {
+		},
+	},
+});
 
 export const getActor = (): string => process.env.GITHUB_ACTOR || '';
 

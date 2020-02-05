@@ -3,9 +3,9 @@ import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare}         = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep}    = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, getPrBranch} = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare, getOctokit} = Utils;
+const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep}        = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, getPrBranch}     = Utils;
 
 jest.useFakeTimers();
 
@@ -463,5 +463,22 @@ describe('versionCompare', () => {
 		expect(versionCompare('1.2', 'v1.2.3')).toBe(-1);
 		expect(versionCompare('v1.2.3', 'v1.2.3.0')).toBe(-1);
 		expect(versionCompare('v1.2.3', 'v1.2.4', false)).toBe(-1);
+	});
+});
+
+describe('getOctokit', () => {
+	testEnv();
+
+	it('should use env token', () => {
+		process.env.INPUT_GITHUB_TOKEN = 'input token';
+		expect(() => getOctokit()).not.toThrow();
+	});
+
+	it('should use input token', () => {
+		expect(() => getOctokit('input token')).not.toThrow();
+	});
+
+	it('should throw error', () => {
+		expect(() => getOctokit()).toThrow();
 	});
 });
