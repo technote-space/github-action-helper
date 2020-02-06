@@ -32,7 +32,9 @@ export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve
 
 export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+(\.\d+)*$/i.test(tagName);
 
-export const isBranch = (ref: string | Context): boolean => /^(refs\/)?heads/.test(getRef(ref));
+export const isBranch = (ref: string | Context): boolean => /^(refs\/)?heads\//.test(getRef(ref));
+
+export const isTagRef = (ref: string | Context): boolean => /^refs\/?tags\//.test(getRef(ref));
 
 export const isRemoteBranch = (ref: string | Context): boolean => /^(refs\/)?remotes\/origin\//.test(getRef(ref));
 
@@ -55,6 +57,16 @@ export const getBranch = (ref: string | Context, defaultIsEmpty = true): string 
 		);
 
 export const getPrBranch = (context: Context): string => context.payload.pull_request?.head.ref ?? '';
+
+export const normalizeRef = (ref: string | Context): string => /^refs\//.test(getRef(ref)) ? getRef(ref) : `refs/heads/${getRef(ref)}`;
+
+export const trimRef = (ref: string | Context): string => getRef(ref).replace(/^refs\/(heads|tags|pull)\//, '');
+
+export const getTag = (ref: string | Context): string => isTagRef(ref) ? trimRef(ref) : '';
+
+const saveTarget = (ref: string | Context, origin: string): string => isTagRef(ref) ? 'tags' : isPrRef(ref) ? 'pull' : `remotes/${origin}`;
+
+export const getRefspec = (ref: string | Context, origin = 'origin'): string => `${normalizeRef(ref)}:refs/${saveTarget(ref, origin)}/${trimRef(ref)}`;
 
 export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
 
