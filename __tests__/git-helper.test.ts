@@ -433,12 +433,12 @@ describe('GitHelper', () => {
 	describe('checkDiff', () => {
 		it('should return true', async() => {
 			setChildProcessParams({stdout: 'M  file1\nA  file2\nD  file3\n   file4\n\nB  file5\n'});
-			expect(await helper.checkDiff(workDir)).toBeTruthy();
+			expect(await helper.checkDiff(workDir)).toBe(true);
 		});
 
 		it('should return false', async() => {
 			setChildProcessParams({stdout: '   file1\n\nB  file2\n'});
-			expect(await helper.checkDiff(workDir)).toBeFalsy();
+			expect(await helper.checkDiff(workDir)).toBe(false);
 		});
 	});
 
@@ -446,7 +446,7 @@ describe('GitHelper', () => {
 		it('should do nothing', async() => {
 			const mockExec = spyOnExec();
 
-			expect(await helper.commit(workDir, 'test message')).toBeFalsy();
+			expect(await helper.commit(workDir, 'test message')).toBe(false);
 
 			execCalledWith(mockExec, [
 				'git add --all',
@@ -458,7 +458,7 @@ describe('GitHelper', () => {
 			setChildProcessParams({stdout: 'M  file1\n\nM  file2\n'});
 			const mockExec = spyOnExec();
 
-			expect(await helper.commit(workDir, 'hello! how are you doing $USER "double" \'single\'')).toBeTruthy();
+			expect(await helper.commit(workDir, 'hello! how are you doing $USER "double" \'single\'')).toBe(true);
 
 			execCalledWith(mockExec, [
 				'git add --all',
@@ -476,7 +476,7 @@ describe('GitHelper', () => {
 				count: 20,
 				allowEmpty: true,
 				args: ['--dry-run'],
-			})).toBeTruthy();
+			})).toBe(true);
 
 			execCalledWith(mockExec, [
 				'git add --all',
