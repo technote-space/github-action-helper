@@ -361,7 +361,7 @@ export default class GitHelper {
 	public commit = async(workDir: string, message: string, options?: { count?: number; allowEmpty?: boolean; args?: Array<string> }): Promise<boolean> => {
 		await this.runCommand(workDir, {command: 'git add', args: ['--all']});
 
-		if (!await this.checkDiff(workDir)) {
+		if (!options?.allowEmpty && !await this.checkDiff(workDir)) {
 			this.logger.info('There is no diff.');
 			return false;
 		}
