@@ -480,7 +480,6 @@ describe('GitHelper', () => {
 
 			execCalledWith(mockExec, [
 				'git add --all',
-				'git status --short -uno',
 				'git commit --allow-empty --dry-run -qm test',
 				'git show \'--stat-count=20\' HEAD',
 			]);
