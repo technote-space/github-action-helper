@@ -6,6 +6,7 @@ import { Utils } from '../src';
 const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare, getOctokit} = Utils;
 const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep}        = Utils;
 const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, getPrBranch}     = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec}                                                         = Utils;
 
 jest.useFakeTimers();
 
@@ -480,5 +481,65 @@ describe('getOctokit', () => {
 
 	it('should throw error', () => {
 		expect(() => getOctokit()).toThrow();
+	});
+});
+
+describe('isBranch', () => {
+	it('should return true', () => {
+		expect(isBranch('refs/heads/master')).toBe(true);
+		expect(isBranch('heads/master')).toBe(true);
+	});
+
+	it('should return false', () => {
+		expect(isBranch('test')).toBe(false);
+		expect(isBranch('heads')).toBe(false);
+	});
+});
+
+describe('isTagRef', () => {
+	it('should return true', () => {
+		expect(isTagRef('refs/tags/v1.2.3')).toBe(true);
+	});
+
+	it('should return false', () => {
+		expect(isTagRef('refs/heads/master')).toBe(false);
+		expect(isTagRef('heads/master')).toBe(false);
+	});
+});
+
+describe('normalizeRef', () => {
+	it('should normalize ref', () => {
+		expect(normalizeRef('master')).toBe('refs/heads/master');
+		expect(normalizeRef('refs/heads/master')).toBe('refs/heads/master');
+		expect(normalizeRef('refs/tags/v1.2.3')).toBe('refs/tags/v1.2.3');
+		expect(normalizeRef('refs/pull/123/merge')).toBe('refs/pull/123/merge');
+	});
+});
+
+describe('trimRef', () => {
+	it('should trim ref', () => {
+		expect(trimRef('master')).toBe('master');
+		expect(trimRef('refs/heads/master')).toBe('master');
+		expect(trimRef('refs/tags/v1.2.3')).toBe('v1.2.3');
+		expect(trimRef('refs/pull/123/merge')).toBe('123/merge');
+	});
+});
+
+describe('getTag', () => {
+	it('should get tag', () => {
+		expect(getTag('master')).toBe('');
+		expect(getTag('heads/master')).toBe('');
+		expect(getTag('refs/heads/master')).toBe('');
+		expect(getTag('refs/tags/v1.2.3')).toBe('v1.2.3');
+		expect(getTag('refs/pull/123/merge')).toBe('');
+	});
+});
+
+describe('getRefspec', () => {
+	it('should get refspec', () => {
+		expect(getRefspec('master')).toBe('refs/heads/master:refs/remotes/origin/master');
+		expect(getRefspec('refs/heads/master', 'test')).toBe('refs/heads/master:refs/remotes/test/master');
+		expect(getRefspec('refs/tags/v1.2.3')).toBe('refs/tags/v1.2.3:refs/tags/v1.2.3');
+		expect(getRefspec('refs/pull/123/merge')).toBe('refs/pull/123/merge:refs/pull/123/merge');
 	});
 });

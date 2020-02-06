@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getBranch, isBranch, isPrRef, isCloned, split, generateNewPatchVersion, arrayChunk, versionCompare, getAccessToken } from './utils';
+import { getBranch, isBranch, isPrRef, getRefspec, isCloned, split, generateNewPatchVersion, arrayChunk, versionCompare, getAccessToken } from './utils';
 import { getGitUrlWithToken } from './context-helper';
 
 type CommandType = string | {
@@ -84,15 +84,32 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @return {Promise<void>} void
+	 */
+	private initialize = async(workDir: string): Promise<void> => {
+		if (fs.existsSync(workDir)) {
+			await this.runCommand(workDir, {command: 'rm', args: ['-rdf', workDir]});
+		}
+		fs.mkdirSync(workDir, {recursive: true});
+		await this.runCommand(workDir, {command: 'git init', args: ['.']});
+	};
+
+	/**
+	 * @param {Context} context context
+	 * @return {string} origin
+	 */
+	private getOrigin = (context: Context): string => this.origin ?? getGitUrlWithToken(context, this.token);
+
+	/**
+	 * @param {string} workDir work dir
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
 	 */
 	public addOrigin = async(workDir: string, context: Context): Promise<void> => {
-		const url = this.getOrigin(context);
 		await this.initialize(workDir);
 		await this.runCommand(workDir, {
 			command: 'git remote add',
-			args: ['origin', url],
+			args: ['origin', getGitUrlWithToken(context, this.token)],
 			quiet: this.isQuiet(),
 			altCommand: 'git remote add origin',
 			suppressError: true,
@@ -114,12 +131,6 @@ export default class GitHelper {
 	 * @return {boolean} is quiet?
 	 */
 	private isQuiet = (): boolean => !this.origin || this.quietIfNotOrigin;
-
-	/**
-	 * @param {Context} context context
-	 * @return {string} origin
-	 */
-	private getOrigin = (context: Context): string => this.origin ?? getGitUrlWithToken(context, this.token);
 
 	/**
 	 * @param {string} workDir work dir
@@ -201,64 +212,6 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
-	 * @param {Context} context context
-	 * @return {Promise<void>} void
-	 */
-	public checkout = async(workDir: string, context: Context): Promise<void> => {
-		const url = this.getOrigin(context);
-		if (this.cloneDepth && context.sha) {
-			await this.runCommand(workDir, [
-				{
-					command: 'git clone',
-					args: [this.cloneDepth, url, '.'],
-					quiet: this.isQuiet(),
-					altCommand: 'git clone',
-				},
-				{
-					command: 'git fetch',
-					args: [url, context.ref],
-					quiet: this.isQuiet(),
-					altCommand: `git fetch origin ${context.ref}`,
-				},
-				{
-					command: 'git checkout',
-					args: ['-qf', context.sha],
-				},
-			]);
-		} else {
-			const checkout = context.sha || getBranch(context) || context.ref;
-			if (!checkout) {
-				throw new Error('Invalid context.');
-			}
-			await this.runCommand(workDir, [
-				{
-					command: 'git clone',
-					args: [url, '.'],
-					quiet: this.isQuiet(),
-					altCommand: 'git clone',
-				},
-				{
-					command: 'git checkout',
-					args: ['-qf', checkout],
-				},
-			]);
-		}
-	};
-
-	/**
-	 * @param {string} workDir work dir
-	 * @return {Promise<void>} void
-	 */
-	private initialize = async(workDir: string): Promise<void> => {
-		if (fs.existsSync(workDir)) {
-			await this.runCommand(workDir, {command: 'rm', args: ['-rdf', workDir]});
-		}
-		fs.mkdirSync(workDir, {recursive: true});
-		await this.runCommand(workDir, {command: 'git init', args: ['.']});
-	};
-
-	/**
-	 * @param {string} workDir work dir
 	 * @param {string} branch branch
 	 * @return {Promise<void>} void
 	 */
@@ -286,6 +239,22 @@ export default class GitHelper {
 			suppressError: true,
 			stderrToStdout: true,
 		});
+	};
+
+	/**
+	 * @param {string} workDir work dir
+	 * @param {Context} context context
+	 * @return {Promise<void>} void
+	 */
+	public checkout = async(workDir: string, context: Context): Promise<void> => {
+		await this.fetchOrigin(workDir, context, ['--no-tags'], [getRefspec(context)]);
+		await this.runCommand(workDir, [
+			{
+				command: 'git checkout',
+				args: ['-qf', context.sha],
+				stderrToStdout: true,
+			},
+		]);
 	};
 
 	/**
@@ -387,8 +356,9 @@ export default class GitHelper {
 	/**
 	 * @param {string} workDir work dir
 	 * @param {string} message message
+	 * @param {object} options options
 	 */
-	public commit = async(workDir: string, message: string): Promise<boolean> => {
+	public commit = async(workDir: string, message: string, options?: { count?: number; allowEmpty?: boolean; args?: Array<string> }): Promise<boolean> => {
 		await this.runCommand(workDir, {command: 'git add', args: ['--all']});
 
 		if (!await this.checkDiff(workDir)) {
@@ -396,20 +366,24 @@ export default class GitHelper {
 			return false;
 		}
 
-		await this.makeCommit(workDir, message);
+		await this.makeCommit(workDir, message, options);
 		return true;
 	};
 
 	/**
 	 * @param {string} workDir work dir
 	 * @param {string} message message
-	 * @param {number} count stat count
+	 * @param {object} options options
 	 */
-	public makeCommit = async(workDir: string, message: string, count = 10): Promise<void> => { // eslint-disable-line no-magic-numbers
+	public makeCommit = async(workDir: string, message: string, options?: { count?: number; allowEmpty?: boolean; args?: Array<string> }): Promise<void> => {
+		const count      = options?.count ?? 10; // eslint-disable-line no-magic-numbers
+		const allowEmpty = options?.allowEmpty ?? false;
+		const args       = options?.args ?? [];
+
 		await this.runCommand(workDir, [
 			{
 				command: 'git commit',
-				args: ['-qm', message],
+				args: [allowEmpty ? '--allow-empty' : '', ...args, '-qm', message],
 			},
 			{
 				command: 'git show',

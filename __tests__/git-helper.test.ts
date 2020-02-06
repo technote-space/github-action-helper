@@ -70,13 +70,13 @@ describe('GitHelper', () => {
 			]);
 		});
 
-		it('should run git checkout', async() => {
+		it('should run git clone PR', async() => {
 			setExists(false);
 			const mockExec = spyOnExec();
 
-			expect(await helper.clone(workDir, context({
+			await helper.clone(workDir, context({
 				ref: 'refs/pull/123/merge',
-			})));
+			}));
 
 			execCalledWith(mockExec, [
 				'git clone \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
@@ -85,48 +85,64 @@ describe('GitHelper', () => {
 			]);
 		});
 
-		it('should throw error', async() => {
+		it('should run checkout', async() => {
 			setExists(false);
+			const mockExec = spyOnExec();
 
-			await expect(helper.clone(workDir, context({
-				ref: '',
-				sha: '',
-			}))).rejects.toThrow('Invalid context.');
+			await helper.clone(workDir, context({
+				ref: 'refs/tags/v1.2.3',
+				sha: '1234567890',
+			}));
+
+			execCalledWith(mockExec, [
+				'git init \'.\'',
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git fetch --no-tags origin \'refs/tags/v1.2.3:refs/tags/v1.2.3\' || :',
+				'git checkout -qf 1234567890',
+			]);
 		});
 	});
 
 	describe('checkout', () => {
-		it('should run checkout 1', async() => {
+		it('should run checkout branch', async() => {
 			const mockExec = spyOnExec();
 
 			await helper.checkout(workDir, context());
 
 			execCalledWith(mockExec, [
-				'git clone \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
-				'git fetch \'https://octocat:token1@github.com/hello/world.git\' refs/heads/test-ref > /dev/null 2>&1',
+				'rm -rdf \'.work\'',
+				'git init \'.\'',
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git fetch --no-tags origin \'refs/heads/test-ref:refs/remotes/origin/test-ref\' || :',
 				'git checkout -qf test-sha',
 			]);
 		});
 
-		it('should run checkout 2', async() => {
+		it('should run checkout merge ref', async() => {
 			const mockExec = spyOnExec();
 
-			await helper.checkout(workDir, context({sha: ''}));
+			await helper.checkout(workDir, context({ref: 'refs/pull/123/merge'}));
 
 			execCalledWith(mockExec, [
-				'git clone \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
-				'git checkout -qf test-ref',
+				'rm -rdf \'.work\'',
+				'git init \'.\'',
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git fetch --no-tags origin \'refs/pull/123/merge:refs/pull/123/merge\' || :',
+				'git checkout -qf test-sha',
 			]);
 		});
 
-		it('should run checkout 3', async() => {
+		it('should run checkout tag', async() => {
 			const mockExec = spyOnExec();
 
-			await helper.checkout(workDir, context({sha: '', ref: 'refs/tags/test-tag'}));
+			await helper.checkout(workDir, context({ref: 'refs/tags/v1.2.3'}));
 
 			execCalledWith(mockExec, [
-				'git clone \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1',
-				'git checkout -qf refs/tags/test-tag',
+				'rm -rdf \'.work\'',
+				'git init \'.\'',
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+				'git fetch --no-tags origin \'refs/tags/v1.2.3:refs/tags/v1.2.3\' || :',
+				'git checkout -qf test-sha',
 			]);
 		});
 	});
@@ -449,6 +465,24 @@ describe('GitHelper', () => {
 				'git status --short -uno',
 				'git commit -qm \'hello! how are you doing $USER "double" \'\\\'\'single\'\\\'',
 				'git show \'--stat-count=10\' HEAD',
+			]);
+		});
+
+		it('should run git commit with options', async() => {
+			setChildProcessParams({stdout: 'M  file1\n\nM  file2\n'});
+			const mockExec = spyOnExec();
+
+			expect(await helper.commit(workDir, 'test', {
+				count: 20,
+				allowEmpty: true,
+				args: ['--dry-run'],
+			})).toBeTruthy();
+
+			execCalledWith(mockExec, [
+				'git add --all',
+				'git status --short -uno',
+				'git commit --allow-empty --dry-run -qm test',
+				'git show \'--stat-count=20\' HEAD',
 			]);
 		});
 	});

@@ -1,6 +1,6 @@
 {
   "name": "@technote-space/github-action-helper",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "Helper to filter GitHub Action.",
   "author": {
     "name": "Technote",
@@ -32,7 +32,7 @@
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
-    "@technote-space/github-action-test-helper": "^0.1.5",
+    "@technote-space/github-action-test-helper": "^0.2.0",
     "@types/jest": "^25.1.1",
     "@types/node": "^13.7.0",
     "@typescript-eslint/eslint-plugin": "^2.19.0",
