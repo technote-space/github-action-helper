@@ -12,7 +12,8 @@ Helper for GitHub Actions.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
+<details>
+<summary>Details</summary>
 
 - [Usage](#usage)
   - [Logger](#logger)
@@ -23,6 +24,7 @@ Helper for GitHub Actions.
   - [ContextHelper](#contexthelper)
 - [Author](#author)
 
+</details>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
