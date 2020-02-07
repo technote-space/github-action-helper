@@ -28,6 +28,9 @@ const context = getContext({
 			login: 'octocat',
 		},
 		number: 123,
+		repository: {
+			'default_branch': 'test',
+		},
 	},
 });
 const octokit = Utils.getOctokit('test-token');
@@ -190,6 +193,22 @@ describe('ApiHelper with params', () => {
 			expect(user.email).toBe('octocat@github.com');
 			expect(user.name).toBe('monalisa octocat');
 			expect(user.id).toBe(1);
+		});
+	});
+
+	describe('getDefaultBranch', () => {
+		it('should get default branch from repo info', async() => {
+			const fn = jest.fn();
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world')
+				.reply(200, () => {
+					fn();
+					return getApiFixture(rootDir, 'repos.get');
+				});
+
+			expect(await helper.getDefaultBranch()).toBe('test');
+			expect(fn).not.toBeCalled();
 		});
 	});
 });
