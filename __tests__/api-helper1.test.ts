@@ -871,4 +871,20 @@ describe('ApiHelper', () => {
 			expect(user.id).toBe(1);
 		});
 	});
+
+	describe('getDefaultBranch', () => {
+		it('should get default branch from api', async() => {
+			const fn = jest.fn();
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world')
+				.reply(200, () => {
+					fn();
+					return getApiFixture(rootDir, 'repos.get');
+				});
+
+			expect(await helper.getDefaultBranch()).toBe('master');
+			expect(fn).toBeCalled();
+		});
+	});
 });

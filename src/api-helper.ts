@@ -40,10 +40,10 @@ type PullsListParams = {
  */
 export default class ApiHelper {
 
-	private readonly branch?: string | undefined                   = undefined;
-	private readonly sender?: string | undefined                   = undefined;
-	private readonly suppressBPError?: boolean | undefined         = undefined;
-	private readonly refForUpdate?: string | undefined             = undefined;
+	private readonly branch?: string | undefined                                   = undefined;
+	private readonly sender?: string | undefined                                   = undefined;
+	private readonly suppressBPError?: boolean | undefined                         = undefined;
+	private readonly refForUpdate?: string | undefined                             = undefined;
 	private prCache: { [key: number]: Octokit.Response<Octokit.PullsGetResponse> } = {};
 
 	/**
@@ -523,4 +523,10 @@ export default class ApiHelper {
 			id: user.id,
 		};
 	};
+
+	// eslint-disable-next-line camelcase
+	public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await this.octokit.repos.get({
+		owner: this.context.repo.owner,
+		repo: this.context.repo.repo,
+	})).data.default_branch;
 }
