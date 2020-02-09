@@ -15,6 +15,8 @@ export const isCron = (context: Context): boolean => 'schedule' === context.even
 
 export const isCustomEvent = (context: Context): boolean => 'repository_dispatch' === context.eventName;
 
+export const isCreateTag = (context: Context): boolean => 'create' === context.eventName && 'tag' === context.payload.ref_type;
+
 export const getTagName = (context: Context): string => isRelease(context) ? context.payload.release.tag_name : (/^refs\/tags\//.test(context.ref) ? context.ref.replace(/^refs\/tags\//, '') : '');
 
 export const getSender = (context: Context): string | false => context.payload.sender && context.payload.sender.type === 'User' ? context.payload.sender.login : false;
@@ -36,9 +38,9 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	logger.log(separator);
 	if (false !== info) {
 		if ('owner' in info) {
-			logger.log('Version:  %s/%s@%s', info.owner, info.repo, info.tagName);
+			logger.log('Version:  %s/%s@%s(%s)', info.owner, info.repo, info.tagName, info.sha);
 		} else {
-			logger.log('Version:  %s', info.tagName);
+			logger.log('Version:  %s(%s)', info.tagName, info.sha);
 		}
 	}
 	logger.log('Event:    %s', context.eventName);

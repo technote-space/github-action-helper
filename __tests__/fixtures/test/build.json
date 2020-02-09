@@ -1,7 +1,7 @@
 {
   "owner": "hello",
   "repo": "world",
-  "sha": "ed968e840d10d2d313a870bc131a4e2c311d7ad09bdf32b3418147221f51a6e2",
+  "sha": "162553222be3497f057501e028b47afc64944d84",
   "ref": "release/v1.2.3",
   "tagName": "v1.2.3",
   "branch": "gh-actions",

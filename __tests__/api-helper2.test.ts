@@ -212,3 +212,28 @@ describe('ApiHelper with params', () => {
 		});
 	});
 });
+
+describe('ApiHelper without logger', () => {
+	disableNetConnect(nock);
+	testEnv();
+
+	const helper = new ApiHelper(octokit, context, undefined, {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
+
+	describe('updateRef', () => {
+		it('should not output warning', async() => {
+			const mockStdout = spyOnStdout();
+			nock('https://api.github.com')
+				.patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'), body => {
+					expect(body).toHaveProperty('sha');
+					return body;
+				})
+				.reply(403, {
+					'message': 'Required status check "Test" is expected.',
+				});
+
+			await helper.updateRef(createCommitResponse, 'test-ref', false);
+
+			stdoutCalledWith(mockStdout, []);
+		});
+	});
+});

@@ -7,7 +7,7 @@ import {
 import { testEnv, getContext } from '@technote-space/github-action-test-helper';
 import { Logger, ContextHelper } from '../src';
 
-const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, getGitUrl, getRepository, getTagName, getSender, showActionInfo} = ContextHelper;
+const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isCreateTag, getGitUrl, getRepository, getTagName, getSender, showActionInfo} = ContextHelper;
 
 describe('isRelease', () => {
 	it('should return true', () => {
@@ -88,6 +88,32 @@ describe('isCustomEvent', () => {
 
 	it('should return false', () => {
 		expect(isCustomEvent(getContext({
+			eventName: 'release',
+		}))).toBe(false);
+	});
+});
+
+describe('isCreateTag', () => {
+	it('should return true', () => {
+		expect(isCreateTag(getContext({
+			eventName: 'create',
+			payload: {
+				'ref_type': 'tag',
+			},
+		}))).toBe(true);
+	});
+
+	it('should return false 1', () => {
+		expect(isCreateTag(getContext({
+			eventName: 'create',
+			payload: {
+				'ref_type': 'branch',
+			},
+		}))).toBe(false);
+	});
+
+	it('should return false 2', () => {
+		expect(isCreateTag(getContext({
 			eventName: 'release',
 		}))).toBe(false);
 	});
@@ -221,7 +247,7 @@ describe('showActionInfo', () => {
 		stdoutCalledWith(mockStdout, [
 			'',
 			'==================================================',
-			'Version:  v1.2.3',
+			'Version:  v1.2.3(undefined)',
 			'Event:    push',
 			'Action:   rerequested',
 			'sha:      test-sha',
@@ -262,7 +288,7 @@ describe('showActionInfo', () => {
 		stdoutCalledWith(mockStdout, [
 			'',
 			'==================================================',
-			'Version:  hello/world@v1.2.3',
+			'Version:  hello/world@v1.2.3(162553222be3497f057501e028b47afc64944d84)',
 			'Event:    push',
 			'Action:   rerequested',
 			'sha:      test-sha',
