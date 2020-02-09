@@ -603,20 +603,20 @@ describe('GitHelper', () => {
 		it('should run push', async() => {
 			const mockExec = spyOnExec();
 
-			await helper.push(workDir, 'test-branch', true, context());
+			await helper.push(workDir, 'test-branch', context(), {withTag: true, args: ['--prune', '--verbose']});
 
 			execCalledWith(mockExec, [
-				'git push --tags \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
+				'git push --tags --prune --verbose \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1 || :',
 			]);
 		});
 
 		it('should run push without tags', async() => {
 			const mockExec = spyOnExec();
 
-			await helper.push(workDir, 'test-branch', false, context());
+			await helper.push(workDir, 'test-branch', context());
 
 			execCalledWith(mockExec, [
-				'git push \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
+				'git push \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1 || :',
 			]);
 		});
 	});
@@ -628,7 +628,7 @@ describe('GitHelper', () => {
 			await helper.forcePush(workDir, 'test-branch', context());
 
 			execCalledWith(mockExec, [
-				'git push --force \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1',
+				'git push --force \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\' > /dev/null 2>&1 || :',
 			]);
 		});
 	});
