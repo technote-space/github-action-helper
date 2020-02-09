@@ -516,7 +516,7 @@ export default class GitHelper {
 			command: 'git push',
 			args: args.concat([url, `${branch}:refs/heads/${branch}`]),
 			quiet: this.isQuiet(),
-			altCommand: `git push${args.concat(['origin', `${branch}:refs/heads/${branch}`]).join(' ')}`,
+			altCommand: `git push ${args.concat(['origin', `${branch}:refs/heads/${branch}`]).join(' ')}`,
 			suppressError: true,
 		});
 	};
