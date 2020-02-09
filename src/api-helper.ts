@@ -59,7 +59,7 @@ export default class ApiHelper {
 	constructor(
 		private readonly octokit: Octokit,
 		private readonly context: Context,
-		private readonly logger: Logger,
+		private readonly logger?: Logger,
 		options?: { branch?: string; sender?: string; refForUpdate?: string; suppressBPError?: boolean },
 	) {
 		this.branch          = options?.branch;
@@ -67,6 +67,15 @@ export default class ApiHelper {
 		this.refForUpdate    = options?.refForUpdate;
 		this.suppressBPError = options?.suppressBPError;
 	}
+
+	/**
+	 * @param {function} caller caller
+	 */
+	private callLogger = (caller: (logger: Logger) => void): void => {
+		if (this.logger) {
+			caller(this.logger);
+		}
+	};
 
 	/**
 	 * @return {string|boolean} sender
@@ -204,7 +213,7 @@ export default class ApiHelper {
 			return true;
 		} catch (error) {
 			if (this.suppressBPError === true && this.isProtectedBranchError(error)) {
-				this.logger.warn('Branch is protected.');
+				this.callLogger(logger => logger.warn('Branch is protected.'));
 			} else {
 				throw error;
 			}
@@ -324,19 +333,28 @@ export default class ApiHelper {
 	 * @param {PullsCreateParams} detail detail
 	 * @return {Promise<PullsInfo>} info
 	 */
+	private createPulls = async(createBranchName: string, detail: PullsCreateParams): Promise<PullsInfo> => {
+		this.callLogger(async logger => logger.startProcess('Creating PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false)));
+		const created = await this.pullsCreate(createBranchName, detail);
+		this.callLogger(logger => logger.endProcess());
+		return Object.assign({isPrCreated: true}, created.data);
+	};
+
+	/**
+	 * @param {string} createBranchName branch name
+	 * @param {PullsCreateParams} detail detail
+	 * @return {Promise<PullsInfo>} info
+	 */
 	public pullsCreateOrUpdate = async(createBranchName: string, detail: PullsCreateParams): Promise<PullsInfo> => {
 		const pullRequest = await this.findPullRequest(createBranchName);
 		if (pullRequest) {
-			this.logger.startProcess('Updating PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false));
+			this.callLogger(async logger => logger.startProcess('Updating PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false)));
 			const updated = await this.pullsUpdate(pullRequest.number, detail);
-			this.logger.endProcess();
+			this.callLogger(logger => logger.endProcess());
 			return Object.assign({isPrCreated: false}, updated.data);
-		} else {
-			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false));
-			const created = await this.pullsCreate(createBranchName, detail);
-			this.logger.endProcess();
-			return Object.assign({isPrCreated: true}, created.data);
 		}
+
+		return this.createPulls(createBranchName, detail);
 	};
 
 	/**
@@ -347,16 +365,13 @@ export default class ApiHelper {
 	public pullsCreateOrComment = async(createBranchName: string, detail: PullsCreateParams): Promise<PullsInfo> => {
 		const pullRequest = await this.findPullRequest(createBranchName);
 		if (pullRequest) {
-			this.logger.startProcess('Creating comment to PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false));
+			this.callLogger(async logger => logger.startProcess('Creating comment to PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false)));
 			await this.createCommentToPr(createBranchName, detail.body);
-			this.logger.endProcess();
+			this.callLogger(logger => logger.endProcess());
 			return Object.assign({isPrCreated: false}, pullRequest);
-		} else {
-			this.logger.startProcess('Creating PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false));
-			const created = await this.pullsCreate(createBranchName, detail);
-			this.logger.endProcess();
-			return Object.assign({isPrCreated: true}, created.data);
 		}
+
+		return this.createPulls(createBranchName, detail);
 	};
 
 	/**
@@ -396,7 +411,7 @@ export default class ApiHelper {
 	 */
 	private checkDiff = (files: string[]): boolean => {
 		if (!files.length) {
-			this.logger.info('There is no diff.');
+			this.callLogger(logger => logger.info('There is no diff.'));
 			return false;
 		}
 
@@ -410,13 +425,13 @@ export default class ApiHelper {
 	 * @return {Promise<Octokit.Response<Octokit.GitCreateCommitResponse>>} commit
 	 */
 	private prepareCommit = async(rootDir: string, commitMessage: string, files: string[]): Promise<Octokit.Response<Octokit.GitCreateCommitResponse>> => {
-		this.logger.startProcess('Creating blobs...');
+		this.callLogger(logger => logger.startProcess('Creating blobs...'));
 		const blobs = await this.filesToBlobs(rootDir, files);
 
-		this.logger.startProcess('Creating tree...');
+		this.callLogger(logger => logger.startProcess('Creating tree...'));
 		const tree = await this.createTree(blobs);
 
-		this.logger.startProcess('Creating commit... [%s]', tree.data.sha);
+		this.callLogger(logger => logger.startProcess('Creating commit... [%s]', tree.data.sha));
 		return this.createCommit(commitMessage, tree);
 	};
 
@@ -434,13 +449,13 @@ export default class ApiHelper {
 		const commit = await this.prepareCommit(rootDir, commitMessage, files);
 		const ref    = await this.getRefForUpdate(true);
 
-		this.logger.startProcess('Updating ref... [%s] [%s]', ref, commit.data.sha);
+		this.callLogger(logger => logger.startProcess('Updating ref... [%s] [%s]', ref, commit.data.sha));
 		if (await this.updateRef(commit, ref, false)) {
 			process.env.GITHUB_SHA = commit.data.sha;
 			exportVariable('GITHUB_SHA', commit.data.sha);
 		}
 
-		this.logger.endProcess();
+		this.callLogger(logger => logger.endProcess());
 		return true;
 	};
 
@@ -461,10 +476,10 @@ export default class ApiHelper {
 		const commit                          = await this.prepareCommit(rootDir, commitMessage, files);
 		const ref                             = await this.getRef(headName);
 		if (null === ref) {
-			this.logger.startProcess('Creating reference... [%s] [%s]', refName, commit.data.sha);
+			this.callLogger(logger => logger.startProcess('Creating reference... [%s] [%s]', refName, commit.data.sha));
 			await this.createRef(commit, refName);
 		} else {
-			this.logger.startProcess('Updating reference... [%s] [%s]', refName, commit.data.sha);
+			this.callLogger(logger => logger.startProcess('Updating reference... [%s] [%s]', refName, commit.data.sha));
 			await this.updateRef(commit, headName, true);
 		}
 
@@ -479,7 +494,7 @@ export default class ApiHelper {
 		const {branchName, headName, refName} = this.getBranchInfo(createBranchName);
 		const pullRequest                     = await this.findPullRequest(branchName);
 		if (pullRequest) {
-			this.logger.startProcess('Closing PullRequest... [%s]', branchName);
+			this.callLogger(logger => logger.startProcess('Closing PullRequest... [%s]', branchName));
 			if (message) {
 				await this.createCommentToPr(branchName, message);
 			}
@@ -489,18 +504,18 @@ export default class ApiHelper {
 				base: undefined,
 			});
 		} else {
-			this.logger.info('There is no PullRequest named [%s]', branchName);
+			this.callLogger(logger => logger.info('There is no PullRequest named [%s]', branchName));
 
 			const ref = await this.getRef(headName);
 			if (!ref) {
-				this.logger.info('There is no reference named [%s]', refName);
+				this.callLogger(logger => logger.info('There is no reference named [%s]', refName));
 				return;
 			}
 		}
 
-		this.logger.startProcess('Deleting reference... [%s]', refName);
+		this.callLogger(logger => logger.startProcess('Deleting reference... [%s]', refName));
 		await this.deleteRef(headName);
-		this.logger.endProcess();
+		this.callLogger(logger => logger.endProcess());
 	};
 
 	/**
