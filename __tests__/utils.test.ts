@@ -6,7 +6,7 @@ import { Utils } from '../src';
 const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare, getOctokit} = Utils;
 const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep}        = Utils;
 const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, getPrBranch}     = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec}                                                         = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec}                      = Utils;
 
 jest.useFakeTimers();
 
@@ -541,5 +541,23 @@ describe('getRefspec', () => {
 		expect(getRefspec('refs/heads/master', 'test')).toBe('refs/heads/master:refs/remotes/test/master');
 		expect(getRefspec('refs/tags/v1.2.3')).toBe('refs/tags/v1.2.3:refs/tags/v1.2.3');
 		expect(getRefspec('refs/pull/123/merge')).toBe('refs/pull/123/merge:refs/pull/123/merge');
+	});
+});
+
+describe('getRemoteRefspec', () => {
+	it('should get remote refspec', () => {
+		expect(getRemoteRefspec('master')).toBe('refs/heads/master');
+		expect(getRemoteRefspec('refs/heads/master')).toBe('refs/heads/master');
+		expect(getRemoteRefspec('refs/tags/v1.2.3')).toBe('refs/tags/v1.2.3');
+		expect(getRemoteRefspec('refs/pull/123/merge')).toBe('refs/pull/123/merge');
+	});
+});
+
+describe('getLocalRefspec', () => {
+	it('should get remote refspec', () => {
+		expect(getLocalRefspec('master')).toBe('origin/master');
+		expect(getLocalRefspec('refs/heads/master', 'test')).toBe('test/master');
+		expect(getLocalRefspec('refs/tags/v1.2.3')).toBe('tags/v1.2.3');
+		expect(getLocalRefspec('refs/pull/123/merge')).toBe('pull/123/merge');
 	});
 });
