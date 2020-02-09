@@ -1,6 +1,6 @@
 {
   "name": "@technote-space/github-action-helper",
-  "version": "0.8.8",
+  "version": "1.0.0",
   "description": "Helper to filter GitHub Action.",
   "author": {
     "name": "Technote",
