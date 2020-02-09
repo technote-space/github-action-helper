@@ -496,18 +496,28 @@ export default class GitHelper {
 	/**
 	 * @param {string} workDir work dir
 	 * @param {string} branch branch
-	 * @param {boolean} withTag with tag?
 	 * @param {Context} context context
+	 * @param {object} options options
 	 * @return {Promise<void>} void
 	 */
-	public push = async(workDir: string, branch: string, withTag: boolean, context: Context): Promise<void> => {
-		const url  = this.getOrigin(context);
-		const tags = withTag ? ' --tags' : '';
+	public push = async(workDir: string, branch: string, context: Context, options?: { withTag?: boolean; force?: boolean; args?: Array<string> }): Promise<void> => {
+		const url                 = this.getOrigin(context);
+		const args: Array<string> = [];
+		if (options?.withTag) {
+			args.push('--tags');
+		}
+		if (options?.force) {
+			args.push('--force');
+		}
+		if (options?.args) {
+			args.push(...options.args);
+		}
 		await this.runCommand(workDir, {
 			command: 'git push',
-			args: [withTag ? '--tags' : '', url, `${branch}:refs/heads/${branch}`],
+			args: args.concat([url, `${branch}:refs/heads/${branch}`]),
 			quiet: this.isQuiet(),
-			altCommand: `git push${tags} origin ${branch}:refs/heads/${branch}`,
+			altCommand: `git push${args.concat(['origin', `${branch}:refs/heads/${branch}`]).join(' ')}`,
+			suppressError: true,
 		});
 	};
 
@@ -517,15 +527,7 @@ export default class GitHelper {
 	 * @param {Context} context context
 	 * @return {Promise<void>} void
 	 */
-	public forcePush = async(workDir: string, branch: string, context: Context): Promise<void> => {
-		const url = this.getOrigin(context);
-		await this.runCommand(workDir, {
-			command: 'git push',
-			args: ['--force', url, `${branch}:refs/heads/${branch}`],
-			quiet: this.isQuiet(),
-			altCommand: `git push --force origin ${branch}:refs/heads/${branch}`,
-		});
-	};
+	public forcePush = async(workDir: string, branch: string, context: Context): Promise<void> => this.push(workDir, branch, context, {force: true});
 
 	/**
 	 * @param {string} workDir work dir
