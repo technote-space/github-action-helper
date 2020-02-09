@@ -187,7 +187,10 @@ export default class GitHelper {
 				altCommand: `git fetch origin ${context.ref}`,
 				stderrToStdout: true,
 			},
-			'git checkout -qf FETCH_HEAD',
+			{
+				command: 'git checkout',
+				args: ['-qf', 'FETCH_HEAD'],
+			},
 		]);
 	};
 
