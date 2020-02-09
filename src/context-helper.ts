@@ -38,9 +38,9 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	logger.log(separator);
 	if (false !== info) {
 		if ('owner' in info) {
-			logger.log('Version:  %s/%s@%s', info.owner, info.repo, info.tagName);
+			logger.log('Version:  %s/%s@%s(%s)', info.owner, info.repo, info.tagName, info.sha);
 		} else {
-			logger.log('Version:  %s', info.tagName);
+			logger.log('Version:  %s(%s)', info.tagName, info.sha);
 		}
 	}
 	logger.log('Event:    %s', context.eventName);

@@ -247,7 +247,7 @@ describe('showActionInfo', () => {
 		stdoutCalledWith(mockStdout, [
 			'',
 			'==================================================',
-			'Version:  v1.2.3',
+			'Version:  v1.2.3(undefined)',
 			'Event:    push',
 			'Action:   rerequested',
 			'sha:      test-sha',
@@ -288,7 +288,7 @@ describe('showActionInfo', () => {
 		stdoutCalledWith(mockStdout, [
 			'',
 			'==================================================',
-			'Version:  hello/world@v1.2.3',
+			'Version:  hello/world@v1.2.3(162553222be3497f057501e028b47afc64944d84)',
 			'Event:    push',
 			'Action:   rerequested',
 			'sha:      test-sha',
