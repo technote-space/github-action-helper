@@ -100,10 +100,26 @@ export default class GitHelper {
 	};
 
 	/**
+	 * @param {string|boolean} origin origin
+	 * @param {boolean} quiet quiet?
+	 */
+	public useOrigin = (origin: string | boolean, quiet?: boolean): void => {
+		this.origin = typeof origin === 'boolean' ? (origin ? 'origin' : undefined) : origin;
+		if (quiet !== undefined) {
+			this.quietIfNotOrigin = quiet;
+		}
+	};
+
+	/**
+	 * @return {string} origin name
+	 */
+	private getRemoteName = (): string | never => this.origin ?? 'origin';
+
+	/**
 	 * @param {Context} context context
 	 * @return {string} origin
 	 */
-	private getOrigin = (context: Context): string => this.origin ?? getGitUrlWithToken(context, this.token);
+	private getRemote = (context: Context): string => this.origin ?? getGitUrlWithToken(context, this.token);
 
 	/**
 	 * @param {string} workDir work dir
@@ -114,22 +130,11 @@ export default class GitHelper {
 		await this.initialize(workDir, false);
 		await this.runCommand(workDir, {
 			command: 'git remote add',
-			args: ['origin', getGitUrlWithToken(context, this.token)],
+			args: [this.getRemoteName(), getGitUrlWithToken(context, this.token)],
 			quiet: this.isQuiet(),
-			altCommand: 'git remote add origin',
+			altCommand: `git remote add ${this.getRemoteName()}`,
 			suppressError: true,
 		});
-	};
-
-	/**
-	 * @param {string|boolean} origin origin
-	 * @param {boolean} quiet quiet?
-	 */
-	public useOrigin = (origin: string | boolean, quiet?: boolean): void => {
-		this.origin = typeof origin === 'boolean' ? (origin ? 'origin' : undefined) : origin;
-		if (quiet !== undefined) {
-			this.quietIfNotOrigin = quiet;
-		}
 	};
 
 	/**
@@ -160,10 +165,9 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public cloneBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
-		const url = this.getOrigin(context);
 		await this.runCommand(workDir, {
 			command: 'git clone',
-			args: [`--branch=${branch}`, this.cloneDepth, url, '.'],
+			args: [`--branch=${branch}`, this.cloneDepth, this.getRemote(context), '.'],
 			quiet: this.isQuiet(),
 			altCommand: `git clone --branch=${branch}`,
 			suppressError: true,
@@ -176,20 +180,19 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	private clonePR = async(workDir: string, context: Context): Promise<void> => {
-		const url = this.getOrigin(context);
 		await this.runCommand(workDir, [
 			{
 				command: 'git clone',
-				args: [this.cloneDepth, url, '.'],
+				args: [this.cloneDepth, this.getRemote(context), '.'],
 				quiet: this.isQuiet(),
 				altCommand: 'git clone',
 				suppressError: true,
 			},
 			{
 				command: 'git fetch',
-				args: [url, `+${context.ref}`],
+				args: [this.getRemote(context), `+${context.ref}`],
 				quiet: this.isQuiet(),
-				altCommand: `git fetch origin ${context.ref}`,
+				altCommand: `git fetch ${this.getRemoteName()} ${context.ref}`,
 				stderrToStdout: true,
 			},
 			{
@@ -241,7 +244,7 @@ export default class GitHelper {
 			command: 'git fetch',
 			args: [
 				...(options ?? []),
-				'origin',
+				this.getRemoteName(),
 				...(refspec ?? []),
 			],
 			suppressError: true,
@@ -272,13 +275,12 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public fetchBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
-		const url        = this.getOrigin(context);
 		const branchName = getBranch(branch, false);
 		await this.runCommand(workDir, {
 			command: 'git fetch',
-			args: ['--prune', '--no-recurse-submodules', this.cloneDepth, url, `+refs/heads/${branchName}:refs/remotes/origin/${branchName}`],
+			args: ['--prune', '--no-recurse-submodules', this.cloneDepth, this.getRemote(context), `+refs/heads/${branchName}:refs/remotes/${this.getRemoteName()}/${branchName}`],
 			quiet: this.isQuiet(),
-			altCommand: `git fetch --prune --no-recurse-submodules${this.cloneDepth} origin +refs/heads/${branchName}:refs/remotes/origin/${branchName}`,
+			altCommand: `git fetch --prune --no-recurse-submodules${this.cloneDepth} ${this.getRemoteName()} +refs/heads/${branchName}:refs/remotes/${this.getRemoteName()}/${branchName}`,
 			suppressError: true,
 		});
 	};
@@ -300,7 +302,7 @@ export default class GitHelper {
 	public switchBranch = async(workDir: string, branch: string): Promise<void> => {
 		await this.runCommand(workDir, {
 			command: 'git checkout',
-			args: ['-b', branch, `origin/${branch}`],
+			args: ['-b', branch, `${this.getRemoteName()}/${branch}`],
 			suppressError: true,
 			stderrToStdout: true,
 		});
@@ -346,7 +348,7 @@ export default class GitHelper {
 	public getRefDiff = async(workDir: string, baseRef: string, compareRef: string, diffFilter?: string, dot?: '..' | '...'): Promise<string[]> => {
 		const toDiffRef = (ref: string): string =>
 			'HEAD' === ref ? 'HEAD' : (
-				isPrRef(ref) ? ref.replace(/^refs\//, '') : `origin/${getBranch(ref, false)}`
+				isPrRef(ref) ? ref.replace(/^refs\//, '') : `${this.getRemoteName()}/${getBranch(ref, false)}`
 			);
 		return (await this.runCommand(workDir, {
 			command: 'git diff',
@@ -416,7 +418,6 @@ export default class GitHelper {
 	 * @see https://qiita.com/ngyuki/items/ca7bed067d7e538fd0cd
 	 */
 	public fetchTags = async(workDir: string, context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
-		const url = this.getOrigin(context);
 		await this.runCommand(workDir, [
 			...arrayChunk(await this.getTags(workDir), splitSize).map(tags => ({
 				command: 'git tag',
@@ -426,9 +427,9 @@ export default class GitHelper {
 			})),
 			{
 				command: 'git fetch',
-				args: [url, '--tags'],
+				args: [this.getRemote(context), '--tags'],
 				quiet: this.isQuiet(),
-				altCommand: 'git fetch origin --tags',
+				altCommand: `git fetch ${this.getRemoteName()} --tags`,
 			},
 		]);
 	};
@@ -441,16 +442,15 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public deleteTag = async(workDir: string, tags: string | string[], context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
-		const url       = this.getOrigin(context);
 		const regexp    = /^(refs\/)?tags\//;
 		const getTagRef = (tag: string): string => regexp.test(tag) ? tag : `tags/${tag}`;
 		const getTag    = (tag: string): string => tag.replace(regexp, '');
 		await this.runCommand(workDir, [
 			...arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTagRef), splitSize).map(tags => ({
 				command: 'git push',
-				args: [url, '--delete', ...tags],
+				args: [this.getRemote(context), '--delete', ...tags],
 				quiet: this.isQuiet(),
-				altCommand: `git push origin --delete ${tags.join(' ')}`,
+				altCommand: `git push ${this.getRemoteName()} --delete ${tags.join(' ')}`,
 				suppressError: true,
 			})),
 			...arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTag), splitSize).map(tags => ({
@@ -470,7 +470,6 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public copyTag = async(workDir: string, newTag: string, fromTag: string, context: Context): Promise<void> => {
-		const url = this.getOrigin(context);
 		await this.deleteTag(workDir, newTag, context);
 		await this.runCommand(workDir, [
 			{
@@ -479,9 +478,9 @@ export default class GitHelper {
 			},
 			{
 				command: 'git push',
-				args: [url, `refs/tags/${newTag}`],
+				args: [this.getRemote(context), `refs/tags/${newTag}`],
 				quiet: this.isQuiet(),
-				altCommand: `git push origin refs/tags/${newTag}`,
+				altCommand: `git push ${this.getRemoteName()} refs/tags/${newTag}`,
 			},
 		]);
 	};
@@ -509,7 +508,6 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public push = async(workDir: string, branch: string, context: Context, options?: { withTag?: boolean; force?: boolean; args?: Array<string> }): Promise<void> => {
-		const url                 = this.getOrigin(context);
 		const args: Array<string> = [];
 		if (options?.withTag) {
 			args.push('--tags');
@@ -522,9 +520,9 @@ export default class GitHelper {
 		}
 		await this.runCommand(workDir, {
 			command: 'git push',
-			args: args.concat([url, `${branch}:refs/heads/${branch}`]),
+			args: args.concat([this.getRemote(context), `${branch}:refs/heads/${branch}`]),
 			quiet: this.isQuiet(),
-			altCommand: `git push ${args.concat(['origin', `${branch}:refs/heads/${branch}`]).join(' ')}`,
+			altCommand: `git push ${args.concat([this.getRemoteName(), `${branch}:refs/heads/${branch}`]).join(' ')}`,
 			suppressError: true,
 		});
 	};

@@ -716,29 +716,39 @@ describe('GitHelper', () => {
 			await helper.clone(workDir, context({
 				ref: 'refs/heads/test',
 			}));
+			await helper.switchBranch(workDir, 'abc');
 			helper.useOrigin(true);
 			await helper.clone(workDir, context({
 				ref: 'refs/heads/test',
 			}));
+			await helper.switchBranch(workDir, 'abc');
 			helper.useOrigin('test');
 			await helper.clone(workDir, context({
 				ref: 'refs/heads/test',
 			}));
+			await helper.switchBranch(workDir, 'abc');
 			helper.useOrigin(true, false);
 			await helper.clone(workDir, context({
 				ref: 'refs/heads/test',
 			}));
+			await helper.switchBranch(workDir, 'abc');
 			helper.useOrigin(false);
 			await helper.clone(workDir, context({
 				ref: 'refs/heads/test',
 			}));
+			await helper.switchBranch(workDir, 'abc');
 
 			execCalledWith(mockExec, [
 				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git checkout -b abc origin/abc || :',
 				'git clone \'--branch=test\' \'--depth=3\' origin \'.\' > /dev/null 2>&1 || :',
+				'git checkout -b abc origin/abc || :',
 				'git clone \'--branch=test\' \'--depth=3\' test \'.\' > /dev/null 2>&1 || :',
+				'git checkout -b abc test/abc || :',
 				'git clone \'--branch=test\' \'--depth=3\' origin \'.\' || :',
+				'git checkout -b abc origin/abc || :',
 				'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
+				'git checkout -b abc origin/abc || :',
 			]);
 		});
 	});
