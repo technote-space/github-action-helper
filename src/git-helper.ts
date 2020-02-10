@@ -84,9 +84,14 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @param {boolean} refresh refresh?
 	 * @return {Promise<void>} void
 	 */
-	private initialize = async(workDir: string): Promise<void> => {
+	private initialize = async(workDir: string, refresh = true): Promise<void> => {
+		if (isCloned(workDir) && !refresh) {
+			return;
+		}
+
 		if (fs.existsSync(workDir)) {
 			await this.runCommand(workDir, {command: 'rm', args: ['-rdf', workDir]});
 		}
@@ -106,7 +111,7 @@ export default class GitHelper {
 	 * @return {Promise<void>} void
 	 */
 	public addOrigin = async(workDir: string, context: Context): Promise<void> => {
-		await this.initialize(workDir);
+		await this.initialize(workDir, false);
 		await this.runCommand(workDir, {
 			command: 'git remote add',
 			args: ['origin', getGitUrlWithToken(context, this.token)],

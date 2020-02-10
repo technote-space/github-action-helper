@@ -110,8 +110,6 @@ describe('GitHelper', () => {
 			await helper.checkout(workDir, context());
 
 			execCalledWith(mockExec, [
-				'rm -rdf \'.work\'',
-				'git init \'.\'',
 				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch --no-tags origin \'refs/heads/test-ref:refs/remotes/origin/test-ref\' || :',
 				'git checkout -qf test-sha',
@@ -124,8 +122,6 @@ describe('GitHelper', () => {
 			await helper.checkout(workDir, context({ref: 'refs/pull/123/merge'}));
 
 			execCalledWith(mockExec, [
-				'rm -rdf \'.work\'',
-				'git init \'.\'',
 				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch --no-tags origin \'refs/pull/123/merge:refs/pull/123/merge\' || :',
 				'git checkout -qf test-sha',
@@ -138,8 +134,6 @@ describe('GitHelper', () => {
 			await helper.checkout(workDir, context({ref: 'refs/tags/v1.2.3'}));
 
 			execCalledWith(mockExec, [
-				'rm -rdf \'.work\'',
-				'git init \'.\'',
 				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch --no-tags origin \'refs/tags/v1.2.3:refs/tags/v1.2.3\' || :',
 				'git checkout -qf test-sha',
@@ -180,6 +174,17 @@ describe('GitHelper', () => {
 			await helper.addOrigin(workDir, context());
 
 			execCalledWith(mockExec, [
+				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+			]);
+		});
+
+		it('should run git init and git remote add', async() => {
+			const mockExec = spyOnExec();
+			setExists([false, true]);
+
+			await helper.addOrigin(workDir, context());
+
+			execCalledWith(mockExec, [
 				`rm -rdf '${workDir}'`,
 				'git init \'.\'',
 				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
@@ -194,8 +199,6 @@ describe('GitHelper', () => {
 			await helper.fetchOrigin(workDir, context());
 
 			execCalledWith(mockExec, [
-				`rm -rdf '${workDir}'`,
-				'git init \'.\'',
 				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch origin || :',
 			]);
@@ -207,8 +210,6 @@ describe('GitHelper', () => {
 			await helper.fetchOrigin(workDir, context(), ['--no-tags']);
 
 			execCalledWith(mockExec, [
-				`rm -rdf '${workDir}'`,
-				'git init \'.\'',
 				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch --no-tags origin || :',
 			]);
@@ -220,8 +221,6 @@ describe('GitHelper', () => {
 			await helper.fetchOrigin(workDir, context(), undefined, ['+refs/pull/*/merge:refs/remotes/pull/*/merge', '+refs/heads/hoge:refs/remotes/origin/hoge']);
 
 			execCalledWith(mockExec, [
-				`rm -rdf '${workDir}'`,
-				'git init \'.\'',
 				'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
 				'git fetch origin \'+refs/pull/*/merge:refs/remotes/pull/*/merge\' \'+refs/heads/hoge:refs/remotes/origin/hoge\' || :',
 			]);
