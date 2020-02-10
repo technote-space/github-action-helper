@@ -1,0 +1,39 @@
+on:
+  push:
+    tags:
+      - "v*"
+
+name: GitHub Releases
+
+jobs:
+  releases:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get version
+        run: echo "::set-env name=TAG_NAME::${HEAD_REF#refs/tags/}"
+        env:
+          HEAD_REF: ${{ github.ref }}
+      - name: Create Release
+        id: drafter
+        uses: technote-space/release-drafter@v6
+        with:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          DRAFT: false
+          NAME: ${{ env.TAG_NAME }}
+          TAG: ${{ env.TAG_NAME }}
+      - uses: 8398a7/action-slack@v2
+        with:
+          status: ${{ job.status }}
+          text: ${{ format('<{0}>', steps.drafter.outputs.html_url) }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: steps.drafter.outputs.html_url
+      - uses: 8398a7/action-slack@v2
+        with:
+          status: ${{ job.status }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: failure()
