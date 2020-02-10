@@ -113,7 +113,7 @@ export default class GitHelper {
 	/**
 	 * @return {string} origin name
 	 */
-	private getRemoteName = (): string | never => this.origin ?? 'origin';
+	public getRemoteName = (): string | never => this.origin ?? 'origin';
 
 	/**
 	 * @param {Context} context context
