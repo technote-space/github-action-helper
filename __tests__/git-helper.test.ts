@@ -493,8 +493,8 @@ describe('GitHelper', () => {
 			await helper.fetchTags(workDir, context());
 
 			execCalledWith(mockExec, [
-				'git tag',
-				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' \'v1.2.6\' || :',
+				'git tag > /dev/null 2>&1',
+				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' \'v1.2.6\' > /dev/null 2>&1',
 				'git fetch \'https://octocat:token1@github.com/hello/world.git\' --tags > /dev/null 2>&1',
 			]);
 		});
@@ -506,9 +506,9 @@ describe('GitHelper', () => {
 			await helper.fetchTags(workDir, context(), 3);
 
 			execCalledWith(mockExec, [
-				'git tag',
-				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' || :',
-				'git tag -d \'v1.2.6\' || :',
+				'git tag > /dev/null 2>&1',
+				'git tag -d \'v1.2.3\' \'v1.2.4\' \'v1.2.5\' > /dev/null 2>&1',
+				'git tag -d \'v1.2.6\' > /dev/null 2>&1',
 				'git fetch \'https://octocat:token1@github.com/hello/world.git\' --tags > /dev/null 2>&1',
 			]);
 		});
