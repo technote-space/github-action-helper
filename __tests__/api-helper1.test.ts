@@ -365,37 +365,18 @@ describe('ApiHelper', () => {
 
 	describe('pullsList', () => {
 		it('should return pulls list generator', async() => {
-			const fn = jest.fn();
 			nock('https://api.github.com')
-				.get('/repos/hello/world/pulls?sort=created&direction=desc&per_page=100&page=1')
+				.get('/repos/hello/world/pulls?sort=created&direction=desc')
 				.reply(200, () => {
-					fn();
 					return getApiFixture(rootDir, 'pulls.list');
-				})
-				.get('/repos/hello/world/pulls?sort=created&direction=desc&per_page=100&page=2')
-				.reply(200, () => {
-					fn();
-					return getApiFixture(rootDir, 'pulls.list');
-				})
-				.get('/repos/hello/world/pulls?sort=created&direction=desc&per_page=100&page=3')
-				.reply(200, () => {
-					fn();
-					return [];
 				});
 
-			const generator = helper.pullsList({
+			const list = await helper.pullsList({
 				sort: 'created',
 				direction: 'desc',
 			});
 
-			let count = 0;
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			for await (const item of generator) {
-				count++;
-			}
-
-			expect(count).toBe(4);
-			expect(fn).toBeCalledTimes(3);
+			expect(list).toHaveLength(2);
 		});
 	});
 
