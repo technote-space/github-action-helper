@@ -409,8 +409,8 @@ export default class GitHelper {
 	 */
 	public getTags = async(workDir: string, options?: { quiet?: boolean; suppressOutput?: boolean }): Promise<string[]> => (await this.runCommand(workDir, {
 		command: 'git tag',
-		quiet: options?.quiet,
 		suppressOutput: options?.suppressOutput,
+		altCommand: options?.quiet ? '' : undefined,
 	}))[0].stdout;
 
 	/**
