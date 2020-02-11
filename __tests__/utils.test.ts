@@ -187,18 +187,6 @@ describe('getBranch', () => {
 		}))).toBe('test');
 	});
 
-	it('should get branch 3', () => {
-		expect(getBranch(getContext({
-			ref: 'heads/test',
-		}))).toBe('test');
-	});
-
-	it('should get branch 4', () => {
-		expect(getBranch(getContext({
-			ref: 'remotes/origin/test',
-		}))).toBe('test');
-	});
-
 	it('should not get branch 1', () => {
 		expect(getBranch(getContext({
 			ref: 'refs/tags/test',
@@ -487,7 +475,6 @@ describe('getOctokit', () => {
 describe('isBranch', () => {
 	it('should return true', () => {
 		expect(isBranch('refs/heads/master')).toBe(true);
-		expect(isBranch('heads/master')).toBe(true);
 	});
 
 	it('should return false', () => {
