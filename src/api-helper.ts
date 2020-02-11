@@ -269,26 +269,15 @@ export default class ApiHelper {
 	 * @param {PullsListParams} params params
 	 * @return {AsyncIterable<Octokit.PullsListResponseItem>} pull request list
 	 */
-	public async* pullsList(params: PullsListParams): AsyncIterable<Octokit.PullsListResponseItem> {
-		const perPage = 100;
-		let page      = 1;
-		while (true) {
-			const list = await this.octokit.pulls.list(Object.assign({
-				sort: 'created',
-				direction: 'asc',
-			}, params, {
-				owner: this.context.repo.owner,
-				repo: this.context.repo.repo,
-				'per_page': perPage,
-				page: page++,
-			}));
-			if (!list.data.length) {
-				break;
-			}
-
-			yield* list.data;
-		}
-	}
+	public pullsList = (params: PullsListParams): Promise<Octokit.PullsListResponse> => this.octokit.paginate(
+		this.octokit.pulls.list.endpoint.merge(Object.assign({
+			sort: 'created',
+			direction: 'asc',
+		}, params, {
+			owner: this.context.repo.owner,
+			repo: this.context.repo.repo,
+		})),
+	);
 
 	/**
 	 * @param {string} branchName branch name

@@ -404,10 +404,13 @@ export default class GitHelper {
 
 	/**
 	 * @param {string} workDir work dir
+	 * @param {object} options options
 	 * @return {Promise<string[]>} tags
 	 */
-	public getTags = async(workDir: string): Promise<string[]> => (await this.runCommand(workDir, {
+	public getTags = async(workDir: string, options?: { quiet?: boolean; suppressOutput?: boolean }): Promise<string[]> => (await this.runCommand(workDir, {
 		command: 'git tag',
+		quiet: options?.quiet,
+		suppressOutput: options?.suppressOutput,
 	}))[0].stdout;
 
 	/**
@@ -419,11 +422,10 @@ export default class GitHelper {
 	 */
 	public fetchTags = async(workDir: string, context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
 		await this.runCommand(workDir, [
-			...arrayChunk(await this.getTags(workDir), splitSize).map(tags => ({
+			...arrayChunk(await this.getTags(workDir, {quiet: true}), splitSize).map(tags => ({
 				command: 'git tag',
 				args: ['-d', ...tags],
-				suppressError: true,
-				stderrToStdout: true,
+				quiet: true,
 			})),
 			{
 				command: 'git fetch',

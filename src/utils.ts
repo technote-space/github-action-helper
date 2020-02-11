@@ -34,11 +34,11 @@ export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+
 
 export const isRef = (ref: string | Context): boolean => /^refs\//.test(getRef(ref));
 
-export const isBranch = (ref: string | Context): boolean => /^(refs\/)?heads\//.test(getRef(ref));
+export const isBranch = (ref: string | Context): boolean => /^refs\/heads\//.test(getRef(ref));
 
-export const isTagRef = (ref: string | Context): boolean => /^refs\/?tags\//.test(getRef(ref));
+export const isTagRef = (ref: string | Context): boolean => /^refs\/tags\//.test(getRef(ref));
 
-export const isRemoteBranch = (ref: string | Context): boolean => /^(refs\/)?remotes\/origin\//.test(getRef(ref));
+export const isRemoteBranch = (ref: string | Context): boolean => /^refs\/remotes\/origin\//.test(getRef(ref));
 
 export const isPrRef = (ref: string | Context): boolean => /^refs\/pull\/\d+\/(merge|head)$/.test(getRef(ref));
 
@@ -50,9 +50,9 @@ export const getRefForUpdate = (ref: string | Context): string => getRef(ref).re
 
 export const getBranch = (ref: string | Context, defaultIsEmpty = true): string =>
 	isBranch(ref) ?
-		getRef(ref).replace(/^(refs\/)?heads\//, '') :
+		getRef(ref).replace(/^refs\/heads\//, '') :
 		(
-			isRemoteBranch(ref) ? getRef(ref).replace(/^(refs\/)?remotes\/origin\//, '') :
+			isRemoteBranch(ref) ? getRef(ref).replace(/^refs\/remotes\/origin\//, '') :
 				(
 					defaultIsEmpty ? '' : getRefForUpdate(ref)
 				)
