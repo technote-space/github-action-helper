@@ -4,7 +4,7 @@ import { Context } from '@actions/github/lib/context';
 import { Octokit } from '@octokit/rest';
 import { exportVariable } from '@actions/core';
 import { Logger } from './index';
-import { getRefForUpdate, isPrRef, getBranch } from './utils';
+import { getRefForUpdate, isPrRef, getBranch, trimRef, versionCompare, generateNewPatchVersion } from './utils';
 import { getSender } from './context-helper';
 
 type PullsUpdateParams = {
@@ -520,4 +520,24 @@ export default class ApiHelper {
 	public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await this.octokit.repos.get({ // eslint-disable-line camelcase
 		...this.context.repo,
 	})).data.default_branch;
+
+	/**
+	 * @return {Promise<Array<string>>} tags
+	 */
+	public getTags = async(): Promise<Array<string>> => (await this.octokit.paginate(
+		this.octokit.git.listMatchingRefs.endpoint.merge({
+			...this.context.repo,
+			ref: 'tags/',
+		}),
+	)).map((item: Octokit.GitListMatchingRefsResponseItem): string => trimRef(item.ref));
+
+	/**
+	 * @return {Promise<string>} tag
+	 */
+	public getLastTag = async(): Promise<string> => 'v' + ((await this.getTags()).filter(tag => /^v?\d+(\.\d+)*$/.test(tag)).sort(versionCompare).reverse()[0]?.replace(/^v/, '') ?? '0.0.0');
+
+	/**
+	 * @return {Promise<string>} tag
+	 */
+	public getNewPatchVersion = async(): Promise<string> => generateNewPatchVersion(await this.getLastTag());
 }

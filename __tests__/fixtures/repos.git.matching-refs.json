@@ -1,0 +1,32 @@
+[
+  {
+    "ref": "refs/tags/v1.0.0",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWE=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/tags/v1.0.0",
+    "object": {
+      "type": "commit",
+      "sha": "aa218f56b14c9653891f9e74264a383fa43fefbd",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/aa218f56b14c9653891f9e74264a383fa43fefbd"
+    }
+  },
+  {
+    "ref": "refs/tags/v2.0.0",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWI=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/tags/v2.0.0",
+    "object": {
+      "type": "commit",
+      "sha": "612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac"
+    }
+  },
+  {
+    "ref": "refs/tags/v1.2.3",
+    "node_id": "MDM6UmVmcmVmcy9oZWFkcy9mZWF0dXJlLWI=",
+    "url": "https://api.github.com/repos/octocat/Hello-World/git/refs/tags/v1.2.3",
+    "object": {
+      "type": "commit",
+      "sha": "612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac",
+      "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/612077ae6dffb4d2fbd8ce0cccaa58893b07b5ac"
+    }
+  }
+]
