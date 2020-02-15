@@ -211,6 +211,71 @@ describe('ApiHelper with params', () => {
 			expect(fn).not.toBeCalled();
 		});
 	});
+
+
+	describe('getTags', () => {
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.matching-refs'));
+
+			expect(await helper.getTags()).toEqual([
+				'v1.0.0',
+				'v2.0.0',
+				'v1.2.3',
+			]);
+		});
+
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => []);
+
+			expect(await helper.getTags()).toEqual([]);
+		});
+	});
+
+	describe('getLastTag', () => {
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.matching-refs'));
+
+			expect(await helper.getLastTag()).toBe('v2.0.0');
+		});
+
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => []);
+
+			expect(await helper.getLastTag()).toBe('v0.0.0');
+		});
+	});
+
+	describe('getNewPatchVersion', () => {
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.matching-refs'));
+
+			expect(await helper.getNewPatchVersion()).toBe('v2.0.1');
+		});
+
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => []);
+
+			expect(await helper.getNewPatchVersion()).toBe('v0.0.1');
+		});
+	});
 });
 
 describe('ApiHelper without logger', () => {
