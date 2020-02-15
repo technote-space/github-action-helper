@@ -100,8 +100,7 @@ export default class ApiHelper {
 	 */
 	private createBlob = async(rootDir: string, filepath: string): Promise<{ path: string; sha: string }> => {
 		const blob = await this.octokit.git.createBlob({
-			owner: this.context.repo.owner,
-			repo: this.context.repo.repo,
+			...this.context.repo,
 			content: Buffer.from(fs.readFileSync(path.resolve(rootDir, filepath), 'utf8')).toString('base64'),
 			encoding: 'base64',
 		});
@@ -121,8 +120,7 @@ export default class ApiHelper {
 	 * @return {Promise<Octokit.Response<Octokit.GitGetCommitResponse>>} commit
 	 */
 	private getCommit = async(): Promise<Octokit.Response<Octokit.GitGetCommitResponse>> => this.octokit.git.getCommit({
-		owner: this.context.repo.owner,
-		repo: this.context.repo.repo,
+		...this.context.repo,
 		'commit_sha': this.getCommitSha(),
 	});
 
@@ -133,8 +131,7 @@ export default class ApiHelper {
 		const key = parseInt(this.context.payload.number, 10);
 		if (!(key in this.prCache)) {
 			this.prCache[key] = await this.octokit.pulls.get({
-				owner: this.context.repo.owner,
-				repo: this.context.repo.repo,
+				...this.context.repo,
 				'pull_number': this.context.payload.number,
 			});
 		}
@@ -154,8 +151,7 @@ export default class ApiHelper {
 	 * @return {Promise<Octokit.Response<Octokit.GitCreateTreeResponse>>} tree
 	 */
 	public createTree = async(blobs: { path: string; sha: string }[]): Promise<Octokit.Response<Octokit.GitCreateTreeResponse>> => this.octokit.git.createTree({
-		owner: this.context.repo.owner,
-		repo: this.context.repo.repo,
+		...this.context.repo,
 		'base_tree': (await this.getCommit()).data.tree.sha,
 		tree: Object.values(blobs).map(blob => ({
 			path: blob.path,
@@ -171,8 +167,7 @@ export default class ApiHelper {
 	 * @return {Promise<Octokit.Response<Octokit.GitCreateCommitResponse>>} commit
 	 */
 	public createCommit = async(commitMessage: string, tree: Octokit.Response<Octokit.GitCreateTreeResponse>): Promise<Octokit.Response<Octokit.GitCreateCommitResponse>> => this.octokit.git.createCommit({
-		owner: this.context.repo.owner,
-		repo: this.context.repo.repo,
+		...this.context.repo,
 		tree: tree.data.sha,
 		parents: [this.getCommitSha()],
 		message: commitMessage,
@@ -185,8 +180,7 @@ export default class ApiHelper {
 	private getRef = async(refName: string): Promise<Octokit.AnyResponse | null> => {
 		try {
 			return await this.octokit.git.getRef({
-				owner: this.context.repo.owner,
-				repo: this.context.repo.repo,
+				...this.context.repo,
 				ref: refName,
 			});
 		} catch (error) {
@@ -203,8 +197,7 @@ export default class ApiHelper {
 	public updateRef = async(commit: Octokit.Response<Octokit.GitCreateCommitResponse>, refName: string, force: boolean): Promise<boolean> => {
 		try {
 			await this.octokit.git.updateRef({
-				owner: this.context.repo.owner,
-				repo: this.context.repo.repo,
+				...this.context.repo,
 				ref: refName,
 				sha: commit.data.sha,
 				force,
@@ -229,8 +222,7 @@ export default class ApiHelper {
 	 */
 	public createRef = async(commit: Octokit.Response<Octokit.GitCreateCommitResponse>, refName: string): Promise<void> => {
 		await this.octokit.git.createRef({
-			owner: this.context.repo.owner,
-			repo: this.context.repo.repo,
+			...this.context.repo,
 			ref: refName,
 			sha: commit.data.sha,
 		});
@@ -242,8 +234,7 @@ export default class ApiHelper {
 	 */
 	public deleteRef = async(refName: string): Promise<void> => {
 		await this.octokit.git.deleteRef({
-			owner: this.context.repo.owner,
-			repo: this.context.repo.repo,
+			...this.context.repo,
 			ref: refName,
 		});
 	};
@@ -254,8 +245,7 @@ export default class ApiHelper {
 	 */
 	public findPullRequest = async(branchName: string): Promise<Octokit.PullsListResponseItem | null> => {
 		const response = await this.octokit.pulls.list({
-			owner: this.context.repo.owner,
-			repo: this.context.repo.repo,
+			...this.context.repo,
 			head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
 		});
 		if (response.data.length) {
@@ -274,8 +264,7 @@ export default class ApiHelper {
 			sort: 'created',
 			direction: 'asc',
 		}, params, {
-			owner: this.context.repo.owner,
-			repo: this.context.repo.repo,
+			...this.context.repo,
 		})),
 	);
 
@@ -285,8 +274,7 @@ export default class ApiHelper {
 	 * @return {Promise<Octokit.Response<Octokit.PullsCreateResponse>>} pull
 	 */
 	public pullsCreate = async(branchName: string, detail: PullsCreateParams): Promise<Octokit.Response<Octokit.PullsCreateResponse>> => this.octokit.pulls.create({
-		owner: this.context.repo.owner,
-		repo: this.context.repo.repo,
+		...this.context.repo,
 		head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
 		base: (await this.getRefForUpdate(false)).replace(/^heads\//, ''),
 		...detail,
@@ -298,8 +286,7 @@ export default class ApiHelper {
 	 * @return {Promise<Octokit.Response<Octokit.PullsUpdateResponse>>} pull
 	 */
 	public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<Octokit.Response<Octokit.PullsUpdateResponse>> => this.octokit.pulls.update({
-		owner: this.context.repo.owner,
-		repo: this.context.repo.repo,
+		...this.context.repo,
 		'pull_number': number,
 		base: (await this.getRefForUpdate(false)).replace(/^heads\//, ''),
 		state: 'open',
@@ -379,8 +366,7 @@ export default class ApiHelper {
 		}
 
 		await this.octokit.issues.createComment({
-			owner: this.context.repo.owner,
-			repo: this.context.repo.repo,
+			...this.context.repo,
 			'issue_number': pullRequest.number,
 			body,
 		});
@@ -528,9 +514,10 @@ export default class ApiHelper {
 		};
 	};
 
-	// eslint-disable-next-line camelcase
-	public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await this.octokit.repos.get({
-		owner: this.context.repo.owner,
-		repo: this.context.repo.repo,
+	/**
+	 * @return {Promise<string>} default branch
+	 */
+	public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await this.octokit.repos.get({ // eslint-disable-line camelcase
+		...this.context.repo,
 	})).data.default_branch;
 }
