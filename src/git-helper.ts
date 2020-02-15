@@ -545,9 +545,8 @@ export default class GitHelper {
 		if (!isCloned(workDir)) {
 			throw new Error('Not a git repository');
 		}
-		const tags       = (await this.getTags(workDir)).filter(tag => /^v?\d+(\.\d+)*$/.test(tag));
-		const compareTag = (tag1: string, tag2: string): number => versionCompare(tag1, tag2);
-		return 'v' + (tags.slice().sort(compareTag).reverse()[0]?.replace(/^v/, '') ?? '0.0.0');
+
+		return 'v' + ((await this.getTags(workDir)).filter(tag => /^v?\d+(\.\d+)*$/.test(tag)).sort(versionCompare).reverse()[0]?.replace(/^v/, '') ?? '0.0.0');
 	};
 
 	/**
