@@ -12,15 +12,15 @@ const COLOR_MAP = {
 	'magenta': 5,
 	'cyan': 6,
 	'white': 7,
-};
+} as const;
 const ATTRIBUTE_MAP = {
 	'none': 0,
 	'bold': 1,
 	'underline': 4,
 	'italic': 3,
-};
-type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white';
-type Attribute = 'none' | 'bold' | 'underline' | 'italic';
+} as const;
+type Color = keyof typeof COLOR_MAP;
+type Attribute = keyof typeof ATTRIBUTE_MAP;
 type Setting = {
 	color?: Color;
 	backColor?: Color;
