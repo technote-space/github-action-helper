@@ -3,7 +3,7 @@ import {
 	spyOnStdout,
 	stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import {Logger} from '../src';
+import { Logger } from '../src';
 
 describe('Logger', () => {
 	beforeEach(() => {
