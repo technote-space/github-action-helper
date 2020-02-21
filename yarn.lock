@@ -7,7 +7,7 @@
   resolved "https://registry.yarnpkg.com/@actions/core/-/core-1.2.2.tgz#3c4848d50378f9e3bcb67bcf97813382ec7369ee"
   integrity sha512-IbCx7oefq+Gi6FWbSs2Fnw8VkEI6Y4gvjrYprY3RV//ksq/KPMlClOerJ4jRosyal6zkUIc8R9fS/cpRMlGClg==
 
-"@actions/github@^2.1.0", "@actions/github@^2.1.1":
+"@actions/github@^2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@actions/github/-/github-2.1.1.tgz#bcabedff598196d953f58ba750d5e75549a75142"
   integrity sha512-kAgTGUx7yf5KQCndVeHSwCNZuDBvPyxm5xKTswW2lofugeuC1AZX73nUUVDNaysnM9aKFMHv9YCdVJbg7syEyA==
@@ -450,12 +450,12 @@
   dependencies:
     type-detect "4.0.8"
 
-"@technote-space/github-action-test-helper@^0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.2.3.tgz#44c5b41043ca290d36176e6adb04ad9b069bddd9"
-  integrity sha512-D8am820P+975Ogg9/iiNzFTsgRbjkG46/fsBIf+jPoVnZAsUgv+q6uIyhO6O3Ame9pvN6VCN5dJm4hGo3NQpog==
+"@technote-space/github-action-test-helper@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.2.4.tgz#9ff122c173caed66d7d1a7c98136f397e876e5de"
+  integrity sha512-yU+KbfZ8+nn6uwMK0TN8W+PoyM2zS8x0lYABVS+077wqLubLIs5PQyFRggNOZPVg51aRWFI1if87VG7QBuan8Q==
   dependencies:
-    "@actions/github" "^2.1.0"
+    "@actions/github" "^2.1.1"
     js-yaml "^3.13.1"
 
 "@types/babel__core@^7.1.0":
