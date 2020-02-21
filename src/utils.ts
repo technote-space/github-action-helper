@@ -88,15 +88,7 @@ export const getRefspec = (ref: string | Context, origin = 'origin'): string => 
 
 export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-export const getOctokit = (token?: string): Octokit => new GitHub(token ?? getAccessToken(true), {
-	log: {
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		warn: function(): void {
-		},
-	},
-});
+export const getOctokit = (token?: string): Octokit => new GitHub(token ?? getAccessToken(true));
 
 export const getActor = (): string => process.env.GITHUB_ACTOR || '';
 
