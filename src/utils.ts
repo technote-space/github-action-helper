@@ -170,7 +170,7 @@ export const versionCompare = (version1: string, version2: string, checkDifferen
 
 export const mask = (value: object, target = 'token'): object => {
 	Object.keys(value).forEach(key => {
-		if (typeof value[key] === 'object') {
+		if (value[key] && typeof value[key] === 'object') {
 			value[key] = mask(value[key], target);
 		} else if (target === key) {
 			value[key] = '***';
