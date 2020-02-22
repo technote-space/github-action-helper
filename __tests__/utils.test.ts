@@ -6,7 +6,7 @@ import { Utils } from '../src';
 const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare, getOctokit} = Utils;
 const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep}        = Utils;
 const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, getPrBranch}     = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, mask}                      = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, mask}                = Utils;
 
 jest.useFakeTimers();
 
@@ -553,6 +553,15 @@ describe('mask', () => {
 	it('should remove token', () => {
 		expect(mask({})).toEqual({});
 		expect(mask({
+			token: 'test',
+			test1: null,
+			test2: undefined,
+		})).toEqual({
+			token: '***',
+			test1: null,
+			test2: undefined,
+		});
+		expect(mask({
 			test1: {
 				token: 'test',
 			},
@@ -563,7 +572,7 @@ describe('mask', () => {
 			},
 		})).toEqual({
 			test1: {
-				token: '***'
+				token: '***',
 			},
 			test2: 2,
 			test3: {
