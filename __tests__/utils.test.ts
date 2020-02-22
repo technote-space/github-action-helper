@@ -6,7 +6,7 @@ import { Utils } from '../src';
 const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare, getOctokit} = Utils;
 const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep}        = Utils;
 const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, getPrBranch}     = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec}                      = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, mask}                      = Utils;
 
 jest.useFakeTimers();
 
@@ -546,5 +546,56 @@ describe('getLocalRefspec', () => {
 		expect(getLocalRefspec('refs/heads/master', 'test')).toBe('test/master');
 		expect(getLocalRefspec('refs/tags/v1.2.3')).toBe('tags/v1.2.3');
 		expect(getLocalRefspec('refs/pull/123/merge')).toBe('pull/123/merge');
+	});
+});
+
+describe('mask', () => {
+	it('should remove token', () => {
+		expect(mask({})).toEqual({});
+		expect(mask({
+			test1: {
+				token: 'test',
+			},
+			test2: 2,
+			test3: {
+				test: 3,
+
+			},
+		})).toEqual({
+			test1: {
+				token: '***'
+			},
+			test2: 2,
+			test3: {
+				test: 3,
+			},
+		});
+		expect(mask({
+			abc: 'test',
+			test1: {
+				abc: 'test',
+				test2: 2,
+				test3: 3,
+				test4: {
+					test5: {
+						abc: 'test',
+						test6: 6,
+					},
+				},
+			},
+		}, 'abc')).toEqual({
+			abc: '***',
+			test1: {
+				abc: '***',
+				test2: 2,
+				test3: 3,
+				test4: {
+					test5: {
+						abc: '***',
+						test6: 6,
+					},
+				},
+			},
+		});
 	});
 });

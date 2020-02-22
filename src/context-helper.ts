@@ -1,7 +1,7 @@
 import path from 'path';
 import { Context } from '@actions/github/lib/context';
 import { Logger } from './index';
-import { getAccessToken, getActor, getBuildInfo } from './utils';
+import { getAccessToken, getActor, getBuildInfo, mask } from './utils';
 
 export const isRelease = (context: Context): boolean => 'release' === context.eventName;
 
@@ -28,18 +28,6 @@ const getGitUrlAuthInfo = (token: string | undefined): string => token ? `${getA
 export const getGitUrlWithToken = (context: Context, token?: string | undefined): string => `https://${getGitUrlAuthInfo(token)}github.com/${context.repo.owner}/${context.repo.repo}.git`;
 
 export const getGitUrl = (context: Context, accessTokenRequired = true): string => getGitUrlWithToken(context, getAccessToken(accessTokenRequired));
-
-export const removeToken = (value: object): object => {
-	Object.keys(value).forEach(key => {
-		if (typeof value[key] === 'object') {
-			value[key] = removeToken(value[key]);
-		} else if ('token' === key) {
-			delete value[key];
-		}
-	});
-
-	return value;
-};
 
 export const showActionInfo = (rootDir: string, logger: Logger, context: Context): void => {
 	const info      = getBuildInfo(path.resolve(rootDir, 'build.json'));
@@ -76,9 +64,9 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	logger.log('repo:     %s', context.repo.repo);
 	logger.log();
 	logger.startProcess('Dump context');
-	console.log(removeToken(context));
+	console.log(mask(context));
 	logger.startProcess('Dump Payload');
-	console.log(removeToken(context.payload));
+	console.log(mask(context.payload));
 	logger.endProcess();
 	logger.log(separator);
 	logger.log();

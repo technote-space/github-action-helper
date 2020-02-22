@@ -167,3 +167,15 @@ export const versionCompare = (version1: string, version2: string, checkDifferen
 	};
 	return compare(splitVersion(version1.replace(/^v/, '')), splitVersion(version2.replace(/^v/, '')));
 };
+
+export const mask = (value: object, target = 'token'): object => {
+	Object.keys(value).forEach(key => {
+		if (typeof value[key] === 'object') {
+			value[key] = mask(value[key], target);
+		} else if (target === key) {
+			value[key] = '***';
+		}
+	});
+
+	return value;
+};
