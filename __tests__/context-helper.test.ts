@@ -7,7 +7,8 @@ import {
 import { testEnv, getContext } from '@technote-space/github-action-test-helper';
 import { Logger, ContextHelper } from '../src';
 
-const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isCreateTag, getGitUrl, getRepository, getTagName, getSender, showActionInfo} = ContextHelper;
+const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isCreateTag}         = ContextHelper;
+const {getGitUrl, getRepository, getTagName, getSender, removeToken, showActionInfo} = ContextHelper;
 
 describe('isRelease', () => {
 	it('should return true', () => {
@@ -218,6 +219,52 @@ describe('getSender', () => {
 				},
 			},
 		}))).toBe(false);
+	});
+});
+
+describe('removeToken', () => {
+	it('should remove token', () => {
+		expect(removeToken({})).toEqual({});
+		expect(removeToken({
+			test1: {
+				token: 'test',
+			},
+			test2: 2,
+			test3: {
+				test: 3,
+
+			},
+		})).toEqual({
+			test1: {},
+			test2: 2,
+			test3: {
+				test: 3,
+			},
+		});
+		expect(removeToken({
+			token: 'test',
+			test1: {
+				token: 'test',
+				test2: 2,
+				test3: 3,
+				test4: {
+					test5: {
+						token: 'test',
+						test6: 6,
+					},
+				},
+			},
+		})).toEqual({
+			test1: {
+				test2: 2,
+				test3: 3,
+				test4: {
+					test5: {
+						test6: 6,
+					},
+				},
+			},
+		});
 	});
 });
 

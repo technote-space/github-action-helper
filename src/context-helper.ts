@@ -29,6 +29,18 @@ export const getGitUrlWithToken = (context: Context, token?: string | undefined)
 
 export const getGitUrl = (context: Context, accessTokenRequired = true): string => getGitUrlWithToken(context, getAccessToken(accessTokenRequired));
 
+export const removeToken = (value: object): object => {
+	Object.keys(value).forEach(key => {
+		if (typeof value[key] === 'object') {
+			value[key] = removeToken(value[key]);
+		} else if ('token' === key) {
+			delete value[key];
+		}
+	});
+
+	return value;
+};
+
 export const showActionInfo = (rootDir: string, logger: Logger, context: Context): void => {
 	const info      = getBuildInfo(path.resolve(rootDir, 'build.json'));
 	const tagName   = getTagName(context);
@@ -64,9 +76,9 @@ export const showActionInfo = (rootDir: string, logger: Logger, context: Context
 	logger.log('repo:     %s', context.repo.repo);
 	logger.log();
 	logger.startProcess('Dump context');
-	console.log(context);
+	console.log(removeToken(context));
 	logger.startProcess('Dump Payload');
-	console.log(context.payload);
+	console.log(removeToken(context.payload));
 	logger.endProcess();
 	logger.log(separator);
 	logger.log();
