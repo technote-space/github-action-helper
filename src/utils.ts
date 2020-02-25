@@ -129,19 +129,26 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 
 export const replaceAll = (string: string, key: string | RegExp, value: string): string => string.split(key).join(value);
 
-export const generateNewPatchVersion = (lastTag: string): string => {
+export const generateNewVersion = (lastTag: string, position?: number): string => {
 	if (!/^v?\d+(\.\d+)*$/.test(lastTag)) {
 		throw new Error('Invalid tag');
 	}
+
 	const fragments = split(lastTag.replace(/^v/, ''), '.');
 	// eslint-disable-next-line no-magic-numbers
 	while (fragments.length < 3) {
 		fragments.push('0');
 	}
-	// eslint-disable-next-line no-magic-numbers
-	fragments[fragments.length - 1] = (Number(fragments[fragments.length - 1]) + 1).toString();
-	return 'v' + fragments.join('.');
+
+	const target      = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
+	fragments[target] = (Number(fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
+	[...Array(2 - target).keys()].forEach(key => fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers
+	return 'v' + fragments.slice(0, 3).join('.');  // eslint-disable-line no-magic-numbers
 };
+
+export const generateNewPatchVersion = (lastTag: string): string => generateNewVersion(lastTag);
+export const generateNewMinorVersion = (lastTag: string): string => generateNewVersion(lastTag, 1); // eslint-disable-line no-magic-numbers
+export const generateNewMajorVersion = (lastTag: string): string => generateNewVersion(lastTag, 0); // eslint-disable-line no-magic-numbers
 
 // eslint-disable-next-line no-magic-numbers
 export const arrayChunk = <T>(array: T[], size = 100): T[][] => {

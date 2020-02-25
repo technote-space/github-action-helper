@@ -4,7 +4,7 @@ import { Context } from '@actions/github/lib/context';
 import { Octokit } from '@octokit/rest';
 import { exportVariable } from '@actions/core';
 import { Logger } from './index';
-import { getRefForUpdate, isPrRef, getBranch, trimRef, versionCompare, generateNewPatchVersion } from './utils';
+import { getRefForUpdate, isPrRef, getBranch, trimRef, versionCompare, generateNewPatchVersion, generateNewMajorVersion, generateNewMinorVersion } from './utils';
 import { getSender } from './context-helper';
 
 type PullsUpdateParams = {
@@ -540,4 +540,14 @@ export default class ApiHelper {
 	 * @return {Promise<string>} tag
 	 */
 	public getNewPatchVersion = async(): Promise<string> => generateNewPatchVersion(await this.getLastTag());
+
+	/**
+	 * @return {Promise<string>} tag
+	 */
+	public getNewMinorVersion = async(): Promise<string> => generateNewMinorVersion(await this.getLastTag());
+
+	/**
+	 * @return {Promise<string>} tag
+	 */
+	public getNewMajorVersion = async(): Promise<string> => generateNewMajorVersion(await this.getLastTag());
 }

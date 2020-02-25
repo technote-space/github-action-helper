@@ -276,6 +276,46 @@ describe('ApiHelper with params', () => {
 			expect(await helper.getNewPatchVersion()).toBe('v0.0.1');
 		});
 	});
+
+	describe('getNewMinorVersion', () => {
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.matching-refs'));
+
+			expect(await helper.getNewMinorVersion()).toBe('v2.1.0');
+		});
+
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => []);
+
+			expect(await helper.getNewMinorVersion()).toBe('v0.1.0');
+		});
+	});
+
+	describe('getNewMajorVersion', () => {
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => getApiFixture(rootDir, 'repos.git.matching-refs'));
+
+			expect(await helper.getNewMajorVersion()).toBe('v3.0.0');
+		});
+
+		it('should get tags', async() => {
+			nock('https://api.github.com')
+				.persist()
+				.get('/repos/hello/world/git/matching-refs/tags/')
+				.reply(200, () => []);
+
+			expect(await helper.getNewMajorVersion()).toBe('v1.0.0');
+		});
+	});
 });
 
 describe('ApiHelper without logger', () => {

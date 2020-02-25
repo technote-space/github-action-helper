@@ -708,6 +708,32 @@ describe('GitHelper', () => {
 		});
 	});
 
+	describe('getNewMinorVersion', () => {
+		it('should get new patch tag', async() => {
+			setChildProcessParams({stdout: '1.2.3'});
+			const mockExec = spyOnExec();
+
+			expect(await helper.getNewMinorVersion(workDir)).toBe('v1.3.0');
+
+			execCalledWith(mockExec, [
+				'git tag',
+			]);
+		});
+	});
+
+	describe('getNewMajorVersion', () => {
+		it('should get new patch tag', async() => {
+			setChildProcessParams({stdout: '1.2.3'});
+			const mockExec = spyOnExec();
+
+			expect(await helper.getNewMajorVersion(workDir)).toBe('v2.0.0');
+
+			execCalledWith(mockExec, [
+				'git tag',
+			]);
+		});
+	});
+
 	describe('useOrigin', () => {
 		it('should use origin', async() => {
 			setExists(false);
