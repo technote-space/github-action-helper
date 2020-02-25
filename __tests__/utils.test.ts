@@ -3,10 +3,10 @@ import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare, getOctokit} = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep}        = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, getPrBranch}     = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, mask}                = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, useNpm, versionCompare, getOctokit}           = Utils;
+const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef, arrayChunk, sleep, getPrBranch}     = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, generateNewPatchVersion, generateNewMajorVersion}   = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, mask, generateNewMinorVersion} = Utils;
 
 jest.useFakeTimers();
 
@@ -407,7 +407,7 @@ describe('generateNewPatchVersion', () => {
 		expect(generateNewPatchVersion('v1.2.3')).toBe('v1.2.4');
 		expect(generateNewPatchVersion('v1')).toBe('v1.0.1');
 		expect(generateNewPatchVersion('v1.2')).toBe('v1.2.1');
-		expect(generateNewPatchVersion('v1.2.3.4')).toBe('v1.2.3.5');
+		expect(generateNewPatchVersion('v1.2.3.4')).toBe('v1.2.4');
 		expect(generateNewPatchVersion('1.2.3')).toBe('v1.2.4');
 	});
 
@@ -417,6 +417,44 @@ describe('generateNewPatchVersion', () => {
 		}).toThrow();
 		expect(() => {
 			generateNewPatchVersion('test');
+		}).toThrow();
+	});
+});
+
+describe('generateNewMinorVersion', () => {
+	it('should generate new minor tag', () => {
+		expect(generateNewMinorVersion('v1.2.3')).toBe('v1.3.0');
+		expect(generateNewMinorVersion('v1')).toBe('v1.1.0');
+		expect(generateNewMinorVersion('v1.2')).toBe('v1.3.0');
+		expect(generateNewMinorVersion('v1.2.3.4')).toBe('v1.3.0');
+		expect(generateNewMinorVersion('1.2.3')).toBe('v1.3.0');
+	});
+
+	it('should throw error', () => {
+		expect(() => {
+			generateNewMinorVersion('');
+		}).toThrow();
+		expect(() => {
+			generateNewMinorVersion('test');
+		}).toThrow();
+	});
+});
+
+describe('generateNewMajorVersion', () => {
+	it('should generate new major tag', () => {
+		expect(generateNewMajorVersion('v1.2.3')).toBe('v2.0.0');
+		expect(generateNewMajorVersion('v1')).toBe('v2.0.0');
+		expect(generateNewMajorVersion('v1.2')).toBe('v2.0.0');
+		expect(generateNewMajorVersion('v1.2.3.4')).toBe('v2.0.0');
+		expect(generateNewMajorVersion('1.2.3')).toBe('v2.0.0');
+	});
+
+	it('should throw error', () => {
+		expect(() => {
+			generateNewMajorVersion('');
+		}).toThrow();
+		expect(() => {
+			generateNewMajorVersion('test');
 		}).toThrow();
 	});
 });

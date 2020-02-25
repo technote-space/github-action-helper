@@ -1,7 +1,20 @@
 import fs from 'fs';
 import { Context } from '@actions/github/lib/context';
 import { Command, Logger } from './index';
-import { getBranch, isBranch, isPrRef, getRefspec, isCloned, split, generateNewPatchVersion, arrayChunk, versionCompare, getAccessToken } from './utils';
+import {
+	getBranch,
+	isBranch,
+	isPrRef,
+	getRefspec,
+	isCloned,
+	split,
+	generateNewPatchVersion,
+	arrayChunk,
+	versionCompare,
+	getAccessToken,
+	generateNewMinorVersion,
+	generateNewMajorVersion,
+} from './utils';
 import { getGitUrlWithToken } from './context-helper';
 
 type CommandType = string | {
@@ -554,4 +567,16 @@ export default class GitHelper {
 	 * @return {string} tag
 	 */
 	public getNewPatchVersion = async(workDir: string): Promise<string> => generateNewPatchVersion(await this.getLastTag(workDir));
+
+	/**
+	 * @param {string} workDir work dir
+	 * @return {string} tag
+	 */
+	public getNewMinorVersion = async(workDir: string): Promise<string> => generateNewMinorVersion(await this.getLastTag(workDir));
+
+	/**
+	 * @param {string} workDir work dir
+	 * @return {string} tag
+	 */
+	public getNewMajorVersion = async(workDir: string): Promise<string> => generateNewMajorVersion(await this.getLastTag(workDir));
 }
