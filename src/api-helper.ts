@@ -23,6 +23,7 @@ type PullsInfo = {
 	'html_url': string;
 	'commits_url': string;
 	'comments_url': string;
+	id: number;
 	number: number;
 	isPrCreated: boolean;
 };
