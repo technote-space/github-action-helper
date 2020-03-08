@@ -2,8 +2,8 @@
 import { testEnv } from '@technote-space/github-action-test-helper';
 import { Utils } from '../src';
 
-const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, mask}  = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit} = Utils;
+const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, mask}                    = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables} = Utils;
 
 jest.useFakeTimers();
 
@@ -249,5 +249,17 @@ describe('mask', () => {
 				},
 			},
 		});
+	});
+});
+
+describe('replaceVariables', () => {
+	it('should replace variables', async() => {
+		expect(await replaceVariables('', [])).toBe('');
+		expect(await replaceVariables('${test1}/${test2}/${test3}/${test4}', [
+			{key: 'test1', replace: '1'},
+			{key: 'test2', replace: (): string => '2'},
+			{key: 'test3', replace: (): Promise<string> => Promise.resolve('3')},
+			{key: 'test5', replace: '5'},
+		])).toBe('1/2/3/${test4}');
 	});
 });
