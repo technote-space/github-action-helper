@@ -186,3 +186,18 @@ export const mask = (value: object, target = 'token'): object => {
 
 	return value;
 };
+
+export const replaceVariables = async(string: string, variables: { key: string; replace: (() => Promise<string> | string) | string }[]): Promise<string> => {
+	let replaced = string;
+	for (const variable of variables) {
+		if (getRegExp(`\${${variable.key}}`).test(replaced)) {
+			if (typeof variable.replace === 'string') {
+				replaced = replaceAll(replaced, `\${${variable.key}}`, variable.replace);
+			} else {
+				replaced = replaceAll(replaced, `\${${variable.key}}`, await variable.replace());
+			}
+		}
+	}
+
+	return replaced;
+};
