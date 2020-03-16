@@ -1,4 +1,4 @@
-import { spawn, ExecException } from 'child_process';
+import { exec, spawn, ExecException } from 'child_process';
 import escape from 'shell-escape';
 import { Logger } from './index';
 
@@ -9,8 +9,9 @@ export default class Command {
 
 	/**
 	 * @param {Logger} logger logger
+	 * @param {boolean} useExec use exec?
 	 */
-	constructor(private logger: Logger) {
+	constructor(private logger: Logger, private useExec = false) {
 	}
 
 	/**
@@ -147,6 +148,48 @@ export default class Command {
 	};
 
 	/**
+	 * @param {string} command command
+	 * @param {string|undefined} altCommand alt command
+	 * @param {boolean} quiet quiet?
+	 * @param {boolean} suppressOutput suppress output?
+	 * @param {boolean} stderrToStdout output to stdout instead of stderr
+	 * @param {function} resolve resolve
+	 * @param {function} reject reject
+	 * @return {void} void
+	 */
+	private execCallback = (
+		command: string,
+		altCommand: string | undefined,
+		quiet: boolean,
+		suppressOutput: boolean,
+		stderrToStdout: boolean,
+		resolve: Function,
+		reject: Function,
+	): (error: ExecException | null, stdout: string, stderr: string) => void => (error: ExecException | null, stdout: string, stderr: string): void => {
+		if (error) {
+			reject(new Error(this.getRejectedErrorMessage(command, altCommand, quiet, error)));
+		} else {
+			let trimmedStdout = stdout.trim();
+			let trimmedStderr = stderr.trim();
+			if (!quiet && !suppressOutput) {
+				if (trimmedStdout) {
+					this.logger.displayStdout(trimmedStdout);
+				}
+				if (trimmedStderr) {
+					if (stderrToStdout) {
+						this.logger.displayStdout(trimmedStderr);
+						trimmedStdout += `\n${trimmedStderr}`;
+						trimmedStderr = '';
+					} else {
+						this.logger.displayStderr(trimmedStderr);
+					}
+				}
+			}
+			resolve({stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command});
+		}
+	};
+
+	/**
 	 * @param {object} options options
 	 * @param {string} options.command command
 	 * @param {string[]|undefined} options.args command
@@ -180,11 +223,21 @@ export default class Command {
 			this.logger.displayCommand(commandWithArgs);
 		}
 
-		try {
-			const {stdout, stderr} = await this.execCommand(this.getCommand(commandWithArgs, quiet, suppressError), quiet, suppressOutput, stderrToStdout, cwd);
-			return this.getCommandResult(commandWithArgs, altCommand, stderrToStdout, stdout, stderr);
-		} catch (error) {
-			throw new Error(this.getRejectedErrorMessage(command, altCommand, quiet, error));
+		if (this.useExec) {
+			return new Promise((resolve, reject) => {
+				if (typeof cwd === 'undefined') {
+					exec(this.getCommand(commandWithArgs, quiet, suppressError), this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+				} else {
+					exec(this.getCommand(commandWithArgs, quiet, suppressError), {cwd}, this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+				}
+			});
+		} else {
+			try {
+				const {stdout, stderr} = await this.execCommand(this.getCommand(commandWithArgs, quiet, suppressError), quiet, suppressOutput, stderrToStdout, cwd);
+				return this.getCommandResult(commandWithArgs, altCommand, stderrToStdout, stdout, stderr);
+			} catch (error) {
+				throw new Error(this.getRejectedErrorMessage(command, altCommand, quiet, error));
+			}
 		}
 	};
 }
