@@ -2,7 +2,7 @@
 import {
 	testChildProcess,
 	setChildProcessParams,
-	spyOnExec,
+	spyOnSpawn,
 	execCalledWith,
 	spyOnStdout,
 	stdoutCalledWith,
@@ -18,7 +18,7 @@ describe('execAsync', () => {
 	const command = new Command(new Logger());
 
 	it('should run command', async() => {
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test'})).toEqual({stdout: 'stdout', stderr: '', command: 'test'});
@@ -34,13 +34,13 @@ describe('execAsync', () => {
 
 	it('should run command with cwd, altCommand', async() => {
 		setChildProcessParams({stderr: 'stderr'});
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toEqual({stdout: 'stdout', stderr: 'stderr', command: 'alt'});
 
 		execCalledWith(mockExec, [
-			['test', {'cwd': 'dir'}],
+			['test', [], {'cwd': 'dir', shell: true}],
 		]);
 		stdoutCalledWith(mockStdout, [
 			'[command]alt',
@@ -50,7 +50,7 @@ describe('execAsync', () => {
 	});
 
 	it('should run command with args', async() => {
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test', args: ['hello!', 'how are you doing $USER', '"double"', '\'single\'']})).toEqual({
@@ -69,7 +69,7 @@ describe('execAsync', () => {
 	});
 
 	it('should run command with args, altCommand', async() => {
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test', args: ['hello!', 'how are you doing $USER', '"double"', '\'single\''], altCommand: 'alt'})).toEqual({
@@ -89,7 +89,7 @@ describe('execAsync', () => {
 
 	it('should not output empty stdout', async() => {
 		setChildProcessParams({stdout: ' \n\n  \n'});
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test'})).toEqual({stdout: '', stderr: '', command: 'test'});
@@ -104,7 +104,7 @@ describe('execAsync', () => {
 
 	it('should not output empty stderr', async() => {
 		setChildProcessParams({stderr: ' \n\n  \n'});
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		expect(await command.execAsync({command: 'test'})).toEqual({stdout: 'stdout', stderr: '', command: 'test'});
@@ -125,7 +125,7 @@ describe('execAsync', () => {
 
 		await expect(command.execAsync({
 			command: 'test',
-		})).rejects.toBe('command [test] exited with code 123. message: test message');
+		})).rejects.toThrow('command [test] exited with code 123. message: test message');
 	});
 
 	it('should catch error 2', async() => {
@@ -136,7 +136,7 @@ describe('execAsync', () => {
 		await expect(command.execAsync({
 			command: 'test',
 			altCommand: 'alt',
-		})).rejects.toBe('command [alt] exited with code 123. message: test message');
+		})).rejects.toThrow('command [alt] exited with code 123. message: test message');
 	});
 
 	it('should catch error 3', async() => {
@@ -148,7 +148,7 @@ describe('execAsync', () => {
 			command: 'test',
 			altCommand: 'alt',
 			quiet: true,
-		})).rejects.toBe('command [alt] exited with code 123.');
+		})).rejects.toThrow('command [alt] exited with code 123.');
 	});
 
 	it('should catch error 4', async() => {
@@ -159,11 +159,11 @@ describe('execAsync', () => {
 		await expect(command.execAsync({
 			command: 'test',
 			quiet: true,
-		})).rejects.toBe('command exited with code 123.');
+		})).rejects.toThrow('command exited with code 123.');
 	});
 
 	it('should suppress stdout', async() => {
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
@@ -181,7 +181,7 @@ describe('execAsync', () => {
 
 	it('should output stdout instead of stderr', async() => {
 		setChildProcessParams({stderr: 'stderr'});
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
@@ -201,7 +201,7 @@ describe('execAsync', () => {
 
 	it('should not output stdout', async() => {
 		setChildProcessParams({stdout: ''});
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		await command.execAsync({
@@ -217,7 +217,7 @@ describe('execAsync', () => {
 	});
 
 	it('should run suppress error command', async() => {
-		const mockExec   = spyOnExec();
+		const mockExec   = spyOnSpawn();
 		const mockStdout = spyOnStdout();
 
 		await command.execAsync({

@@ -603,10 +603,10 @@
   dependencies:
     type-detect "4.0.8"
 
-"@technote-space/github-action-test-helper@^0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.2.6.tgz#2b98508b9ab5932b3e974c479d2c489ae1da2c44"
-  integrity sha512-P5L/Xkgl44NmHf6+iugLFfLH5j0ShbZrIK7jeJq6gqlc6+J8PK5B9ogachy1DZSBrMHQV16cpt4ZiZOcy1nvmQ==
+"@technote-space/github-action-test-helper@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.3.1.tgz#75d569e927db9add4c45a7ca764db47605092e67"
+  integrity sha512-CVnegCaipSpb/g23TxnhzpyGnYl37YsTThv9JWqFwJ4o0QkM1pssRBNIR7izOAPe8rYu7AF57KR6wzJ+U3TV8A==
   dependencies:
     "@actions/github" "^2.1.1"
     js-yaml "^3.13.1"
