@@ -287,9 +287,9 @@ describe('GitHelper', () => {
 			]);
 
 			execCalledWith(mockExec, [
-				['command1', [], {cwd: workDir, shell: true}],
-				['command2', [], {cwd: workDir, shell: true}],
-				['command3', [], {cwd: workDir, shell: true}],
+				'command1',
+				'command2',
+				'command3',
 			]);
 		});
 
@@ -329,9 +329,9 @@ describe('GitHelper', () => {
 			]);
 
 			execCalledWith(mockExec, [
-				['command1', [], {cwd: workDir, shell: true}],
-				['command2', [], {cwd: workDir, shell: true}],
-				['command3 > /dev/null 2>&1', [], {cwd: workDir, shell: true}],
+				'command1',
+				'command2',
+				'command3 > /dev/null 2>&1',
 			]);
 		});
 

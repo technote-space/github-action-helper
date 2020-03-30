@@ -40,7 +40,7 @@ describe('execAsync', () => {
 		expect(await command.execAsync({command: 'test', cwd: 'dir', altCommand: 'alt'})).toEqual({stdout: 'stdout', stderr: 'stderr', command: 'alt'});
 
 		execCalledWith(mockExec, [
-			['test', [], {'cwd': 'dir', shell: true}],
+			'test',
 		]);
 		stdoutCalledWith(mockStdout, [
 			'[command]alt',

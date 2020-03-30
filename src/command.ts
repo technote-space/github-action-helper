@@ -125,23 +125,23 @@ export default class Command {
 		cwd?: string,
 	): Promise<{ stdout: string; stderr: string }> => {
 		return new Promise((resolve, reject) => {
-			const process = spawn(command, [], {shell: true, cwd});
-			let stdout    = '';
-			let stderr    = '';
-			process.stdout.on('data', (data) => {
+			const subProcess = spawn(command, [], {shell: true, cwd, stdio: [process.stdin, 'pipe', 'pipe']});
+			let stdout       = '';
+			let stderr       = '';
+			subProcess.stdout.on('data', (data) => {
 				this.outputStdout(data.toString(), quiet, suppressOutput);
 				stdout += data.toString();
 			});
 
-			process.stderr.on('data', (data) => {
+			subProcess.stderr.on('data', (data) => {
 				this.outputStderr(data.toString(), quiet, suppressOutput, stderrToStdout);
 				stderr += data.toString();
 			});
 
-			process.on('error', (err) => {
+			subProcess.on('error', (err) => {
 				reject(err);
 			});
-			process.on('close', () => {
+			subProcess.on('close', () => {
 				resolve({stdout, stderr});
 			});
 		});
