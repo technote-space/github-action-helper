@@ -60,6 +60,7 @@ const createCommitResponse = createResponse<Octokit.GitCreateCommitResponse>({
     verified: true,
   },
 });
+const escape               = value => encodeURIComponent(value).replace(new RegExp('%2F', 'g'), '%252F');
 
 describe('ApiHelper', () => {
   disableNetConnect(nock);
@@ -213,7 +214,7 @@ describe('ApiHelper', () => {
       const fn1 = jest.fn();
       const fn2 = jest.fn();
       nock('https://api.github.com')
-        .patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
+        .patch('/repos/hello/world/git/refs/' + escape('heads/test'), body => {
           fn1();
           expect(body).toHaveProperty('sha');
           return body;
@@ -234,7 +235,7 @@ describe('ApiHelper', () => {
       const fn2 = jest.fn();
       const fn3 = jest.fn();
       nock('https://api.github.com')
-        .patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/new-topic'), body => {
+        .patch('/repos/hello/world/git/refs/' + escape('heads/new-topic'), body => {
           fn1();
           expect(body).toHaveProperty('sha');
           return body;
@@ -263,7 +264,7 @@ describe('ApiHelper', () => {
     it('should cache PR get api', async() => {
       const fn = jest.fn();
       nock('https://api.github.com')
-        .patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/new-topic'))
+        .patch('/repos/hello/world/git/refs/' + escape('heads/new-topic'))
         .reply(200, () => {
           return getApiFixture(rootDir, 'repos.git.refs.update');
         })
@@ -286,7 +287,7 @@ describe('ApiHelper', () => {
 
     it('should output warning', async() => {
       nock('https://api.github.com')
-        .patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'), body => {
+        .patch('/repos/hello/world/git/refs/' + escape('heads/test'), body => {
           expect(body).toHaveProperty('sha');
           return body;
         })
@@ -326,7 +327,7 @@ describe('ApiHelper', () => {
     it('should create ref', async() => {
       const fn = jest.fn();
       nock('https://api.github.com')
-        .delete('/repos/hello/world/git/refs/heads/featureA')
+        .delete('/repos/hello/world/git/refs/' + encodeURIComponent('heads/featureA'))
         .reply(204, () => {
           fn();
           return getApiFixture(rootDir, 'repos.git.refs.create');
@@ -579,7 +580,7 @@ describe('ApiHelper', () => {
         .reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
         .post('/repos/hello/world/git/commits')
         .reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
-        .patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/test'))
+        .patch('/repos/hello/world/git/refs/' + escape('heads/test'))
         .reply(200, () => getApiFixture(rootDir, 'repos.git.refs.update'));
 
       expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'])).toBe(true);
@@ -625,7 +626,7 @@ describe('ApiHelper', () => {
         .reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
         .post('/repos/hello/world/git/commits')
         .reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
-        .get('/repos/hello/world/git/ref/heads/create/test')
+        .get('/repos/hello/world/git/ref/' + encodeURIComponent('heads/create/test'))
         .reply(404)
         .post('/repos/hello/world/git/refs')
         .reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
@@ -679,9 +680,9 @@ describe('ApiHelper', () => {
         .reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
         .post('/repos/hello/world/git/commits')
         .reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
-        .get('/repos/hello/world/git/ref/heads/create/test')
+        .get('/repos/hello/world/git/ref/' + encodeURIComponent('heads/create/test'))
         .reply(200, () => getApiFixture(rootDir, 'repos.git.ref'))
-        .patch('/repos/hello/world/git/refs/heads/create/test')
+        .patch('/repos/hello/world/git/refs/' + encodeURIComponent('heads/create/test'))
         .reply(200, () => getApiFixture(rootDir, 'repos.git.refs.update'))
         .post('/repos/hello/world/git/refs')
         .reply(201, () => getApiFixture(rootDir, 'repos.git.refs.create'))
@@ -730,7 +731,7 @@ describe('ApiHelper', () => {
         .reply(200, () => getApiFixture(rootDir, 'pulls.list'))
         .patch('/repos/hello/world/pulls/1347')
         .reply(200, () => getApiFixture(rootDir, 'pulls.update'))
-        .delete('/repos/hello/world/git/refs/heads/close/test')
+        .delete('/repos/hello/world/git/refs/' + encodeURIComponent('heads/close/test'))
         .reply(204);
 
       await helper.closePR('close/test');
@@ -753,7 +754,7 @@ describe('ApiHelper', () => {
         .reply(201)
         .patch('/repos/hello/world/pulls/1347')
         .reply(200, () => getApiFixture(rootDir, 'pulls.update'))
-        .delete('/repos/hello/world/git/refs/heads/close/test')
+        .delete('/repos/hello/world/git/refs/' + encodeURIComponent('heads/close/test'))
         .reply(204);
 
       await helper.closePR('close/test', 'close message');
@@ -772,9 +773,9 @@ describe('ApiHelper', () => {
         .persist()
         .get('/repos/hello/world/pulls?head=hello%3Aclose%2Ftest')
         .reply(200, () => [])
-        .get('/repos/hello/world/git/ref/heads/close/test')
+        .get('/repos/hello/world/git/ref/' + encodeURIComponent('heads/close/test'))
         .reply(200, () => getApiFixture(rootDir, 'repos.git.ref'))
-        .delete('/repos/hello/world/git/refs/heads/close/test')
+        .delete('/repos/hello/world/git/refs/' + encodeURIComponent('heads/close/test'))
         .reply(204);
 
       await helper.closePR('close/test');
@@ -792,7 +793,7 @@ describe('ApiHelper', () => {
         .persist()
         .get('/repos/hello/world/pulls?head=hello%3Aclose%2Ftest')
         .reply(200, () => [])
-        .get('/repos/hello/world/git/ref/heads/close/test')
+        .get('/repos/hello/world/git/ref/' + encodeURIComponent('heads/close/test'))
         .reply(404);
 
       await helper.closePR('close/test');
