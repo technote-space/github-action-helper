@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import {Context} from '@actions/github/lib/context';
 import {Octokit} from '@octokit/rest';
+import {Octokit as OctokitCore} from '@octokit/core';
 import {exportVariable} from '@actions/core';
 import {Logger} from './index';
 import {getRefForUpdate, isPrRef, getBranch, trimRef, versionCompare, generateNewPatchVersion, generateNewMajorVersion, generateNewMinorVersion} from './utils';
@@ -58,7 +59,7 @@ export default class ApiHelper {
    * @param {boolean|undefined} options.suppressBPError suppress branch protection error?
    */
   constructor(
-    private readonly octokit: Octokit,
+    private readonly octokit: OctokitCore,
     private readonly context: Context,
     private readonly logger?: Logger,
     options?: { branch?: string; sender?: string; refForUpdate?: string; suppressBPError?: boolean },
