@@ -1,31 +1,31 @@
 import fs from 'fs';
 import path from 'path';
-import { getInput } from '@actions/core' ;
-import { GitHub } from '@actions/github';
-import { Context } from '@actions/github/lib/context';
-import { Octokit } from '@octokit/rest';
+import {getInput} from '@actions/core' ;
+import {GitHub} from '@actions/github';
+import {Context} from '@actions/github/lib/context';
+import {Octokit} from '@octokit/rest';
 
 const getRef = (ref: string | Context): string => typeof ref === 'string' ? ref : ref.ref;
 
 export const getBuildInfo = (filepath: string): {
-	owner?: string;
-	repo?: string;
-	sha?: string;
-	ref?: string;
-	tagName: string;
-	branch: string;
-	tags: string[];
-	'updated_at': string;
+  owner?: string;
+  repo?: string;
+  sha?: string;
+  ref?: string;
+  tagName: string;
+  branch: string;
+  tags: string[];
+  'updated_at': string;
 } | false => {
-	if (!fs.existsSync(filepath)) {
-		return false;
-	}
+  if (!fs.existsSync(filepath)) {
+    return false;
+  }
 
-	try {
-		return JSON.parse(fs.readFileSync(filepath, 'utf8'));
-	} catch {
-		return false;
-	}
+  try {
+    return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+  } catch {
+    return false;
+  }
 };
 
 export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve(workDir, '.git'));
@@ -49,14 +49,14 @@ export const getPrHeadRef = (ref: string | Context): string => getRef(ref).repla
 export const getRefForUpdate = (ref: string | Context): string => getRef(ref).replace(/^refs\//, '');
 
 export const getBranch = (ref: string | Context, defaultIsEmpty = true): string =>
-	isBranch(ref) ?
-		getRef(ref).replace(/^refs\/heads\//, '') :
-		(
-			isRemoteBranch(ref) ? getRef(ref).replace(/^refs\/remotes\/origin\//, '') :
-				(
-					defaultIsEmpty ? '' : getRefForUpdate(ref)
-				)
-		);
+  isBranch(ref) ?
+    getRef(ref).replace(/^refs\/heads\//, '') :
+    (
+      isRemoteBranch(ref) ? getRef(ref).replace(/^refs\/remotes\/origin\//, '') :
+        (
+          defaultIsEmpty ? '' : getRefForUpdate(ref)
+        )
+    );
 
 export const getPrBranch = (context: Context): string => context.payload.pull_request?.head.ref ?? '';
 
@@ -109,41 +109,41 @@ export const getWorkspace = (): string => process.env.GITHUB_WORKSPACE || '';
 export const split = (value: string, separator: string | RegExp = /\r?\n/, limit?: number): string[] => value.length ? value.split(separator, limit) : [];
 
 export const getArrayInput = (name: string, required = false, separator = ',', unique = true): string[] => {
-	const arrayInput = getInput(name, {required}).split(/\r?\n/).reduce<string[]>(
-		(acc, line) => acc.concat(separator ? line.split(separator) : line).filter(item => item).map(item => item.trim()),
-		[],
-	);
-	return unique ? uniqueArray<string>(arrayInput) : arrayInput;
+  const arrayInput = getInput(name, {required}).split(/\r?\n/).reduce<string[]>(
+    (acc, line) => acc.concat(separator ? line.split(separator) : line).filter(item => item).map(item => item.trim()),
+    [],
+  );
+  return unique ? uniqueArray<string>(arrayInput) : arrayInput;
 };
 
 export const sleep = async(millisecond: number): Promise<void> => new Promise(resolve => setTimeout(resolve, millisecond));
 
 export const useNpm = (workDir: string, pkgManager = ''): boolean =>
-	'npm' === pkgManager ||
-	(
-		'yarn' !== pkgManager && (
-			fs.existsSync(path.resolve(workDir, 'package-lock.json')) ||
-			!fs.existsSync(path.resolve(workDir, 'yarn.lock'))
-		)
-	);
+  'npm' === pkgManager ||
+  (
+    'yarn' !== pkgManager && (
+      fs.existsSync(path.resolve(workDir, 'package-lock.json')) ||
+      !fs.existsSync(path.resolve(workDir, 'yarn.lock'))
+    )
+  );
 
 export const replaceAll = (string: string, key: string | RegExp, value: string): string => string.split(key).join(value);
 
 export const generateNewVersion = (lastTag: string, position?: number): string => {
-	if (!/^v?\d+(\.\d+)*$/.test(lastTag)) {
-		throw new Error('Invalid tag');
-	}
+  if (!/^v?\d+(\.\d+)*$/.test(lastTag)) {
+    throw new Error('Invalid tag');
+  }
 
-	const fragments = split(lastTag.replace(/^v/, ''), '.');
-	// eslint-disable-next-line no-magic-numbers
-	while (fragments.length < 3) {
-		fragments.push('0');
-	}
+  const fragments = split(lastTag.replace(/^v/, ''), '.');
+  // eslint-disable-next-line no-magic-numbers
+  while (fragments.length < 3) {
+    fragments.push('0');
+  }
 
-	const target      = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
-	fragments[target] = (Number(fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
-	[...Array(2 - target).keys()].forEach(key => fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers
-	return 'v' + fragments.slice(0, 3).join('.');  // eslint-disable-line no-magic-numbers
+  const target      = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
+  fragments[target] = (Number(fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
+  [...Array(2 - target).keys()].forEach(key => fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers
+  return 'v' + fragments.slice(0, 3).join('.');  // eslint-disable-line no-magic-numbers
 };
 
 export const generateNewPatchVersion = (lastTag: string): string => generateNewVersion(lastTag);
@@ -152,52 +152,56 @@ export const generateNewMajorVersion = (lastTag: string): string => generateNewV
 
 // eslint-disable-next-line no-magic-numbers
 export const arrayChunk = <T>(array: T[], size = 100): T[][] => {
-	const result: T[][] = [], length = array.length;
-	for (let index = 0; index < length; index += size) {
-		result.push(array.slice(index, index + size));
-	}
-	return result;
+  const result: T[][] = [];
+  const length        = array.length;
+  for (let index = 0; index < length; index += size) {
+    result.push(array.slice(index, index + size));
+  }
+  return result;
 };
 
 export const versionCompare = (version1: string, version2: string, checkDifferentLevel = true): number => {
-	const splitVersion = (version: string): number[] => version.split('.').map(item => Number(item));
-	// eslint-disable-next-line no-magic-numbers
-	const compare      = (version1: number[], version2: number[], num = 0): number => {
-		if (version1.length <= num && version2.length <= num) {
-			// eslint-disable-next-line no-magic-numbers
-			return checkDifferentLevel ? Math.sign(version1.length - version2.length) : 0;
-		}
+  const splitVersion = (version: string): number[] => version.split('.').map(item => Number(item));
+  // eslint-disable-next-line no-magic-numbers
+  const compare      = (version1: number[], version2: number[], num = 0): number => {
+    if (version1.length <= num && version2.length <= num) {
+      // eslint-disable-next-line no-magic-numbers
+      return checkDifferentLevel ? Math.sign(version1.length - version2.length) : 0;
+    }
 
-		// eslint-disable-next-line no-magic-numbers
-		const val1 = version1[num] ?? (checkDifferentLevel ? 0 : version2[num]), val2 = version2[num] ?? (checkDifferentLevel ? 0 : version1[num]);
-		return val1 === val2 ? compare(version1, version2, ++num) : Math.sign(val1 - val2);
-	};
-	return compare(splitVersion(version1.replace(/^v/, '')), splitVersion(version2.replace(/^v/, '')));
+    // eslint-disable-next-line no-magic-numbers
+    const val1 = version1[num] ?? (checkDifferentLevel ? 0 : version2[num]);
+    // eslint-disable-next-line no-magic-numbers
+    const val2 = version2[num] ?? (checkDifferentLevel ? 0 : version1[num]);
+    return val1 === val2 ? compare(version1, version2, ++num) : Math.sign(val1 - val2);
+  };
+  return compare(splitVersion(version1.replace(/^v/, '')), splitVersion(version2.replace(/^v/, '')));
 };
 
-export const mask = (value: object, target = 'token'): object => {
-	Object.keys(value).forEach(key => {
-		if (value[key] && typeof value[key] === 'object') {
-			value[key] = mask(value[key], target);
-		} else if (target === key) {
-			value[key] = '***';
-		}
-	});
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
+export const mask = (value: any, target = 'token'): any => {
+  Object.keys(value).forEach(key => {
+    if (value[key] && typeof value[key] === 'object') {
+      value[key] = mask(value[key], target);
+    } else if (target === key) {
+      value[key] = '***';
+    }
+  });
 
-	return value;
+  return value;
 };
 
 export const replaceVariables = async(string: string, variables: { key: string; replace: (() => Promise<string> | string) | string }[]): Promise<string> => {
-	let replaced = string;
-	for (const variable of variables) {
-		if (getRegExp(`\${${variable.key}}`).test(replaced)) {
-			if (typeof variable.replace === 'string') {
-				replaced = replaceAll(replaced, `\${${variable.key}}`, variable.replace);
-			} else {
-				replaced = replaceAll(replaced, `\${${variable.key}}`, await variable.replace());
-			}
-		}
-	}
+  let replaced = string;
+  for (const variable of variables) {
+    if (getRegExp(`\${${variable.key}}`).test(replaced)) {
+      if (typeof variable.replace === 'string') {
+        replaced = replaceAll(replaced, `\${${variable.key}}`, variable.replace);
+      } else {
+        replaced = replaceAll(replaced, `\${${variable.key}}`, await variable.replace());
+      }
+    }
+  }
 
-	return replaced;
+  return replaced;
 };

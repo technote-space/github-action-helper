@@ -1,7 +1,7 @@
 import path from 'path';
-import { Context } from '@actions/github/lib/context';
-import { Logger } from './index';
-import { getAccessToken, getActor, getBuildInfo, mask } from './utils';
+import {Context} from '@actions/github/lib/context';
+import {Logger} from './index';
+import {getAccessToken, getActor, getBuildInfo, mask} from './utils';
 
 export const isRelease = (context: Context): boolean => 'release' === context.eventName;
 
@@ -30,44 +30,44 @@ export const getGitUrlWithToken = (context: Context, token?: string | undefined)
 export const getGitUrl = (context: Context, accessTokenRequired = true): string => getGitUrlWithToken(context, getAccessToken(accessTokenRequired));
 
 export const showActionInfo = (rootDir: string, logger: Logger, context: Context): void => {
-	const info      = getBuildInfo(path.resolve(rootDir, 'build.json'));
-	const tagName   = getTagName(context);
-	const separator = '==================================================';
+  const info      = getBuildInfo(path.resolve(rootDir, 'build.json'));
+  const tagName   = getTagName(context);
+  const separator = '==================================================';
 
-	logger.log();
-	logger.log(separator);
-	if (false !== info) {
-		if ('owner' in info) {
-			logger.log('Version:  %s/%s@%s', info.owner, info.repo, info.tagName);
-			logger.log('          %s', info.sha);
-		} else {
-			logger.log('Version:  %s', info.tagName);
-			logger.log('          %s', info.sha);
-		}
-	}
-	logger.log('Event:    %s', context.eventName);
-	logger.log('Action:   %s', context.payload.action);
-	logger.log('sha:      %s', context.sha);
-	logger.log('ref:      %s', context.ref);
-	if (tagName) {
-		logger.log('Tag name: %s', tagName);
-	}
-	if (context.payload.issue) {
-		logger.log('Labels:');
-		context.payload.issue.labels.map(label => label.name).forEach(label => logger.log('  - %s', label));
-	}
-	if (context.payload.pull_request) {
-		logger.log('Labels:');
-		context.payload.pull_request.labels.map(label => label.name).forEach(label => logger.log('  - %s', label));
-	}
-	logger.log('owner:    %s', context.repo.owner);
-	logger.log('repo:     %s', context.repo.repo);
-	logger.log();
-	logger.startProcess('Dump context');
-	console.log(mask(context));
-	logger.startProcess('Dump Payload');
-	console.log(mask(context.payload));
-	logger.endProcess();
-	logger.log(separator);
-	logger.log();
+  logger.log();
+  logger.log(separator);
+  if (false !== info) {
+    if ('owner' in info) {
+      logger.log('Version:  %s/%s@%s', info.owner, info.repo, info.tagName);
+      logger.log('          %s', info.sha);
+    } else {
+      logger.log('Version:  %s', info.tagName);
+      logger.log('          %s', info.sha);
+    }
+  }
+  logger.log('Event:    %s', context.eventName);
+  logger.log('Action:   %s', context.payload.action);
+  logger.log('sha:      %s', context.sha);
+  logger.log('ref:      %s', context.ref);
+  if (tagName) {
+    logger.log('Tag name: %s', tagName);
+  }
+  if (context.payload.issue) {
+    logger.log('Labels:');
+    context.payload.issue.labels.map(label => label.name).forEach(label => logger.log('  - %s', label));
+  }
+  if (context.payload.pull_request) {
+    logger.log('Labels:');
+    context.payload.pull_request.labels.map(label => label.name).forEach(label => logger.log('  - %s', label));
+  }
+  logger.log('owner:    %s', context.repo.owner);
+  logger.log('repo:     %s', context.repo.repo);
+  logger.log();
+  logger.startProcess('Dump context');
+  console.log(mask(context));
+  logger.startProcess('Dump Payload');
+  console.log(mask(context.payload));
+  logger.endProcess();
+  logger.log(separator);
+  logger.log();
 };
