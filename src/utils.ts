@@ -5,7 +5,8 @@ import {GitHub} from '@actions/github/lib/utils';
 import {Context} from '@actions/github/lib/context';
 import {getOctokit as getOctokitInstance} from '@actions/github';
 
-const getRef = (ref: string | Context): string => typeof ref === 'string' ? ref : ref.ref;
+type RefObject = { ref: string }
+const getRef = (ref: string | RefObject): string => typeof ref === 'string' ? ref : ref.ref;
 
 export const getBuildInfo = (filepath: string): {
   owner?: string;
@@ -32,23 +33,23 @@ export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve
 
 export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+(\.\d+)*$/i.test(tagName);
 
-export const isRef = (ref: string | Context): boolean => /^refs\//.test(getRef(ref));
+export const isRef = (ref: string | RefObject): boolean => /^refs\//.test(getRef(ref));
 
-export const isBranch = (ref: string | Context): boolean => /^refs\/heads\//.test(getRef(ref));
+export const isBranch = (ref: string | RefObject): boolean => /^refs\/heads\//.test(getRef(ref));
 
-export const isTagRef = (ref: string | Context): boolean => /^refs\/tags\//.test(getRef(ref));
+export const isTagRef = (ref: string | RefObject): boolean => /^refs\/tags\//.test(getRef(ref));
 
-export const isRemoteBranch = (ref: string | Context): boolean => /^refs\/remotes\/origin\//.test(getRef(ref));
+export const isRemoteBranch = (ref: string | RefObject): boolean => /^refs\/remotes\/origin\//.test(getRef(ref));
 
-export const isPrRef = (ref: string | Context): boolean => /^refs\/pull\/\d+\/(merge|head)$/.test(getRef(ref));
+export const isPrRef = (ref: string | RefObject): boolean => /^refs\/pull\/\d+\/(merge|head)$/.test(getRef(ref));
 
-export const getPrMergeRef = (ref: string | Context): string => getRef(ref).replace(/^refs\/pull\/(\d+)\/(merge|head)$/, 'refs/pull/$1/merge');
+export const getPrMergeRef = (ref: string | RefObject): string => getRef(ref).replace(/^refs\/pull\/(\d+)\/(merge|head)$/, 'refs/pull/$1/merge');
 
-export const getPrHeadRef = (ref: string | Context): string => getRef(ref).replace(/^refs\/pull\/(\d+)\/(merge|head)$/, 'refs/pull/$1/head');
+export const getPrHeadRef = (ref: string | RefObject): string => getRef(ref).replace(/^refs\/pull\/(\d+)\/(merge|head)$/, 'refs/pull/$1/head');
 
-export const getRefForUpdate = (ref: string | Context): string => getRef(ref).replace(/^refs\//, '');
+export const getRefForUpdate = (ref: string | RefObject): string => getRef(ref).replace(/^refs\//, '');
 
-export const getBranch = (ref: string | Context, defaultIsEmpty = true): string =>
+export const getBranch = (ref: string | RefObject, defaultIsEmpty = true): string =>
   isBranch(ref) ?
     getRef(ref).replace(/^refs\/heads\//, '') :
     (
@@ -60,31 +61,31 @@ export const getBranch = (ref: string | Context, defaultIsEmpty = true): string 
 
 export const getPrBranch = (context: Context): string => context.payload.pull_request?.head.ref ?? '';
 
-export const normalizeRef = (ref: string | Context): string => isRef(ref) ? getRef(ref) : `refs/heads/${getRef(ref)}`;
+export const normalizeRef = (ref: string | RefObject): string => isRef(ref) ? getRef(ref) : `refs/heads/${getRef(ref)}`;
 
-export const trimRef = (ref: string | Context): string => getRef(ref).replace(/^refs\/(heads|tags|pull)\//, '');
+export const trimRef = (ref: string | RefObject): string => getRef(ref).replace(/^refs\/(heads|tags|pull)\//, '');
 
-export const getTag = (ref: string | Context): string => isTagRef(ref) ? trimRef(ref) : '';
+export const getTag = (ref: string | RefObject): string => isTagRef(ref) ? trimRef(ref) : '';
 
-const saveTarget = (ref: string | Context, origin: string): string => isTagRef(ref) ? 'tags' : isPrRef(ref) ? 'pull' : origin;
+const saveTarget = (ref: string | RefObject, origin: string): string => isTagRef(ref) ? 'tags' : isPrRef(ref) ? 'pull' : origin;
 
 // e.g.
 //  refs/heads/master
 //  refs/pull/123/merge
 //  refs/tags/v1.2.3
-export const getRemoteRefspec = (ref: string | Context): string => normalizeRef(ref);
+export const getRemoteRefspec = (ref: string | RefObject): string => normalizeRef(ref);
 
 // e.g.
 //  origin/master
 //  pull/123/merge
 //  tags/v1.2.3
-export const getLocalRefspec = (ref: string | Context, origin = 'origin'): string => `${saveTarget(ref, origin)}/${trimRef(ref)}`;
+export const getLocalRefspec = (ref: string | RefObject, origin = 'origin'): string => `${saveTarget(ref, origin)}/${trimRef(ref)}`;
 
 // e.g.
 //  refs/heads/master:refs/remotes/origin/master
 //  refs/pull/123/merge:refs/pull/123/merge
 //  refs/tags/v1.2.3:refs/tags/v1.2.3
-export const getRefspec = (ref: string | Context, origin = 'origin'): string => `${getRemoteRefspec(ref)}:refs/${getLocalRefspec(ref, `remotes/${origin}`)}`;
+export const getRefspec = (ref: string | RefObject, origin = 'origin'): string => `${getRemoteRefspec(ref)}:refs/${getLocalRefspec(ref, `remotes/${origin}`)}`;
 
 export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
 
