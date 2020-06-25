@@ -1,17 +1,16 @@
 /* eslint-disable no-magic-numbers */
 import nock from 'nock';
 import path from 'path';
-import {Octokit} from '@octokit/rest';
 import {Utils} from '../src';
 import {
   disableNetConnect,
   testEnv,
   getContext,
   getApiFixture,
-  createResponse,
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
+import {GitCreateCommitResponseData} from '@octokit/types';
 import {ApiHelper, Logger} from '../src';
 
 const rootDir = path.resolve(__dirname, 'fixtures');
@@ -36,7 +35,7 @@ const context = getContext({
 const octokit = Utils.getOctokit('test-token');
 const logger  = new Logger();
 
-const createCommitResponse = createResponse<Octokit.GitCreateCommitResponse>({
+const createCommitResponse: GitCreateCommitResponseData = {
   author: {
     date: '',
     email: '',
@@ -57,12 +56,12 @@ const createCommitResponse = createResponse<Octokit.GitCreateCommitResponse>({
   },
   url: '',
   verification: {
-    payload: null,
+    payload: '',
     reason: '',
-    signature: null,
+    signature: '',
     verified: true,
   },
-});
+};
 
 describe('ApiHelper with params', () => {
   disableNetConnect(nock);
