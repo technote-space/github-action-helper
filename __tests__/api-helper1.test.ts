@@ -1,17 +1,16 @@
 /* eslint-disable no-magic-numbers */
 import nock from 'nock';
 import path from 'path';
-import {Octokit} from '@octokit/rest';
 import {Utils} from '../src';
 import {
   disableNetConnect,
   testEnv,
   getContext,
   getApiFixture,
-  createResponse,
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
+import {GitCreateCommitResponseData} from '@octokit/types';
 import {ApiHelper, Logger} from '../src';
 
 const rootDir = path.resolve(__dirname, 'fixtures');
@@ -33,7 +32,7 @@ const context = getContext({
 const octokit = Utils.getOctokit('test-token');
 const logger  = new Logger();
 
-const createCommitResponse = createResponse<Octokit.GitCreateCommitResponse>({
+const createCommitResponse: GitCreateCommitResponseData = {
   author: {
     date: '',
     email: '',
@@ -54,13 +53,13 @@ const createCommitResponse = createResponse<Octokit.GitCreateCommitResponse>({
   },
   url: '',
   verification: {
-    payload: null,
+    payload: '',
     reason: '',
-    signature: null,
+    signature: '',
     verified: true,
   },
-});
-const escape               = value => encodeURIComponent(value).replace(new RegExp('%2F', 'g'), '%252F');
+};
+const escape                                            = value => encodeURIComponent(value).replace(new RegExp('%2F', 'g'), '%252F');
 
 describe('ApiHelper', () => {
   disableNetConnect(nock);
@@ -136,11 +135,9 @@ describe('ApiHelper', () => {
       expect(fn1).toBeCalledTimes(1);
       expect(fn2).toBeCalledTimes(1);
       expect(fn3).toBeCalledTimes(1);
-      expect(tree).toHaveProperty('status');
+      expect(tree).toHaveProperty('sha');
       expect(tree).toHaveProperty('url');
-      expect(tree).toHaveProperty('headers');
-      expect(tree).toHaveProperty('data');
-      expect(tree.status).toBe(201);
+      expect(tree).toHaveProperty('tree');
     });
   });
 
@@ -161,19 +158,18 @@ describe('ApiHelper', () => {
           return getApiFixture(rootDir, 'repos.git.commits');
         });
 
-      const commit = await helper.createCommit('test commit message', createResponse<Octokit.GitCreateTreeResponse>({
+      const commit = await helper.createCommit('test commit message', {
         sha: 'tree-sha',
         tree: [],
         url: '',
-      }));
+      });
 
       expect(fn1).toBeCalledTimes(1);
       expect(fn2).toBeCalledTimes(1);
-      expect(commit).toHaveProperty('status');
+      expect(commit).toHaveProperty('sha');
+      expect(commit).toHaveProperty('author');
       expect(commit).toHaveProperty('url');
-      expect(commit).toHaveProperty('headers');
-      expect(commit).toHaveProperty('data');
-      expect(commit.status).toBe(201);
+      expect(commit).toHaveProperty('tree');
     });
 
     it('should create PR commit', async() => {
@@ -198,14 +194,17 @@ describe('ApiHelper', () => {
           },
         },
       }), logger);
-      const commit = await helper.createCommit('test commit message', createResponse<Octokit.GitCreateTreeResponse>({
+      const commit = await helper.createCommit('test commit message', {
         sha: 'tree-sha',
         tree: [],
         url: '',
-      }));
+      });
 
       expect(fn).toBeCalledTimes(1);
-      expect(commit.status).toBe(201);
+      expect(commit).toHaveProperty('sha');
+      expect(commit).toHaveProperty('author');
+      expect(commit).toHaveProperty('url');
+      expect(commit).toHaveProperty('tree');
     });
   });
 
