@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import {getInput} from '@actions/core' ;
-import {GitHub} from '@actions/github/lib/utils';
 import {Context} from '@actions/github/lib/context';
 import {getOctokit as getOctokitInstance} from '@actions/github';
+import {Octokit} from './types';
 
 type RefObject = { ref: string }
 const getRef = (ref: string | RefObject): string => typeof ref === 'string' ? ref : ref.ref;
@@ -89,7 +89,7 @@ export const getRefspec = (ref: string | RefObject, origin = 'origin'): string =
 
 export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
 
-export const getOctokit = (token?: string): InstanceType<typeof GitHub> => getOctokitInstance(token ?? getAccessToken(true), {});
+export const getOctokit = (token?: string): Octokit => getOctokitInstance(token ?? getAccessToken(true), {});
 
 export const getActor = (): string => process.env.GITHUB_ACTOR || '';
 

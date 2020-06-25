@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import {Context} from '@actions/github/lib/context';
-import {GitHub} from '@actions/github/lib/utils';
 import {PaginateInterface} from '@octokit/plugin-paginate-rest';
 import {RestEndpointMethods} from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/method-types';
 import {
@@ -20,6 +19,7 @@ import {exportVariable} from '@actions/core';
 import {Logger} from './index';
 import {getRefForUpdate, isPrRef, getBranch, trimRef, versionCompare, generateNewPatchVersion, generateNewMajorVersion, generateNewMinorVersion} from './utils';
 import {getSender} from './context-helper';
+import {Octokit} from './types';
 
 type PullsUpdateParams = {
   body?: string;
@@ -72,7 +72,7 @@ export default class ApiHelper {
    * @param {boolean|undefined} options.suppressBPError suppress branch protection error?
    */
   constructor(
-    private readonly octokit: InstanceType<typeof GitHub>,
+    private readonly octokit: Octokit,
     private readonly context: Context,
     private readonly logger?: Logger,
     options?: { branch?: string; sender?: string; refForUpdate?: string; suppressBPError?: boolean },
