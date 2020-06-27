@@ -281,12 +281,13 @@ export default class ApiHelper {
    * @return {AsyncIterable<PullsListResponseData>} pull request list
    */
   public pullsList = (params: PullsListParams): Promise<PullsListResponseData> => (this.octokit.paginate as PaginateInterface)(
-    (this.octokit as RestEndpointMethods).pulls.list.endpoint.merge(Object.assign({
+    (this.octokit as RestEndpointMethods).pulls.list,
+    Object.assign({
       sort: 'created',
       direction: 'asc',
     }, params, {
       ...this.context.repo,
-    })),
+    }),
   );
 
   /**
@@ -546,10 +547,11 @@ export default class ApiHelper {
    * @return {Promise<Array<string>>} tags
    */
   public getTags = async(): Promise<Array<string>> => (await (this.octokit.paginate as PaginateInterface)(
-    (this.octokit as RestEndpointMethods).git.listMatchingRefs.endpoint.merge({
+    (this.octokit as RestEndpointMethods).git.listMatchingRefs,
+    {
       ...this.context.repo,
       ref: 'tags/',
-    }),
+    },
   )).map((item): string => trimRef((item as GitListMatchingRefsResponseData[number]).ref));
 
   /**
