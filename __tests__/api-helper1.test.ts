@@ -59,7 +59,6 @@ const createCommitResponse: GitCreateCommitResponseData = {
     verified: true,
   },
 };
-const escape                                            = value => encodeURIComponent(value).replace(new RegExp('%2F', 'g'), '%252F');
 
 describe('ApiHelper', () => {
   disableNetConnect(nock);
@@ -213,7 +212,7 @@ describe('ApiHelper', () => {
       const fn1 = jest.fn();
       const fn2 = jest.fn();
       nock('https://api.github.com')
-        .patch('/repos/hello/world/git/refs/' + escape('heads/test'), body => {
+        .patch(`/repos/hello/world/git/refs/${encodeURIComponent('heads/test')}`, body => {
           fn1();
           expect(body).toHaveProperty('sha');
           return body;
@@ -223,7 +222,7 @@ describe('ApiHelper', () => {
           return getApiFixture(rootDir, 'repos.git.refs.update');
         });
 
-      await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true), false);
+      await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(false), false);
 
       expect(fn1).toBeCalledTimes(1);
       expect(fn2).toBeCalledTimes(1);
@@ -234,7 +233,7 @@ describe('ApiHelper', () => {
       const fn2 = jest.fn();
       const fn3 = jest.fn();
       nock('https://api.github.com')
-        .patch('/repos/hello/world/git/refs/' + escape('heads/new-topic'), body => {
+        .patch(`/repos/hello/world/git/refs/${encodeURIComponent('heads/new-topic')}`, body => {
           fn1();
           expect(body).toHaveProperty('sha');
           return body;
@@ -253,7 +252,7 @@ describe('ApiHelper', () => {
         ref: 'refs/pull/123/merge',
       });
       const helper   = new ApiHelper(octokit, _context, logger);
-      await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true), false);
+      await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(false), false);
 
       expect(fn1).toBeCalledTimes(1);
       expect(fn2).toBeCalledTimes(1);
@@ -263,7 +262,7 @@ describe('ApiHelper', () => {
     it('should cache PR get api', async() => {
       const fn = jest.fn();
       nock('https://api.github.com')
-        .patch('/repos/hello/world/git/refs/' + escape('heads/new-topic'))
+        .patch(`/repos/hello/world/git/refs/${encodeURIComponent('heads/new-topic')}`)
         .reply(200, () => {
           return getApiFixture(rootDir, 'repos.git.refs.update');
         })
@@ -279,14 +278,14 @@ describe('ApiHelper', () => {
       const helper   = new ApiHelper(octokit, _context, logger);
       await helper.getRefForUpdate(true);
       await helper.getRefForUpdate(true);
-      await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true), false);
+      await helper.updateRef(createCommitResponse, await helper.getRefForUpdate(false), false);
 
       expect(fn).toBeCalledTimes(1);
     });
 
     it('should output warning', async() => {
       nock('https://api.github.com')
-        .patch('/repos/hello/world/git/refs/' + escape('heads/test'), body => {
+        .patch(`/repos/hello/world/git/refs/${encodeURIComponent('heads/test')}`, body => {
           expect(body).toHaveProperty('sha');
           return body;
         })
@@ -294,7 +293,7 @@ describe('ApiHelper', () => {
           'message': 'Required status check "Test" is expected.',
         });
 
-      await expect(helper.updateRef(createCommitResponse, await helper.getRefForUpdate(true), false)).rejects.toThrow('Required status check "Test" is expected.');
+      await expect(helper.updateRef(createCommitResponse, await helper.getRefForUpdate(false), false)).rejects.toThrow('Required status check "Test" is expected.');
     });
   });
 
@@ -579,7 +578,7 @@ describe('ApiHelper', () => {
         .reply(201, () => getApiFixture(rootDir, 'repos.git.trees'))
         .post('/repos/hello/world/git/commits')
         .reply(201, () => getApiFixture(rootDir, 'repos.git.commits'))
-        .patch('/repos/hello/world/git/refs/' + escape('heads/test'))
+        .patch(`/repos/hello/world/git/refs/${encodeURIComponent('heads/test')}`)
         .reply(200, () => getApiFixture(rootDir, 'repos.git.refs.update'));
 
       expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'])).toBe(true);
@@ -590,7 +589,7 @@ describe('ApiHelper', () => {
         '::endgroup::',
         '::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
         '::endgroup::',
-        '::group::Updating ref... [heads%252Ftest] [7638417db6d59f3c431d3e1f261cc637155684cd]',
+        '::group::Updating ref... [heads/test] [7638417db6d59f3c431d3e1f261cc637155684cd]',
         '::set-env name=GITHUB_SHA::7638417db6d59f3c431d3e1f261cc637155684cd',
         '::endgroup::',
       ]);

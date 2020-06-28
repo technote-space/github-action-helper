@@ -444,7 +444,7 @@ export default class ApiHelper {
     }
 
     const commit = await this.prepareCommit(rootDir, commitMessage, files);
-    const ref    = await this.getRefForUpdate(true);
+    const ref    = await this.getRefForUpdate(false);
 
     this.callLogger(logger => logger.startProcess('Updating ref... [%s] [%s]', ref, commit.sha));
     if (await this.updateRef(commit, ref, false)) {
