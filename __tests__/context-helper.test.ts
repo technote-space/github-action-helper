@@ -7,7 +7,7 @@ import {
 import {testEnv, getContext} from '@technote-space/github-action-test-helper';
 import {Logger, ContextHelper} from '../src';
 
-const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isCreateTag} = ContextHelper;
+const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isManualEvent, isCreateTag} = ContextHelper;
 const {getGitUrl, getRepository, getTagName, getSender, showActionInfo}      = ContextHelper;
 
 describe('isRelease', () => {
@@ -89,6 +89,20 @@ describe('isCustomEvent', () => {
 
   it('should return false', () => {
     expect(isCustomEvent(getContext({
+      eventName: 'release',
+    }))).toBe(false);
+  });
+});
+
+describe('isManualEvent', () => {
+  it('should return true', () => {
+    expect(isManualEvent(getContext({
+      eventName: 'workflow_dispatch',
+    }))).toBe(true);
+  });
+
+  it('should return false', () => {
+    expect(isManualEvent(getContext({
       eventName: 'release',
     }))).toBe(false);
   });
