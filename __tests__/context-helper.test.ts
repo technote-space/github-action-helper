@@ -7,7 +7,7 @@ import {
 import {testEnv, getContext} from '@technote-space/github-action-test-helper';
 import {Logger, ContextHelper} from '../src';
 
-const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isManualEvent, isCreateTag} = ContextHelper;
+const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isManualEvent, isWorkflowRun, isCreateTag} = ContextHelper;
 const {getGitUrl, getRepository, getTagName, getSender, showActionInfo}      = ContextHelper;
 
 describe('isRelease', () => {
@@ -39,9 +39,15 @@ describe('isPush', () => {
 });
 
 describe('isPr', () => {
-  it('should return true', () => {
+  it('should return true 1', () => {
     expect(isPr(getContext({
       eventName: 'pull_request',
+    }))).toBe(true);
+  });
+
+  it('should return true 2', () => {
+    expect(isPr(getContext({
+      eventName: 'pull_request_target',
     }))).toBe(true);
   });
 
@@ -103,6 +109,20 @@ describe('isManualEvent', () => {
 
   it('should return false', () => {
     expect(isManualEvent(getContext({
+      eventName: 'release',
+    }))).toBe(false);
+  });
+});
+
+describe('isWorkflowRun', () => {
+  it('should return true', () => {
+    expect(isWorkflowRun(getContext({
+      eventName: 'workflow_run',
+    }))).toBe(true);
+  });
+
+  it('should return false', () => {
+    expect(isWorkflowRun(getContext({
       eventName: 'release',
     }))).toBe(false);
   });

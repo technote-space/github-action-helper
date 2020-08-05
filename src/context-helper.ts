@@ -7,7 +7,7 @@ export const isRelease = (context: Context): boolean => 'release' === context.ev
 
 export const isPush = (context: Context): boolean => 'push' === context.eventName;
 
-export const isPr = (context: Context): boolean => 'pull_request' === context.eventName;
+export const isPr = (context: Context): boolean => 'pull_request' === context.eventName || 'pull_request_target' === context.eventName;
 
 export const isIssue = (context: Context): boolean => 'issues' === context.eventName;
 
@@ -16,6 +16,8 @@ export const isCron = (context: Context): boolean => 'schedule' === context.even
 export const isCustomEvent = (context: Context): boolean => 'repository_dispatch' === context.eventName;
 
 export const isManualEvent = (context: Context): boolean => 'workflow_dispatch' === context.eventName;
+
+export const isWorkflowRun = (context: Context): boolean => 'workflow_run' === context.eventName;
 
 export const isCreateTag = (context: Context): boolean => 'create' === context.eventName && 'tag' === context.payload.ref_type;
 
