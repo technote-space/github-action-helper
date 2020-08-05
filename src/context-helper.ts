@@ -7,7 +7,7 @@ export const isRelease = (context: Context): boolean => 'release' === context.ev
 
 export const isPush = (context: Context): boolean => 'push' === context.eventName;
 
-export const isPr = (context: Context): boolean => 'pull_request' === context.eventName;
+export const isPr = (context: Context): boolean => 'pull_request' === context.eventName || 'pull_request_target' === context.eventName;
 
 export const isIssue = (context: Context): boolean => 'issues' === context.eventName;
 

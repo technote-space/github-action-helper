@@ -39,9 +39,15 @@ describe('isPush', () => {
 });
 
 describe('isPr', () => {
-  it('should return true', () => {
+  it('should return true 1', () => {
     expect(isPr(getContext({
       eventName: 'pull_request',
+    }))).toBe(true);
+  });
+
+  it('should return true 2', () => {
+    expect(isPr(getContext({
+      eventName: 'pull_request_target',
     }))).toBe(true);
   });
 
