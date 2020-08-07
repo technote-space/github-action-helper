@@ -97,9 +97,9 @@ export const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|
 
 export const getRegExp = (value: string): RegExp => new RegExp(escapeRegExp(value));
 
-export const getPrefixRegExp = (value: string): RegExp => new RegExp('^' + escapeRegExp(value));
+export const getPrefixRegExp = (value: string): RegExp => new RegExp('^' + escapeRegExp(value), 'i');
 
-export const getSuffixRegExp = (value: string): RegExp => new RegExp(escapeRegExp(value) + '$');
+export const getSuffixRegExp = (value: string): RegExp => new RegExp(escapeRegExp(value) + '$', 'i');
 
 export const getBoolValue = (input: string): boolean => !['false', '0', '', 'no', 'n'].includes(input.trim().toLowerCase());
 
