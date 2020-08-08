@@ -14,13 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Set running flag
+        run: echo "::set-env name=RUNNING::"
+      - name: Set running flag
+        run: echo "::set-env name=RUNNING::1"
+        if: github.event.pull_request.head.user.id == github.event.pull_request.base.user.id)
       - uses: technote-space/load-config-action@v1
+        if: env.RUNNING
         with:
           CONFIG_FILENAME: workflow-settings.json
       - uses: technote-space/auto-cancel-redundant-job@v1
+        if: env.RUNNING
         with:
           EXCLUDE_MERGED: 'true'
       - name: Update dependencies
+        if: env.RUNNING
         id: update_deps
         uses: technote-space/create-pr-action@v2
         with:
@@ -38,10 +46,8 @@ jobs:
           AUTO_MERGE_THRESHOLD_DAYS: 14
 
       - name: Set running flag
-        run: echo "::set-env name=RUNNING::"
-      - name: Set running flag
         run: echo "::set-env name=RUNNING::1"
-        if: steps.update_deps.outputs.result != 'succeeded' && github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.pull_request.head.user.id == github.event.pull_request.base.user.id && startsWith(github.head_ref, 'release/')
+        if: env.RUNNING && steps.update_deps.outputs.result != 'succeeded' && github.event_name == 'pull_request' && github.event.action != 'closed' && startsWith(github.head_ref, 'release/')
       - uses: actions/checkout@v2
         if: env.RUNNING
       - name: Set running flag
