@@ -54,6 +54,8 @@ describe('getPrefixRegExp', () => {
   it('should get RegExp', () => {
     expect(getPrefixRegExp('?t*e^s$t*/abc').test('?t*e^s$t*/abc/xyz')).toBe(true);
     expect(getPrefixRegExp('?t*e^s$t*/abc').test('123/?t*e^s$t*/abc/xyz')).toBe(false);
+    expect(getPrefixRegExp('src/').test('SRC/test')).toBe(false);
+    expect(getPrefixRegExp('src/', 'i').test('SRC/test')).toBe(true);
   });
 });
 
@@ -61,6 +63,8 @@ describe('getSuffixRegExp', () => {
   it('should get RegExp', () => {
     expect(getSuffixRegExp('?t*e^s$t*/abc').test('123/?t*e^s$t*/abc')).toBe(true);
     expect(getSuffixRegExp('?t*e^s$t*/abc').test('123/?t*e^s$t*/abc/xyz')).toBe(false);
+    expect(getSuffixRegExp('.JPEG').test('test.jpeg')).toBe(false);
+    expect(getSuffixRegExp('.JPEG', 'i').test('test.jpeg')).toBe(true);
   });
 });
 
