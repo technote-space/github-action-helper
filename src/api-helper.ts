@@ -135,7 +135,7 @@ export default class ApiHelper {
   /**
    * @return {string} commit sha
    */
-  private getCommitSha = (): string => isPrRef(this.context) && this.context.payload.pull_request ? this.context.payload.pull_request.head.sha : this.context.sha;
+  private getCommitSha = (): string => this.context.payload.pull_request ? this.context.payload.pull_request.head.sha : this.context.sha;
 
   /**
    * @return {Promise<GitGetCommitResponseData>} commit
