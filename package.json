@@ -1,7 +1,7 @@
 {
   "name": "@technote-space/github-action-helper",
   "version": "3.2.1",
-  "description": "Helper for GitHub Action.",
+  "description": "Helper to filter GitHub Action.",
   "author": {
     "name": "Technote",
     "email": "technote.space@gmail.com",
