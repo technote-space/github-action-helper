@@ -576,6 +576,45 @@ describe('GitHelper', () => {
     });
   });
 
+  describe('deleteLocalTag', () => {
+    it('should delete tag', async() => {
+      const mockExec = spyOnSpawn();
+
+      await helper.deleteLocalTag(workDir, 'delete-tag');
+
+      execCalledWith(mockExec, [
+        'git tag -d delete-tag || :',
+      ]);
+    });
+
+    it('should run add tags', async() => {
+      const mockExec = spyOnSpawn();
+
+      await helper.deleteLocalTag(workDir, ['delete-tag1', 'delete-tag2']);
+
+      execCalledWith(mockExec, [
+        'git tag -d delete-tag1 delete-tag2 || :',
+      ]);
+    });
+
+    it('should chunk delete tags', async() => {
+      const mockExec = spyOnSpawn();
+
+      await helper.deleteLocalTag(workDir, [
+        'delete-tag1',
+        'delete-tag2',
+        'delete-tag3',
+        'tags/delete-tag4',
+        'refs/tags/delete-tag5',
+      ], 3);
+
+      execCalledWith(mockExec, [
+        'git tag -d delete-tag1 delete-tag2 delete-tag3 || :',
+        'git tag -d delete-tag4 delete-tag5 || :',
+      ]);
+    });
+  });
+
   describe('addLocalTag', () => {
     it('should run add tag', async() => {
       const mockExec = spyOnSpawn();
