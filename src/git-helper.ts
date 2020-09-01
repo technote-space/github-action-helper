@@ -457,24 +457,17 @@ export default class GitHelper {
    * @return {Promise<void>} void
    */
   public deleteTag = async(workDir: string, tags: string | string[], context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
-    const regexp    = /^(refs\/)?tags\//;
-    const getTagRef = (tag: string): string => regexp.test(tag) ? tag : `tags/${tag}`;
-    const getTag    = (tag: string): string => tag.replace(regexp, '');
-    await this.runCommand(workDir, [
-      ...arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTagRef), splitSize).map(tags => ({
+    const getTagRef = (tag: string): string => /^(refs\/)?tags\//.test(tag) ? tag : `tags/${tag}`;
+    await this.runCommand(workDir,
+      arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTagRef), splitSize).map(tags => ({
         command: 'git push',
         args: [this.getRemote(context), '--delete', ...tags],
         quiet: this.isQuiet(),
         altCommand: `git push ${this.getRemoteName()} --delete ${tags.join(' ')}`,
         suppressError: true,
       })),
-      ...arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTag), splitSize).map(tags => ({
-        command: 'git tag',
-        args: ['-d', ...tags],
-        suppressError: true,
-        stderrToStdout: true,
-      })),
-    ]);
+    );
+    await this.deleteLocalTag(workDir, tags, splitSize);
   };
 
   /**
@@ -498,6 +491,24 @@ export default class GitHelper {
         altCommand: `git push ${this.getRemoteName()} refs/tags/${newTag}`,
       },
     ]);
+  };
+
+  /**
+   * @param {string} workDir work dir
+   * @param {string|string[]} tags tags
+   * @param {number} splitSize split size
+   * @return {Promise<void>} void
+   */
+  public deleteLocalTag = async(workDir: string, tags: string | string[], splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
+    const getTag = (tag: string): string => tag.replace(/^(refs\/)?tags\//, '');
+    await this.runCommand(workDir, arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTag), splitSize).map(
+      tags => ({
+        command: 'git tag',
+        args: ['-d', ...tags],
+        suppressError: true,
+        stderrToStdout: true,
+      }),
+    ));
   };
 
   /**
