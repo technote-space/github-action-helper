@@ -67,7 +67,7 @@ export const trimRef = (ref: string | RefObject): string => getRef(ref).replace(
 
 export const getTag = (ref: string | RefObject): string => isTagRef(ref) ? trimRef(ref) : '';
 
-const saveTarget = (ref: string | RefObject, origin: string): string => isTagRef(ref) ? 'tags' : isPrRef(ref) ? 'pull' : origin;
+const saveTarget = (ref: string | RefObject, origin: string): string => isTagRef(ref) ? 'tags' : isPrRef(ref) ? `${origin}/pull` : origin;
 
 // e.g.
 //  refs/heads/master
@@ -77,7 +77,7 @@ export const getRemoteRefspec = (ref: string | RefObject): string => normalizeRe
 
 // e.g.
 //  origin/master
-//  pull/123/merge
+//  origin/pull/123/merge
 //  tags/v1.2.3
 export const getLocalRefspec = (ref: string | RefObject, origin = 'origin'): string => `${saveTarget(ref, origin)}/${trimRef(ref)}`;
 
