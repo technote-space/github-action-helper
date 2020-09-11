@@ -124,7 +124,7 @@ describe('GitHelper', () => {
 
       execCalledWith(mockExec, [
         'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
-        'git fetch --no-tags origin \'refs/pull/123/merge:refs/pull/123/merge\' || :',
+        'git fetch --no-tags origin \'refs/pull/123/merge:refs/remotes/origin/pull/123/merge\' || :',
         'git checkout -qf test-sha',
       ]);
     });

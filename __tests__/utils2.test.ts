@@ -170,7 +170,7 @@ describe('getRefspec', () => {
     expect(getRefspec('master')).toBe('refs/heads/master:refs/remotes/origin/master');
     expect(getRefspec('refs/heads/master', 'test')).toBe('refs/heads/master:refs/remotes/test/master');
     expect(getRefspec('refs/tags/v1.2.3')).toBe('refs/tags/v1.2.3:refs/tags/v1.2.3');
-    expect(getRefspec('refs/pull/123/merge')).toBe('refs/pull/123/merge:refs/pull/123/merge');
+    expect(getRefspec('refs/pull/123/merge')).toBe('refs/pull/123/merge:refs/remotes/origin/pull/123/merge');
   });
 });
 
@@ -188,7 +188,7 @@ describe('getLocalRefspec', () => {
     expect(getLocalRefspec('master')).toBe('origin/master');
     expect(getLocalRefspec('refs/heads/master', 'test')).toBe('test/master');
     expect(getLocalRefspec('refs/tags/v1.2.3')).toBe('tags/v1.2.3');
-    expect(getLocalRefspec('refs/pull/123/merge')).toBe('pull/123/merge');
+    expect(getLocalRefspec('refs/pull/123/merge')).toBe('origin/pull/123/merge');
   });
 });
 
