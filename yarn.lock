@@ -766,6 +766,13 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
+"@technote-space/github-action-log-helper@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-log-helper/-/github-action-log-helper-0.1.0.tgz#ac7ef71f8f81fd689b31e0c34384bc346ba13d1a"
+  integrity sha512-IOK3gHzEuIbMUY2Jnk5d70sUXJ69Jntf6+46DtASWrokVH6f/+vFOKHACZQKjH47nFfZT0yU1DkPubs/lB0iiQ==
+  dependencies:
+    "@actions/core" "^1.2.5"
+
 "@technote-space/github-action-test-helper@^0.5.7":
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.5.7.tgz#ac8b1b9c5113ea311b06dff7385235c238134ba7"
