@@ -214,6 +214,9 @@ console.log(getSender(context));  // e.g. 'octocat'
 showActionInfo('root dir', new Logger(), context);
 ```
 
+### Dependencies
+[@technote-space/github-action-log-helper](https://github.com/technote-space/github-action-log-helper)
+
 ## Author
 [GitHub (Technote)](https://github.com/technote-space)  
 [Blog](https://technote.space)

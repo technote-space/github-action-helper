@@ -31,9 +31,9 @@ GitHub Actions 用のヘルパー
 ## 使用方法
 1. インストール  
    1. npm  
-      `npm i @technote-space/github-action-helper @technote-space/github-action-log-helper`
+      `npm i @technote-space/github-action-helper`
    1. yarn  
-      `yarn add @technote-space/github-action-helper @technote-space/github-action-log-helper`
+      `yarn add @technote-space/github-action-helper`
    
 1. 使用
 ```typescript
@@ -214,6 +214,9 @@ console.log(getTagName(context));  // e.g. 'v1.2.3'
 console.log(getSender(context));  // e.g. 'octocat'
 showActionInfo('root dir', new Logger(), context);
 ```
+
+### 依存
+[@technote-space/github-action-log-helper](https://github.com/technote-space/github-action-log-helper)
 
 ## Author
 [GitHub (Technote)](https://github.com/technote-space)  
