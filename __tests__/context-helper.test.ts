@@ -5,10 +5,11 @@ import {
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
 import {testEnv, getContext} from '@technote-space/github-action-test-helper';
-import {Logger, ContextHelper} from '../src';
+import {Logger} from '@technote-space/github-action-log-helper';
+import {ContextHelper} from '../src';
 
 const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isManualEvent, isWorkflowRun, isCreateTag} = ContextHelper;
-const {getGitUrl, getRepository, getTagName, getSender, showActionInfo}      = ContextHelper;
+const {getGitUrl, getRepository, getTagName, getSender, showActionInfo}                                    = ContextHelper;
 
 describe('isRelease', () => {
   it('should return true', () => {
