@@ -32,9 +32,9 @@ Helper for GitHub Actions.
 ## Usage
 1. Install  
    1. npm  
-      `npm i @technote-space/github-action-helper @technote-space/github-action-log-helper`
+      `npm i @technote-space/github-action-helper`
    1. yarn  
-      `yarn add @technote-space/github-action-helper @technote-space/github-action-log-helper`
+      `yarn add @technote-space/github-action-helper`
    
 1. Use
 ```typescript
