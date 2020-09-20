@@ -18,7 +18,6 @@ Helper for GitHub Actions.
 <summary>Details</summary>
 
 - [Usage](#usage)
-  - [Logger](#logger)
   - [Command](#command)
   - [ApiHelper](#apihelper)
   - [GitHelper](#githelper)
