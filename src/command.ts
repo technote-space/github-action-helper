@@ -1,6 +1,6 @@
 import {exec, spawn, ExecException} from 'child_process';
 import escape from 'shell-escape';
-import {Logger} from './index';
+import {Logger} from '@technote-space/github-action-log-helper';
 
 /**
  * Command

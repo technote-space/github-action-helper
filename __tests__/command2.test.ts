@@ -7,7 +7,8 @@ import {
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import {Logger, Command} from '../src';
+import {Logger} from '@technote-space/github-action-log-helper';
+import {Command} from '../src';
 
 describe('execAsync', () => {
   testChildProcess();

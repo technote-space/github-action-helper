@@ -9,7 +9,8 @@ import {
   spyOnSpawn,
   execCalledWith,
 } from '@technote-space/github-action-test-helper';
-import {GitHelper, Logger} from '../src';
+import {Logger} from '@technote-space/github-action-log-helper';
+import {GitHelper} from '../src';
 
 const workDir   = '.work';
 const setExists = testFs(true);
