@@ -23,6 +23,7 @@ GitHub Actions 用のヘルパー
   - [GitHelper](#githelper)
   - [Utils](#utils)
   - [ContextHelper](#contexthelper)
+  - [依存](#%E4%BE%9D%E5%AD%98)
 - [Author](#author)
 
 </details>

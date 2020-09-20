@@ -23,6 +23,7 @@ Helper for GitHub Actions.
   - [GitHelper](#githelper)
   - [Utils](#utils)
   - [ContextHelper](#contexthelper)
+  - [Dependencies](#dependencies)
 - [Author](#author)
 
 </details>
