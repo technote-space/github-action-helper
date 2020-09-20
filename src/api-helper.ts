@@ -16,7 +16,7 @@ import {
   GitListMatchingRefsResponseData,
 } from '@octokit/types';
 import {exportVariable} from '@actions/core';
-import {Logger} from './index';
+import {Logger} from '@technote-space/github-action-log-helper';
 import {getRefForUpdate, isPrRef, getBranch, trimRef, versionCompare, generateNewPatchVersion, generateNewMajorVersion, generateNewMinorVersion} from './utils';
 import {getSender} from './context-helper';
 import {Octokit} from './types';

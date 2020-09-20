@@ -1,6 +1,7 @@
 import fs from 'fs';
 import {Context} from '@actions/github/lib/context';
-import {Command, Logger} from './index';
+import {Logger} from '@technote-space/github-action-log-helper';
+import {Command} from './index';
 import {
   getBranch,
   isBranch,

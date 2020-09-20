@@ -10,8 +10,9 @@ import {
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
+import {Logger} from '@technote-space/github-action-log-helper';
 import {GitCreateCommitResponseData} from '@octokit/types';
-import {ApiHelper, Logger} from '../src';
+import {ApiHelper} from '../src';
 
 const rootDir = path.resolve(__dirname, 'fixtures');
 const context = getContext({
