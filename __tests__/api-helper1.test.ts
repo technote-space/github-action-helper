@@ -9,6 +9,8 @@ import {
   getApiFixture,
   spyOnStdout,
   stdoutCalledWith,
+  spyOnExportVariable,
+  exportVariableCalledWith,
 } from '@technote-space/github-action-test-helper';
 import {Logger} from '@technote-space/github-action-log-helper';
 import {GitCreateCommitResponseData} from '@octokit/types';
@@ -566,6 +568,7 @@ describe('ApiHelper', () => {
 
     it('should commit', async() => {
       const mockStdout       = spyOnStdout();
+      const mockEnv          = spyOnExportVariable();
       process.env.GITHUB_SHA = 'sha';
       nock('https://api.github.com')
         .persist()
@@ -591,8 +594,10 @@ describe('ApiHelper', () => {
         '::group::Creating commit... [cd8274d15fa3ae2ab983129fb037999f264ba9a7]',
         '::endgroup::',
         '::group::Updating ref... [heads/test] [7638417db6d59f3c431d3e1f261cc637155684cd]',
-        '::set-env name=GITHUB_SHA::7638417db6d59f3c431d3e1f261cc637155684cd',
         '::endgroup::',
+      ]);
+      exportVariableCalledWith(mockEnv, [
+        {name: 'GITHUB_SHA', val: '7638417db6d59f3c431d3e1f261cc637155684cd'},
       ]);
       expect(process.env.GITHUB_SHA).toBe('7638417db6d59f3c431d3e1f261cc637155684cd');
     });
