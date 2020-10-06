@@ -773,10 +773,10 @@
   dependencies:
     "@actions/core" "^1.2.6"
 
-"@technote-space/github-action-test-helper@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.6.0.tgz#ff058a3f1467d4ea63b17c01583c6a22906392c8"
-  integrity sha512-n4YdEmhHvondmffqArdMsNB3iQE0f/GGOoHdT3phaar9vuNl87tYynioiN7W/YLEv/+VDHbtiCnsjNILgN+bKw==
+"@technote-space/github-action-test-helper@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.6.1.tgz#a0fc8a4278145ffaf0561fc87315e81365aa9354"
+  integrity sha512-EzirRTpYWVKnGOA0fZe73oGt6Fwr+DT0tovx9QlHP4Mxx9xfEOrS0OENeOlz7vyP4NyP9j9OdBvkFtsPvRoIPQ==
   dependencies:
     "@actions/core" "^1.2.6"
     "@actions/github" "^4.0.0"
