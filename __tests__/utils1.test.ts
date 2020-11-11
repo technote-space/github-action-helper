@@ -181,6 +181,7 @@ describe('getSemanticVersion', () => {
     expect(getSemanticVersion('v12.23.34')).toBe('12.23.34');
     expect(getSemanticVersion('1.2.3')).toBe('1.2.3');
     expect(getSemanticVersion('1.2.3.4')).toBe('1.2.3');
+    expect(getSemanticVersion('1.2.3.4', false)).toBe('1.2.3.4');
     expect(getSemanticVersion('1.2.3-alpha')).toBe('1.2.3');
   });
 
