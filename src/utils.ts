@@ -36,12 +36,12 @@ export const parseVersion = (version: string, options?: { fill?: boolean, cut?: 
   preRelease: string | undefined;
   build: string | undefined;
   fragments: Array<string>;
-} | undefined => {
+} | never => {
   // https://semver.org/spec/v2.0.0.html
   const regex   = /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*))*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
   const matches = version.trim().replace(/^[=v]+/, '').match(regex);
   if (!matches) {
-    return undefined;
+    throw new Error('Invalid versioning');
   }
 
   const fragments = split(matches[1], '.');
@@ -61,16 +61,19 @@ export const parseVersion = (version: string, options?: { fill?: boolean, cut?: 
 
 export const normalizeVersion = (version: string, options?: { fill?: boolean, cut?: boolean }): string | never => {
   const parsed = parseVersion(version, options);
-  if (parsed === undefined) {
-    throw new Error('Invalid versioning');
-  }
-
   return parsed.core + (parsed.preRelease ? `-${parsed.preRelease}` : '') + (parsed.build ? `+${parsed.build}` : '');
 };
 
-export const getSemanticVersion = (version: string, cut = true): string | undefined => parseVersion(version, {cut})?.core;
+export const getSemanticVersion = (version: string, cut = true): string | never => parseVersion(version, {cut}).core;
 
-export const isSemanticVersioningTagName = (tagName: string): boolean => getSemanticVersion(tagName) !== undefined;
+export const isValidSemanticVersioning = (version: string): boolean => {
+  try {
+    parseVersion(version);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 export const isRef = (ref: string | RefObject): boolean => /^refs\//.test(getRef(ref));
 
@@ -170,11 +173,7 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 export const replaceAll = (string: string, key: string | RegExp, value: string): string => string.split(key).join(value);
 
 export const generateNewVersion = (lastTag: string, position?: number): string => {
-  const parsed = parseVersion(lastTag);
-  if (!parsed) {
-    throw new Error('Invalid tag');
-  }
-
+  const parsed             = parseVersion(lastTag);
   const target             = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
   parsed.fragments[target] = (Number(parsed.fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
   [...Array(2 - target).keys()].forEach(key => parsed.fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers

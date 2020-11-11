@@ -3,9 +3,9 @@ import path from 'path';
 import {testEnv, getContext, testFs} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef}   = Utils;
-const {parseVersion, normalizeVersion, getSemanticVersion, isSemanticVersioningTagName, isPrRef, getPrMergeRef, sleep} = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, replaceAll, getBoolValue}  = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef}  = Utils;
+const {parseVersion, normalizeVersion, getSemanticVersion, isValidSemanticVersioning, isPrRef, getPrMergeRef, sleep}  = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, replaceAll, getBoolValue} = Utils;
 
 jest.useFakeTimers();
 
@@ -185,31 +185,31 @@ describe('getSemanticVersion', () => {
   });
 
   it('should return undefined', () => {
-    expect(getSemanticVersion('')).toBeUndefined();
-    expect(getSemanticVersion('v')).toBeUndefined();
-    expect(getSemanticVersion('abc')).toBeUndefined();
-    expect(getSemanticVersion('test/v1.2.3')).toBeUndefined();
+    expect(() => getSemanticVersion('')).toThrow();
+    expect(() => getSemanticVersion('v')).toThrow();
+    expect(() => getSemanticVersion('abc')).toThrow();
+    expect(() => getSemanticVersion('test/v1.2.3')).toThrow();
   });
 });
 
-describe('isSemanticVersioningTagName', () => {
+describe('isValidSemanticVersioning', () => {
   it('should return true', () => {
-    expect(isSemanticVersioningTagName('v1')).toBe(true);
-    expect(isSemanticVersioningTagName('v1.2')).toBe(true);
-    expect(isSemanticVersioningTagName('v12.23.34')).toBe(true);
-    expect(isSemanticVersioningTagName('1.2.3')).toBe(true);
-    expect(isSemanticVersioningTagName('1.2.3.4')).toBe(true);
-    expect(isSemanticVersioningTagName('1.2.3-alpha')).toBe(true);
-    expect(isSemanticVersioningTagName('1.0.0-rc.1')).toBe(true);
-    expect(isSemanticVersioningTagName('v2.0.0-alpha01')).toBe(true);
-    expect(isSemanticVersioningTagName('v3.0.0+f2eed76')).toBe(true);
-    expect(isSemanticVersioningTagName('v1.0.0-beta+exp.sha.5114f85')).toBe(true);
+    expect(isValidSemanticVersioning('v1')).toBe(true);
+    expect(isValidSemanticVersioning('v1.2')).toBe(true);
+    expect(isValidSemanticVersioning('v12.23.34')).toBe(true);
+    expect(isValidSemanticVersioning('1.2.3')).toBe(true);
+    expect(isValidSemanticVersioning('1.2.3.4')).toBe(true);
+    expect(isValidSemanticVersioning('1.2.3-alpha')).toBe(true);
+    expect(isValidSemanticVersioning('1.0.0-rc.1')).toBe(true);
+    expect(isValidSemanticVersioning('v2.0.0-alpha01')).toBe(true);
+    expect(isValidSemanticVersioning('v3.0.0+f2eed76')).toBe(true);
+    expect(isValidSemanticVersioning('v1.0.0-beta+exp.sha.5114f85')).toBe(true);
   });
 
   it('should return false', () => {
-    expect(isSemanticVersioningTagName('')).toBe(false);
-    expect(isSemanticVersioningTagName('v')).toBe(false);
-    expect(isSemanticVersioningTagName('abc')).toBe(false);
+    expect(isValidSemanticVersioning('')).toBe(false);
+    expect(isValidSemanticVersioning('v')).toBe(false);
+    expect(isValidSemanticVersioning('abc')).toBe(false);
   });
 });
 
