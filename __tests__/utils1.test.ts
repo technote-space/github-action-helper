@@ -132,6 +132,14 @@ describe('parseVersion', () => {
   });
 
   it('should parse version 7', () => {
+    const result = parseVersion('v1.2.3.4', {slice: 2});
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.2');
+    expect(result?.preRelease).toBe(undefined);
+    expect(result?.build).toBe(undefined);
+  });
+
+  it('should parse version 8', () => {
     const result = parseVersion('1.0.0-rc.1');
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('1.0.0');
@@ -139,7 +147,7 @@ describe('parseVersion', () => {
     expect(result?.build).toBe(undefined);
   });
 
-  it('should parse version 7', () => {
+  it('should parse version 9', () => {
     const result = parseVersion('v2.0.0-alpha01');
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('2.0.0');
@@ -147,7 +155,7 @@ describe('parseVersion', () => {
     expect(result?.build).toBe(undefined);
   });
 
-  it('should parse version 7', () => {
+  it('should parse version 10', () => {
     const result = parseVersion('v3.0.0+f2eed76');
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('3.0.0');
@@ -155,7 +163,7 @@ describe('parseVersion', () => {
     expect(result?.build).toBe('f2eed76');
   });
 
-  it('should parse version 7', () => {
+  it('should parse version 11', () => {
     const result = parseVersion('v1.0.0-beta+exp.sha.5114f85');
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('1.0.0');
@@ -163,10 +171,10 @@ describe('parseVersion', () => {
     expect(result?.build).toBe('exp.sha.5114f85');
   });
 
-  it('should parse version 7', () => {
-    const result = parseVersion('v1.0.0-beta+exp.sha.5114f85');
+  it('should parse version 12', () => {
+    const result = parseVersion('v1.2.3-beta+exp.sha.5114f85', {slice: 4});
     expect(result).not.toBeUndefined();
-    expect(result?.core).toBe('1.0.0');
+    expect(result?.core).toBe('1.2.3.0');
     expect(result?.preRelease).toBe('beta');
     expect(result?.build).toBe('exp.sha.5114f85');
   });
@@ -183,13 +191,21 @@ describe('normalizeVersion', () => {
     expect(normalizeVersion('v1.2')).toBe('1.2.0');
     expect(normalizeVersion('v1.2.3')).toBe('1.2.3');
     expect(normalizeVersion('v1.2.3.4')).toBe('1.2.3');
+    expect(normalizeVersion('v1.2.3.4', {length: 5})).toBe('1.2.3.4.0');
     expect(normalizeVersion('v1.2.3.4', {cut: false})).toBe('1.2.3.4');
+    expect(normalizeVersion('v1.2.3.4.5.6.7.8.9', {slice: 2})).toBe('1.2');
+    expect(normalizeVersion('v1.2.3.4.5.6.7.8.9', {slice: -1})).toBe('1.2.3.4.5.6.7.8');
+    expect(normalizeVersion('v1', {slice: -1})).toBe('1.0');
+    expect(normalizeVersion('v1', {slice: -1, length: 5})).toBe('1.0.0.0');
+    expect(normalizeVersion('v1', {slice: 0})).toBe('');
     expect(normalizeVersion('1', {fill: false})).toBe('1');
     expect(normalizeVersion('1.0.0.123-rc.1')).toBe('1.0.0-rc.1');
     expect(normalizeVersion('v2.0-alpha01')).toBe('2.0.0-alpha01');
     expect(normalizeVersion('v3.0.0+f2eed76')).toBe('3.0.0+f2eed76');
     expect(normalizeVersion('v1-beta+exp.sha.5114f85')).toBe('1.0.0-beta+exp.sha.5114f85');
     expect(normalizeVersion('v1-beta+exp.sha.5114f85', {onlyCore: true})).toBe('1.0.0');
+    expect(normalizeVersion('v1-beta+exp.sha.5114f85', {slice: 2})).toBe('1.0-beta+exp.sha.5114f85');
+    expect(normalizeVersion('v1-beta+exp.sha.5114f85', {slice: 2, onlyCore: true})).toBe('1.0');
   });
 
   it('should return undefined', () => {

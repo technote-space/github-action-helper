@@ -31,7 +31,7 @@ export const getBuildInfo = (filepath: string): {
 
 export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve(workDir, '.git'));
 
-export const parseVersion = (version: string, options?: { fill?: boolean; cut?: boolean; strict?: boolean; }): {
+export const parseVersion = (version: string, options?: { fill?: boolean; cut?: boolean; slice?: number; length?: number; strict?: boolean; }): {
   core: string;
   preRelease: string | undefined;
   build: string | undefined;
@@ -48,20 +48,22 @@ export const parseVersion = (version: string, options?: { fill?: boolean; cut?: 
 
   const fragments = split(matches[1], '.');
   // eslint-disable-next-line no-magic-numbers
-  while (options?.fill !== false && fragments.length < 3) {
+  const length    = options?.slice && options.slice < 0 ? (options.length ?? 3) : (options?.slice ?? options?.length ?? 3);
+  // eslint-disable-next-line no-magic-numbers
+  while (options?.fill !== false && fragments.length < length) {
     fragments.push('0');
   }
 
   return {
     // eslint-disable-next-line no-magic-numbers
-    core: (options?.cut === false ? fragments : fragments.slice(0, 3)).join('.'),
+    core: (options?.cut === false ? fragments : fragments.slice(0, options?.slice ?? options?.length ?? 3)).join('.'),
     preRelease: matches[5],
     build: matches[6],
     fragments,
   };
 };
 
-export const normalizeVersion = (version: string, options?: { fill?: boolean; cut?: boolean; onlyCore?: boolean; }): string | undefined => {
+export const normalizeVersion = (version: string, options?: { fill?: boolean; cut?: boolean; slice?: number; length?: number; onlyCore?: boolean; }): string | undefined => {
   const parsed = parseVersion(version, options);
   if (!parsed) {
     return undefined;
