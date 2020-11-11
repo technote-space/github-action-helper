@@ -178,10 +178,11 @@ describe('getSemanticVersion', () => {
   it('should return version', () => {
     expect(getSemanticVersion('v1')).toBe('1.0.0');
     expect(getSemanticVersion('v1.2')).toBe('1.2.0');
+    expect(getSemanticVersion('v1.2', {fill: false})).toBe('1.2');
     expect(getSemanticVersion('v12.23.34')).toBe('12.23.34');
     expect(getSemanticVersion('1.2.3')).toBe('1.2.3');
     expect(getSemanticVersion('1.2.3.4')).toBe('1.2.3');
-    expect(getSemanticVersion('1.2.3.4', false)).toBe('1.2.3.4');
+    expect(getSemanticVersion('1.2.3.4', {cut: false})).toBe('1.2.3.4');
     expect(getSemanticVersion('1.2.3-alpha')).toBe('1.2.3');
   });
 
@@ -211,6 +212,9 @@ describe('isValidSemanticVersioning', () => {
     expect(isValidSemanticVersioning('')).toBe(false);
     expect(isValidSemanticVersioning('v')).toBe(false);
     expect(isValidSemanticVersioning('abc')).toBe(false);
+    expect(isValidSemanticVersioning('v1', true)).toBe(false);
+    expect(isValidSemanticVersioning('v1.2', true)).toBe(false);
+    expect(isValidSemanticVersioning('1.2.3.4', true)).toBe(false);
   });
 });
 

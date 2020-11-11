@@ -31,14 +31,16 @@ export const getBuildInfo = (filepath: string): {
 
 export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve(workDir, '.git'));
 
-export const parseVersion = (version: string, options?: { fill?: boolean, cut?: boolean }): {
+export const parseVersion = (version: string, options?: { fill?: boolean, cut?: boolean, strict?: boolean }): {
   core: string;
   preRelease: string | undefined;
   build: string | undefined;
   fragments: Array<string>;
 } | never => {
   // https://semver.org/spec/v2.0.0.html
-  const regex   = /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*))*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+  const regex   = options?.strict ?
+    /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*)){2})(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/ :
+    /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*))*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
   const matches = version.trim().replace(/^[=v]+/, '').match(regex);
   if (!matches) {
     throw new Error('Invalid versioning');
@@ -64,11 +66,11 @@ export const normalizeVersion = (version: string, options?: { fill?: boolean, cu
   return parsed.core + (parsed.preRelease ? `-${parsed.preRelease}` : '') + (parsed.build ? `+${parsed.build}` : '');
 };
 
-export const getSemanticVersion = (version: string, cut = true): string | never => parseVersion(version, {cut}).core;
+export const getSemanticVersion = (version: string, options?: { fill?: boolean, cut?: boolean }): string | never => parseVersion(version, options).core;
 
-export const isValidSemanticVersioning = (version: string): boolean => {
+export const isValidSemanticVersioning = (version: string, strict?: boolean): boolean => {
   try {
-    parseVersion(version);
+    parseVersion(version, {strict});
     return true;
   } catch {
     return false;
