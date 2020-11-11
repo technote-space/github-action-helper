@@ -3,7 +3,6 @@ import path from 'path';
 import {getInput} from '@actions/core' ;
 import {Context} from '@actions/github/lib/context';
 import {getOctokit as getOctokitInstance} from '@actions/github';
-import semver from 'semver';
 import {Octokit} from './types';
 
 type RefObject = { ref: string }
@@ -32,9 +31,53 @@ export const getBuildInfo = (filepath: string): {
 
 export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve(workDir, '.git'));
 
-export const getSemanticVersion = (tagName: string): string | null => semver.valid(semver.coerce(tagName));
+export const parseVersion = (version: string, options?: { fill?: boolean; cut?: boolean; strict?: boolean; }): {
+  core: string;
+  preRelease: string | undefined;
+  build: string | undefined;
+  fragments: Array<string>;
+} | never => {
+  // https://semver.org/spec/v2.0.0.html
+  const regex   = options?.strict ?
+    /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*)){2})(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/ :
+    /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*))*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+  const matches = version.trim().replace(/^[=v]+/, '').match(regex);
+  if (!matches) {
+    throw new Error('Invalid versioning');
+  }
 
-export const isSemanticVersioningTagName = (tagName: string): boolean => getSemanticVersion(tagName) !== null;
+  const fragments = split(matches[1], '.');
+  // eslint-disable-next-line no-magic-numbers
+  while (options?.fill !== false && fragments.length < 3) {
+    fragments.push('0');
+  }
+
+  return {
+    // eslint-disable-next-line no-magic-numbers
+    core: (options?.cut === false ? fragments : fragments.slice(0, 3)).join('.'),
+    preRelease: matches[5],
+    build: matches[6],
+    fragments,
+  };
+};
+
+export const normalizeVersion = (version: string, options?: { fill?: boolean; cut?: boolean; onlyCore?: boolean; }): string | never => {
+  const parsed = parseVersion(version, options);
+  if (options?.onlyCore) {
+    return parsed.core;
+  }
+
+  return parsed.core + (parsed.preRelease ? `-${parsed.preRelease}` : '') + (parsed.build ? `+${parsed.build}` : '');
+};
+
+export const isValidSemanticVersioning = (version: string, strict?: boolean): boolean => {
+  try {
+    parseVersion(version, {strict});
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 export const isRef = (ref: string | RefObject): boolean => /^refs\//.test(getRef(ref));
 
@@ -134,20 +177,11 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 export const replaceAll = (string: string, key: string | RegExp, value: string): string => string.split(key).join(value);
 
 export const generateNewVersion = (lastTag: string, position?: number): string => {
-  if (!/^v?\d+(\.\d+)*$/.test(lastTag)) {
-    throw new Error('Invalid tag');
-  }
-
-  const fragments = split(lastTag.replace(/^v/, ''), '.');
-  // eslint-disable-next-line no-magic-numbers
-  while (fragments.length < 3) {
-    fragments.push('0');
-  }
-
-  const target      = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
-  fragments[target] = (Number(fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
-  [...Array(2 - target).keys()].forEach(key => fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers
-  return 'v' + fragments.slice(0, 3).join('.');  // eslint-disable-line no-magic-numbers
+  const parsed             = parseVersion(lastTag);
+  const target             = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
+  parsed.fragments[target] = (Number(parsed.fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
+  [...Array(2 - target).keys()].forEach(key => parsed.fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers
+  return 'v' + parsed.fragments.slice(0, 3).join('.');  // eslint-disable-line no-magic-numbers
 };
 
 export const generateNewPatchVersion = (lastTag: string): string => generateNewVersion(lastTag);

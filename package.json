@@ -1,6 +1,6 @@
 {
   "name": "@technote-space/github-action-helper",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "Helper for GitHub Action.",
   "keywords": [
     "github",
@@ -38,7 +38,6 @@
     "@actions/github": "^4.0.0",
     "@octokit/plugin-rest-endpoint-methods": "^4.2.1",
     "@technote-space/github-action-log-helper": "^0.1.7",
-    "semver": "^7.3.2",
     "shell-escape": "^0.2.0",
     "sprintf-js": "^1.1.2"
   },
