@@ -170,20 +170,15 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 export const replaceAll = (string: string, key: string | RegExp, value: string): string => string.split(key).join(value);
 
 export const generateNewVersion = (lastTag: string, position?: number): string => {
-  if (!/^v?\d+(\.\d+)*$/.test(lastTag)) {
+  const parsed = parseVersion(lastTag);
+  if (!parsed) {
     throw new Error('Invalid tag');
   }
 
-  const fragments = split(lastTag.replace(/^v/, ''), '.');
-  // eslint-disable-next-line no-magic-numbers
-  while (fragments.length < 3) {
-    fragments.push('0');
-  }
-
-  const target      = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
-  fragments[target] = (Number(fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
-  [...Array(2 - target).keys()].forEach(key => fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers
-  return 'v' + fragments.slice(0, 3).join('.');  // eslint-disable-line no-magic-numbers
+  const target             = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
+  parsed.fragments[target] = (Number(parsed.fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
+  [...Array(2 - target).keys()].forEach(key => parsed.fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers
+  return 'v' + parsed.fragments.slice(0, 3).join('.');  // eslint-disable-line no-magic-numbers
 };
 
 export const generateNewPatchVersion = (lastTag: string): string => generateNewVersion(lastTag);
