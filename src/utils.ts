@@ -3,7 +3,6 @@ import path from 'path';
 import {getInput} from '@actions/core' ;
 import {Context} from '@actions/github/lib/context';
 import {getOctokit as getOctokitInstance} from '@actions/github';
-import semver from 'semver';
 import {Octokit} from './types';
 
 type RefObject = { ref: string }
@@ -32,9 +31,46 @@ export const getBuildInfo = (filepath: string): {
 
 export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve(workDir, '.git'));
 
-export const getSemanticVersion = (tagName: string): string | null => semver.valid(semver.coerce(tagName));
+export const parseVersion = (version: string, options?: { fill?: boolean, cut?: boolean }): {
+  core: string;
+  preRelease: string | undefined;
+  build: string | undefined;
+  fragments: Array<string>;
+} | undefined => {
+  // https://semver.org/spec/v2.0.0.html
+  const regex   = /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*))*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+  const matches = version.trim().replace(/^[=v]+/, '').match(regex);
+  if (!matches) {
+    return undefined;
+  }
 
-export const isSemanticVersioningTagName = (tagName: string): boolean => getSemanticVersion(tagName) !== null;
+  const fragments = split(matches[1], '.');
+  // eslint-disable-next-line no-magic-numbers
+  while (options?.fill !== false && fragments.length < 3) {
+    fragments.push('0');
+  }
+
+  return {
+    // eslint-disable-next-line no-magic-numbers
+    core: (options?.cut === false ? fragments : fragments.slice(0, 3)).join('.'),
+    preRelease: matches[5],
+    build: matches[6],
+    fragments,
+  };
+};
+
+export const normalizeVersion = (version: string, options?: { fill?: boolean, cut?: boolean }): string | never => {
+  const parsed = parseVersion(version, options);
+  if (parsed === undefined) {
+    throw new Error('Invalid versioning');
+  }
+
+  return parsed.core + (parsed.preRelease ? `-${parsed.preRelease}` : '') + (parsed.build ? `+${parsed.build}` : '');
+};
+
+export const getSemanticVersion = (version: string, cut = true): string | undefined => parseVersion(version, {cut})?.core;
+
+export const isSemanticVersioningTagName = (tagName: string): boolean => getSemanticVersion(tagName) !== undefined;
 
 export const isRef = (ref: string | RefObject): boolean => /^refs\//.test(getRef(ref));
 

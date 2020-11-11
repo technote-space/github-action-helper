@@ -3,9 +3,9 @@ import path from 'path';
 import {testEnv, getContext, testFs} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, sleep} = Utils;
-const {getSemanticVersion, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll}     = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, getPrHeadRef}     = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef}   = Utils;
+const {parseVersion, normalizeVersion, getSemanticVersion, isSemanticVersioningTagName, isPrRef, getPrMergeRef, sleep} = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, replaceAll, getBoolValue}  = Utils;
 
 jest.useFakeTimers();
 
@@ -82,6 +82,98 @@ describe('getBoolValue', () => {
   });
 });
 
+describe('parseVersion', () => {
+  it('should parse version 1', () => {
+    const result = parseVersion('v1');
+    expect(result.core).toBe('1.0.0');
+    expect(result.preRelease).toBe(undefined);
+    expect(result.build).toBe(undefined);
+  });
+
+  it('should parse version 2', () => {
+    const result = parseVersion('v1', {fill: false});
+    expect(result.core).toBe('1');
+    expect(result.preRelease).toBe(undefined);
+    expect(result.build).toBe(undefined);
+  });
+
+  it('should parse version 3', () => {
+    const result = parseVersion('v1', {cut: false});
+    expect(result.core).toBe('1.0.0');
+    expect(result.preRelease).toBe(undefined);
+    expect(result.build).toBe(undefined);
+  });
+
+  it('should parse version 4', () => {
+    const result = parseVersion('v1.2.3');
+    expect(result.core).toBe('1.2.3');
+    expect(result.preRelease).toBe(undefined);
+    expect(result.build).toBe(undefined);
+  });
+
+  it('should parse version 5', () => {
+    const result = parseVersion('v1.2.3.4');
+    expect(result.core).toBe('1.2.3');
+    expect(result.preRelease).toBe(undefined);
+    expect(result.build).toBe(undefined);
+  });
+
+  it('should parse version 6', () => {
+    const result = parseVersion('v1.2.3.4', {cut: false});
+    expect(result.core).toBe('1.2.3.4');
+    expect(result.preRelease).toBe(undefined);
+    expect(result.build).toBe(undefined);
+  });
+
+  it('should parse version 7', () => {
+    const result = parseVersion('1.0.0-rc.1');
+    expect(result.core).toBe('1.0.0');
+    expect(result.preRelease).toBe('rc.1');
+    expect(result.build).toBe(undefined);
+  });
+
+  it('should parse version 7', () => {
+    const result = parseVersion('v2.0.0-alpha01');
+    expect(result.core).toBe('2.0.0');
+    expect(result.preRelease).toBe('alpha01');
+    expect(result.build).toBe(undefined);
+  });
+
+  it('should parse version 7', () => {
+    const result = parseVersion('v3.0.0+f2eed76');
+    expect(result.core).toBe('3.0.0');
+    expect(result.preRelease).toBe(undefined);
+    expect(result.build).toBe('f2eed76');
+  });
+
+  it('should parse version 7', () => {
+    const result = parseVersion('v1.0.0-beta+exp.sha.5114f85');
+    expect(result.core).toBe('1.0.0');
+    expect(result.preRelease).toBe('beta');
+    expect(result.build).toBe('exp.sha.5114f85');
+  });
+});
+
+describe('normalizeVersion', () => {
+  it('should normalize version', () => {
+    expect(normalizeVersion('v1')).toBe('1.0.0');
+    expect(normalizeVersion('1')).toBe('1.0.0');
+    expect(normalizeVersion('v1.2')).toBe('1.2.0');
+    expect(normalizeVersion('v1.2.3')).toBe('1.2.3');
+    expect(normalizeVersion('v1.2.3.4')).toBe('1.2.3');
+    expect(normalizeVersion('v1.2.3.4', {cut: false})).toBe('1.2.3.4');
+    expect(normalizeVersion('1', {fill: false})).toBe('1');
+    expect(normalizeVersion('1.0.0.123-rc.1')).toBe('1.0.0-rc.1');
+    expect(normalizeVersion('v2.0-alpha01')).toBe('2.0.0-alpha01');
+    expect(normalizeVersion('v3.0.0+f2eed76')).toBe('3.0.0+f2eed76');
+    expect(normalizeVersion('v1-beta+exp.sha.5114f85')).toBe('1.0.0-beta+exp.sha.5114f85');
+  });
+
+  it('should throw error', () => {
+    expect(() => normalizeVersion('abc')).toThrow();
+  });
+});
+
 describe('getSemanticVersion', () => {
   it('should return version', () => {
     expect(getSemanticVersion('v1')).toBe('1.0.0');
@@ -92,10 +184,11 @@ describe('getSemanticVersion', () => {
     expect(getSemanticVersion('1.2.3-alpha')).toBe('1.2.3');
   });
 
-  it('should return null', () => {
-    expect(getSemanticVersion('')).toBe(null);
-    expect(getSemanticVersion('v')).toBe(null);
-    expect(getSemanticVersion('abc')).toBe(null);
+  it('should return undefined', () => {
+    expect(getSemanticVersion('')).toBeUndefined();
+    expect(getSemanticVersion('v')).toBeUndefined();
+    expect(getSemanticVersion('abc')).toBeUndefined();
+    expect(getSemanticVersion('test/v1.2.3')).toBeUndefined();
   });
 });
 
