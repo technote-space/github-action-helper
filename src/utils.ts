@@ -36,14 +36,14 @@ export const parseVersion = (version: string, options?: { fill?: boolean; cut?: 
   preRelease: string | undefined;
   build: string | undefined;
   fragments: Array<string>;
-} | never => {
+} | undefined => {
   // https://semver.org/spec/v2.0.0.html
   const regex   = options?.strict ?
     /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*)){2})(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/ :
     /^v?((0|[1-9]\d*)(\.(0|[1-9]\d*))*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
   const matches = version.trim().replace(/^[=v]+/, '').match(regex);
   if (!matches) {
-    throw new Error('Invalid versioning');
+    return undefined;
   }
 
   const fragments = split(matches[1], '.');
@@ -61,8 +61,12 @@ export const parseVersion = (version: string, options?: { fill?: boolean; cut?: 
   };
 };
 
-export const normalizeVersion = (version: string, options?: { fill?: boolean; cut?: boolean; onlyCore?: boolean; }): string | never => {
+export const normalizeVersion = (version: string, options?: { fill?: boolean; cut?: boolean; onlyCore?: boolean; }): string | undefined => {
   const parsed = parseVersion(version, options);
+  if (!parsed) {
+    return undefined;
+  }
+
   if (options?.onlyCore) {
     return parsed.core;
   }
@@ -70,14 +74,7 @@ export const normalizeVersion = (version: string, options?: { fill?: boolean; cu
   return parsed.core + (parsed.preRelease ? `-${parsed.preRelease}` : '') + (parsed.build ? `+${parsed.build}` : '');
 };
 
-export const isValidSemanticVersioning = (version: string, strict?: boolean): boolean => {
-  try {
-    parseVersion(version, {strict});
-    return true;
-  } catch {
-    return false;
-  }
-};
+export const isValidSemanticVersioning = (version: string, strict?: boolean): boolean => parseVersion(version, {strict}) !== undefined;
 
 export const isRef = (ref: string | RefObject): boolean => /^refs\//.test(getRef(ref));
 
@@ -177,7 +174,11 @@ export const useNpm = (workDir: string, pkgManager = ''): boolean =>
 export const replaceAll = (string: string, key: string | RegExp, value: string): string => string.split(key).join(value);
 
 export const generateNewVersion = (lastTag: string, position?: number): string => {
-  const parsed             = parseVersion(lastTag);
+  const parsed = parseVersion(lastTag);
+  if (!parsed) {
+    throw new Error('Invalid versioning');
+  }
+
   const target             = Math.max(Math.min(position ?? 2, 2), 0);  // eslint-disable-line no-magic-numbers
   parsed.fragments[target] = (Number(parsed.fragments[target]) + 1).toString();  // eslint-disable-line no-magic-numbers
   [...Array(2 - target).keys()].forEach(key => parsed.fragments[2 - key] = '0'); // eslint-disable-line no-magic-numbers

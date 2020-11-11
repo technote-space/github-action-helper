@@ -85,72 +85,94 @@ describe('getBoolValue', () => {
 describe('parseVersion', () => {
   it('should parse version 1', () => {
     const result = parseVersion('v1');
-    expect(result.core).toBe('1.0.0');
-    expect(result.preRelease).toBe(undefined);
-    expect(result.build).toBe(undefined);
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.0.0');
+    expect(result?.preRelease).toBe(undefined);
+    expect(result?.build).toBe(undefined);
   });
 
   it('should parse version 2', () => {
     const result = parseVersion('v1', {fill: false});
-    expect(result.core).toBe('1');
-    expect(result.preRelease).toBe(undefined);
-    expect(result.build).toBe(undefined);
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1');
+    expect(result?.preRelease).toBe(undefined);
+    expect(result?.build).toBe(undefined);
   });
 
   it('should parse version 3', () => {
     const result = parseVersion('v1', {cut: false});
-    expect(result.core).toBe('1.0.0');
-    expect(result.preRelease).toBe(undefined);
-    expect(result.build).toBe(undefined);
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.0.0');
+    expect(result?.preRelease).toBe(undefined);
+    expect(result?.build).toBe(undefined);
   });
 
   it('should parse version 4', () => {
     const result = parseVersion('v1.2.3');
-    expect(result.core).toBe('1.2.3');
-    expect(result.preRelease).toBe(undefined);
-    expect(result.build).toBe(undefined);
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.2.3');
+    expect(result?.preRelease).toBe(undefined);
+    expect(result?.build).toBe(undefined);
   });
 
   it('should parse version 5', () => {
     const result = parseVersion('v1.2.3.4');
-    expect(result.core).toBe('1.2.3');
-    expect(result.preRelease).toBe(undefined);
-    expect(result.build).toBe(undefined);
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.2.3');
+    expect(result?.preRelease).toBe(undefined);
+    expect(result?.build).toBe(undefined);
   });
 
   it('should parse version 6', () => {
     const result = parseVersion('v1.2.3.4', {cut: false});
-    expect(result.core).toBe('1.2.3.4');
-    expect(result.preRelease).toBe(undefined);
-    expect(result.build).toBe(undefined);
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.2.3.4');
+    expect(result?.preRelease).toBe(undefined);
+    expect(result?.build).toBe(undefined);
   });
 
   it('should parse version 7', () => {
     const result = parseVersion('1.0.0-rc.1');
-    expect(result.core).toBe('1.0.0');
-    expect(result.preRelease).toBe('rc.1');
-    expect(result.build).toBe(undefined);
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.0.0');
+    expect(result?.preRelease).toBe('rc.1');
+    expect(result?.build).toBe(undefined);
   });
 
   it('should parse version 7', () => {
     const result = parseVersion('v2.0.0-alpha01');
-    expect(result.core).toBe('2.0.0');
-    expect(result.preRelease).toBe('alpha01');
-    expect(result.build).toBe(undefined);
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('2.0.0');
+    expect(result?.preRelease).toBe('alpha01');
+    expect(result?.build).toBe(undefined);
   });
 
   it('should parse version 7', () => {
     const result = parseVersion('v3.0.0+f2eed76');
-    expect(result.core).toBe('3.0.0');
-    expect(result.preRelease).toBe(undefined);
-    expect(result.build).toBe('f2eed76');
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('3.0.0');
+    expect(result?.preRelease).toBe(undefined);
+    expect(result?.build).toBe('f2eed76');
   });
 
   it('should parse version 7', () => {
     const result = parseVersion('v1.0.0-beta+exp.sha.5114f85');
-    expect(result.core).toBe('1.0.0');
-    expect(result.preRelease).toBe('beta');
-    expect(result.build).toBe('exp.sha.5114f85');
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.0.0');
+    expect(result?.preRelease).toBe('beta');
+    expect(result?.build).toBe('exp.sha.5114f85');
+  });
+
+  it('should parse version 7', () => {
+    const result = parseVersion('v1.0.0-beta+exp.sha.5114f85');
+    expect(result).not.toBeUndefined();
+    expect(result?.core).toBe('1.0.0');
+    expect(result?.preRelease).toBe('beta');
+    expect(result?.build).toBe('exp.sha.5114f85');
+  });
+
+  it('should return undefined', () => {
+    expect(parseVersion('abc')).toBeUndefined();
   });
 });
 
@@ -170,11 +192,11 @@ describe('normalizeVersion', () => {
     expect(normalizeVersion('v1-beta+exp.sha.5114f85', {onlyCore: true})).toBe('1.0.0');
   });
 
-  it('should throw error', () => {
-    expect(() => normalizeVersion('')).toThrow();
-    expect(() => normalizeVersion('v')).toThrow();
-    expect(() => normalizeVersion('abc')).toThrow();
-    expect(() => normalizeVersion('test/v1.2.3')).toThrow();
+  it('should return undefined', () => {
+    expect(normalizeVersion('')).toBeUndefined();
+    expect(normalizeVersion('v')).toBeUndefined();
+    expect(normalizeVersion('abc')).toBeUndefined();
+    expect(normalizeVersion('test/v1.2.3')).toBeUndefined();
   });
 });
 
