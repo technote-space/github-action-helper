@@ -3,9 +3,9 @@ import path from 'path';
 import {testEnv, getContext, testFs} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef}  = Utils;
-const {parseVersion, normalizeVersion, getSemanticVersion, isValidSemanticVersioning, isPrRef, getPrMergeRef, sleep}  = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, replaceAll, getBoolValue} = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef} = Utils;
+const {parseVersion, normalizeVersion, isValidSemanticVersioning, isPrRef, getPrMergeRef, replaceAll, sleep}         = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, getBoolValue}            = Utils;
 
 jest.useFakeTimers();
 
@@ -167,30 +167,14 @@ describe('normalizeVersion', () => {
     expect(normalizeVersion('v2.0-alpha01')).toBe('2.0.0-alpha01');
     expect(normalizeVersion('v3.0.0+f2eed76')).toBe('3.0.0+f2eed76');
     expect(normalizeVersion('v1-beta+exp.sha.5114f85')).toBe('1.0.0-beta+exp.sha.5114f85');
+    expect(normalizeVersion('v1-beta+exp.sha.5114f85', {onlyCore: true})).toBe('1.0.0');
   });
 
   it('should throw error', () => {
+    expect(() => normalizeVersion('')).toThrow();
+    expect(() => normalizeVersion('v')).toThrow();
     expect(() => normalizeVersion('abc')).toThrow();
-  });
-});
-
-describe('getSemanticVersion', () => {
-  it('should return version', () => {
-    expect(getSemanticVersion('v1')).toBe('1.0.0');
-    expect(getSemanticVersion('v1.2')).toBe('1.2.0');
-    expect(getSemanticVersion('v1.2', {fill: false})).toBe('1.2');
-    expect(getSemanticVersion('v12.23.34')).toBe('12.23.34');
-    expect(getSemanticVersion('1.2.3')).toBe('1.2.3');
-    expect(getSemanticVersion('1.2.3.4')).toBe('1.2.3');
-    expect(getSemanticVersion('1.2.3.4', {cut: false})).toBe('1.2.3.4');
-    expect(getSemanticVersion('1.2.3-alpha')).toBe('1.2.3');
-  });
-
-  it('should return undefined', () => {
-    expect(() => getSemanticVersion('')).toThrow();
-    expect(() => getSemanticVersion('v')).toThrow();
-    expect(() => getSemanticVersion('abc')).toThrow();
-    expect(() => getSemanticVersion('test/v1.2.3')).toThrow();
+    expect(() => normalizeVersion('test/v1.2.3')).toThrow();
   });
 });
 

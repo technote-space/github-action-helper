@@ -31,7 +31,7 @@ export const getBuildInfo = (filepath: string): {
 
 export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve(workDir, '.git'));
 
-export const parseVersion = (version: string, options?: { fill?: boolean, cut?: boolean, strict?: boolean }): {
+export const parseVersion = (version: string, options?: { fill?: boolean; cut?: boolean; strict?: boolean; }): {
   core: string;
   preRelease: string | undefined;
   build: string | undefined;
@@ -61,12 +61,14 @@ export const parseVersion = (version: string, options?: { fill?: boolean, cut?: 
   };
 };
 
-export const normalizeVersion = (version: string, options?: { fill?: boolean, cut?: boolean }): string | never => {
+export const normalizeVersion = (version: string, options?: { fill?: boolean; cut?: boolean; onlyCore?: boolean; }): string | never => {
   const parsed = parseVersion(version, options);
+  if (options?.onlyCore) {
+    return parsed.core;
+  }
+
   return parsed.core + (parsed.preRelease ? `-${parsed.preRelease}` : '') + (parsed.build ? `+${parsed.build}` : '');
 };
-
-export const getSemanticVersion = (version: string, options?: { fill?: boolean, cut?: boolean }): string | never => parseVersion(version, options).core;
 
 export const isValidSemanticVersioning = (version: string, strict?: boolean): boolean => {
   try {
