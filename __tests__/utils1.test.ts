@@ -3,9 +3,9 @@ import path from 'path';
 import {testEnv, getContext, testFs} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch} = Utils;
-const {isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll, getPrHeadRef}    = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, sleep}     = Utils;
+const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, sleep} = Utils;
+const {getSemanticVersion, isSemanticVersioningTagName, isPrRef, getPrMergeRef, getBoolValue, replaceAll}     = Utils;
+const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, getPrHeadRef}     = Utils;
 
 jest.useFakeTimers();
 
@@ -82,12 +82,35 @@ describe('getBoolValue', () => {
   });
 });
 
+describe('getSemanticVersion', () => {
+  it('should return version', () => {
+    expect(getSemanticVersion('v1')).toBe('1.0.0');
+    expect(getSemanticVersion('v1.2')).toBe('1.2.0');
+    expect(getSemanticVersion('v12.23.34')).toBe('12.23.34');
+    expect(getSemanticVersion('1.2.3')).toBe('1.2.3');
+    expect(getSemanticVersion('1.2.3.4')).toBe('1.2.3');
+    expect(getSemanticVersion('1.2.3-alpha')).toBe('1.2.3');
+  });
+
+  it('should return null', () => {
+    expect(getSemanticVersion('')).toBe(null);
+    expect(getSemanticVersion('v')).toBe(null);
+    expect(getSemanticVersion('abc')).toBe(null);
+  });
+});
+
 describe('isSemanticVersioningTagName', () => {
   it('should return true', () => {
     expect(isSemanticVersioningTagName('v1')).toBe(true);
     expect(isSemanticVersioningTagName('v1.2')).toBe(true);
     expect(isSemanticVersioningTagName('v12.23.34')).toBe(true);
     expect(isSemanticVersioningTagName('1.2.3')).toBe(true);
+    expect(isSemanticVersioningTagName('1.2.3.4')).toBe(true);
+    expect(isSemanticVersioningTagName('1.2.3-alpha')).toBe(true);
+    expect(isSemanticVersioningTagName('1.0.0-rc.1')).toBe(true);
+    expect(isSemanticVersioningTagName('v2.0.0-alpha01')).toBe(true);
+    expect(isSemanticVersioningTagName('v3.0.0+f2eed76')).toBe(true);
+    expect(isSemanticVersioningTagName('v1.0.0-beta+exp.sha.5114f85')).toBe(true);
   });
 
   it('should return false', () => {

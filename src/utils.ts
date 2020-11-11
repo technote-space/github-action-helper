@@ -3,6 +3,7 @@ import path from 'path';
 import {getInput} from '@actions/core' ;
 import {Context} from '@actions/github/lib/context';
 import {getOctokit as getOctokitInstance} from '@actions/github';
+import semver from 'semver';
 import {Octokit} from './types';
 
 type RefObject = { ref: string }
@@ -31,7 +32,9 @@ export const getBuildInfo = (filepath: string): {
 
 export const isCloned = (workDir: string): boolean => fs.existsSync(path.resolve(workDir, '.git'));
 
-export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+(\.\d+)*$/i.test(tagName);
+export const getSemanticVersion = (tagName: string): string | null => semver.valid(semver.coerce(tagName));
+
+export const isSemanticVersioningTagName = (tagName: string): boolean => getSemanticVersion(tagName) !== null;
 
 export const isRef = (ref: string | RefObject): boolean => /^refs\//.test(getRef(ref));
 
