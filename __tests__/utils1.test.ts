@@ -92,7 +92,7 @@ describe('parseVersion', () => {
   });
 
   it('should parse version 2', () => {
-    const result = parseVersion('v1', {fill: false});
+    const result = parseVersion('V1', {fill: false});
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('1');
     expect(result?.preRelease).toBe(undefined);
