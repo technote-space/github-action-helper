@@ -78,6 +78,12 @@ export const normalizeVersion = (version: string, options?: { fill?: boolean; cu
 
 export const isValidSemanticVersioning = (version: string, strict?: boolean): boolean => parseVersion(version, {strict}) !== undefined;
 
+/* istanbul ignore next */
+/*
+ * @deprecated Use isValidSemanticVersioning
+ */
+export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+(\.\d+)*$/i.test(tagName);
+
 export const isRef = (ref: string | RefObject): boolean => /^refs\//.test(getRef(ref));
 
 export const isBranch = (ref: string | RefObject): boolean => /^refs\/heads\//.test(getRef(ref));
