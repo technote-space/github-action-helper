@@ -219,6 +219,7 @@ describe('normalizeVersion', () => {
     expect(normalizeVersion('', {fallback: ''})).toBe('');
     expect(normalizeVersion('', {fallback: null})).toBe(null);
     expect(normalizeVersion('', {fallback: 'abc'})).toBe('abc');
+    expect(normalizeVersion('', {fallback: 123})).toBe(123);
   });
 });
 
