@@ -82,7 +82,7 @@ export const isValidSemanticVersioning = (version: string, strict?: boolean): bo
 /*
  * @deprecated Use isValidSemanticVersioning
  */
-export const isSemanticVersioningTagName = (version: string): boolean => isValidSemanticVersioning(version);
+export const isSemanticVersioningTagName = (tagName: string): boolean => /^v?\d+(\.\d+)*$/i.test(tagName);
 
 export const isRef = (ref: string | RefObject): boolean => /^refs\//.test(getRef(ref));
 
