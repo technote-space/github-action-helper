@@ -63,10 +63,10 @@ export const parseVersion = (version: string, options?: { fill?: boolean; cut?: 
   };
 };
 
-export const normalizeVersion = (version: string, options?: { fill?: boolean; cut?: boolean; slice?: number; length?: number; onlyCore?: boolean; }): string | undefined => {
+export const normalizeVersion = (version: string, options?: { fill?: boolean; cut?: boolean; slice?: number; length?: number; onlyCore?: boolean; fallback?: string | null }): string | undefined | null => {
   const parsed = parseVersion(version, options);
   if (!parsed) {
-    return undefined;
+    return options?.fallback;
   }
 
   if (options?.onlyCore) {

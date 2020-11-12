@@ -214,6 +214,12 @@ describe('normalizeVersion', () => {
     expect(normalizeVersion('abc')).toBeUndefined();
     expect(normalizeVersion('test/v1.2.3')).toBeUndefined();
   });
+
+  it('should return fallback', () => {
+    expect(normalizeVersion('', {fallback: ''})).toBe('');
+    expect(normalizeVersion('', {fallback: null})).toBe(null);
+    expect(normalizeVersion('', {fallback: 'abc'})).toBe('abc');
+  });
 });
 
 describe('isValidSemanticVersioning', () => {
