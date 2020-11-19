@@ -764,7 +764,7 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@technote-space/github-action-log-helper@^0.1.7":
+"@technote-space/github-action-log-helper@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@technote-space/github-action-log-helper/-/github-action-log-helper-0.1.8.tgz#73b8e1d90a3e81f60d122f0988d0ffc8cae04590"
   integrity sha512-xGXMF18RWPebt92CzgE0F/dKojLJAj1GCoun+BI6OfIWYA9itu+FgGQXHeykniX24v2PvfFtuoyNfll44tKxKQ==

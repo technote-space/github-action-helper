@@ -37,7 +37,7 @@
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
     "@octokit/plugin-rest-endpoint-methods": "^4.2.1",
-    "@technote-space/github-action-log-helper": "^0.1.7",
+    "@technote-space/github-action-log-helper": "^0.1.8",
     "shell-escape": "^0.2.0",
     "sprintf-js": "^1.1.2"
   },
