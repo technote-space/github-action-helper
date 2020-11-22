@@ -8,10 +8,16 @@ import {
   testChildProcess,
   spyOnSpawn,
   execCalledWith,
+  spyOnStdout,
+  stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
 import {Logger} from '@technote-space/github-action-log-helper';
+import {ExecException} from 'child_process';
 import {GitHelper} from '../src';
 
+beforeEach(() => {
+  Logger.resetForTesting();
+});
 const workDir   = '.work';
 const setExists = testFs(true);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -893,5 +899,55 @@ describe('GitHelper without params', () => {
         'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token4@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
       ]);
     });
+  });
+});
+
+describe('ACTIONS_STEP_DEBUG test', () => {
+  testEnv();
+  testChildProcess();
+
+  const helper = new GitHelper(new Logger(), {token: 'token1'});
+
+  it('should add suppress error command', async() => {
+    const mockExec   = spyOnSpawn();
+    const mockStdout = spyOnStdout();
+    mockExec.mockImplementation(() => {
+      const error: ExecException = new Error('test error');
+      error.code                 = 123;
+      throw error;
+    });
+
+    await expect(helper.addOrigin(workDir, context())).rejects.toThrow('command [git remote add origin] exited with code 123.');
+
+    execCalledWith(mockExec, [
+      'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1 || :',
+    ]);
+    stdoutCalledWith(mockStdout, [
+      '[command]git remote add origin',
+      'undefined',
+      '{}',
+    ]);
+  });
+
+  it('should not add suppress error command', async() => {
+    process.env.ACTIONS_STEP_DEBUG = 'true';
+    const mockExec                 = spyOnSpawn();
+    const mockStdout               = spyOnStdout();
+    mockExec.mockImplementation(() => {
+      const error: ExecException = new Error('test error');
+      error.code                 = 123;
+      throw error;
+    });
+
+    await expect(helper.addOrigin(workDir, context())).rejects.toThrow('command [git remote add origin] exited with code 123.');
+
+    execCalledWith(mockExec, [
+      'git remote add origin \'https://octocat:token1@github.com/hello/world.git\'',
+    ]);
+    stdoutCalledWith(mockStdout, [
+      '[command]git remote add origin',
+      'undefined',
+      '{}',
+    ]);
   });
 });

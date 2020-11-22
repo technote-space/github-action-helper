@@ -2,8 +2,8 @@
 import {testEnv} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, mask}                    = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables} = Utils;
+const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, mask, isActionsStepDebug} = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables}  = Utils;
 
 jest.useFakeTimers();
 
@@ -261,5 +261,33 @@ describe('replaceVariables', () => {
       {key: 'test3', replace: (): Promise<string> => Promise.resolve('3')},
       {key: 'test5', replace: '5'},
     ])).toBe('1/2/3/${test4}');
+  });
+});
+
+describe('isActionsStepDebug', () => {
+  testEnv();
+
+  it('should return true', () => {
+    process.env.ACTIONS_STEP_DEBUG = 'true';
+    expect(isActionsStepDebug()).toBe(true);
+  });
+
+  it('should return false 1', () => {
+    expect(isActionsStepDebug()).toBe(false);
+  });
+
+  it('should return false 2', () => {
+    process.env.ACTIONS_STEP_DEBUG = '';
+    expect(isActionsStepDebug()).toBe(false);
+  });
+
+  it('should return false 3', () => {
+    process.env.ACTIONS_STEP_DEBUG = '1';
+    expect(isActionsStepDebug()).toBe(false);
+  });
+
+  it('should return false 4', () => {
+    process.env.ACTIONS_STEP_DEBUG = 'abc';
+    expect(isActionsStepDebug()).toBe(false);
   });
 });
