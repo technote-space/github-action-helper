@@ -2,8 +2,8 @@
 import {testEnv} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, mask, isActionsStepDebug}         = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, isDebug} = Utils;
+const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug} = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, mask} = Utils;
 
 jest.useFakeTimers();
 
@@ -264,58 +264,58 @@ describe('replaceVariables', () => {
   });
 });
 
-describe('isDebug', () => {
+describe('isCommandDebug', () => {
   testEnv();
 
   it('should return true', () => {
-    process.env.ACTIONS_UTILS_DEBUG = 'true';
-    expect(isDebug()).toBe(true);
+    process.env.INPUT_UTILS_COMMAND_DEBUG = 'true';
+    expect(isCommandDebug()).toBe(true);
   });
 
   it('should return false 1', () => {
-    expect(isDebug()).toBe(false);
+    expect(isCommandDebug()).toBe(false);
   });
 
   it('should return false 2', () => {
-    process.env.ACTIONS_UTILS_DEBUG = '';
-    expect(isDebug()).toBe(false);
+    process.env.INPUT_UTILS_COMMAND_DEBUG = '';
+    expect(isCommandDebug()).toBe(false);
   });
 
   it('should return false 3', () => {
-    process.env.ACTIONS_UTILS_DEBUG = '1';
-    expect(isDebug()).toBe(false);
+    process.env.INPUT_UTILS_COMMAND_DEBUG = '1';
+    expect(isCommandDebug()).toBe(false);
   });
 
   it('should return false 4', () => {
-    process.env.ACTIONS_UTILS_DEBUG = 'abc';
-    expect(isDebug()).toBe(false);
+    process.env.INPUT_UTILS_COMMAND_DEBUG = 'abc';
+    expect(isCommandDebug()).toBe(false);
   });
 });
 
-describe('isActionsStepDebug', () => {
+describe('isOutputDebug', () => {
   testEnv();
 
   it('should return true', () => {
-    process.env.ACTIONS_STEP_DEBUG = 'true';
-    expect(isActionsStepDebug()).toBe(true);
+    process.env.INPUT_UTILS_OUTPUT_DEBUG = 'true';
+    expect(isOutputDebug()).toBe(true);
   });
 
   it('should return false 1', () => {
-    expect(isActionsStepDebug()).toBe(false);
+    expect(isOutputDebug()).toBe(false);
   });
 
   it('should return false 2', () => {
-    process.env.ACTIONS_STEP_DEBUG = '';
-    expect(isActionsStepDebug()).toBe(false);
+    process.env.INPUT_UTILS_OUTPUT_DEBUG = '';
+    expect(isOutputDebug()).toBe(false);
   });
 
   it('should return false 3', () => {
-    process.env.ACTIONS_STEP_DEBUG = '1';
-    expect(isActionsStepDebug()).toBe(false);
+    process.env.INPUT_UTILS_OUTPUT_DEBUG = '1';
+    expect(isOutputDebug()).toBe(false);
   });
 
   it('should return false 4', () => {
-    process.env.ACTIONS_STEP_DEBUG = 'abc';
-    expect(isActionsStepDebug()).toBe(false);
+    process.env.INPUT_UTILS_OUTPUT_DEBUG = 'abc';
+    expect(isOutputDebug()).toBe(false);
   });
 });
