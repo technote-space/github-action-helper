@@ -15,6 +15,8 @@ import {
   getAccessToken,
   generateNewMinorVersion,
   generateNewMajorVersion,
+  isDebug,
+  isActionsStepDebug,
 } from './utils';
 import {getGitUrlWithToken} from './context-helper';
 
@@ -62,6 +64,16 @@ export default class GitHelper {
       this.filter = (line: string): boolean => !!line.trim();
     }
   }
+
+  /**
+   * @return {boolean} should suppress error
+   */
+  private shouldSuppressError = (): boolean => !isDebug();
+
+  /**
+   * @return {boolean} is quiet?
+   */
+  private isQuiet = (): boolean => !isActionsStepDebug() && (!this.origin || this.quietIfNotOrigin);
 
   /**
    * @param {string} workDir work dir
@@ -147,14 +159,9 @@ export default class GitHelper {
       args: [this.getRemoteName(), getGitUrlWithToken(context, this.token)],
       quiet: this.isQuiet(),
       altCommand: `git remote add ${this.getRemoteName()}`,
-      suppressError: true,
+      suppressError: this.shouldSuppressError(),
     });
   };
-
-  /**
-   * @return {boolean} is quiet?
-   */
-  private isQuiet = (): boolean => !this.origin || this.quietIfNotOrigin;
 
   /**
    * @param {string} workDir work dir
@@ -167,7 +174,7 @@ export default class GitHelper {
     return (await this.runCommand(workDir, {
       command: 'git rev-parse',
       args: ['--abbrev-ref', 'HEAD'],
-      suppressError: true,
+      suppressError: this.shouldSuppressError(),
       stderrToStdout: true,
     }))[0].stdout[0]?.trim() ?? '';
   };
@@ -184,7 +191,7 @@ export default class GitHelper {
       args: [`--branch=${branch}`, this.cloneDepth, this.getRemote(context), '.'],
       quiet: this.isQuiet(),
       altCommand: `git clone --branch=${branch}`,
-      suppressError: true,
+      suppressError: this.shouldSuppressError(),
     });
   };
 
@@ -200,7 +207,7 @@ export default class GitHelper {
         args: [this.cloneDepth, this.getRemote(context), '.'],
         quiet: this.isQuiet(),
         altCommand: 'git clone',
-        suppressError: true,
+        suppressError: this.shouldSuppressError(),
       },
       {
         command: 'git fetch',
@@ -261,7 +268,7 @@ export default class GitHelper {
         this.getRemoteName(),
         ...(refspec ?? []),
       ],
-      suppressError: true,
+      suppressError: this.shouldSuppressError(),
       stderrToStdout: true,
     });
   };
@@ -295,7 +302,7 @@ export default class GitHelper {
       args: ['--prune', '--no-recurse-submodules', this.cloneDepth, this.getRemote(context), `+refs/heads/${branchName}:refs/remotes/${this.getRemoteName()}/${branchName}`],
       quiet: this.isQuiet(),
       altCommand: `git fetch --prune --no-recurse-submodules${this.cloneDepth} ${this.getRemoteName()} +refs/heads/${branchName}:refs/remotes/${this.getRemoteName()}/${branchName}`,
-      suppressError: true,
+      suppressError: this.shouldSuppressError(),
     });
   };
 
@@ -317,7 +324,7 @@ export default class GitHelper {
     await this.runCommand(workDir, {
       command: 'git checkout',
       args: ['-b', branch, `${this.getRemoteName()}/${branch}`],
-      suppressError: true,
+      suppressError: this.shouldSuppressError(),
       stderrToStdout: true,
     });
   };
@@ -465,7 +472,7 @@ export default class GitHelper {
         args: [this.getRemote(context), '--delete', ...tags],
         quiet: this.isQuiet(),
         altCommand: `git push ${this.getRemoteName()} --delete ${tags.join(' ')}`,
-        suppressError: true,
+        suppressError: this.shouldSuppressError(),
       })),
     );
     await this.deleteLocalTag(workDir, tags, splitSize);
@@ -506,7 +513,7 @@ export default class GitHelper {
       tags => ({
         command: 'git tag',
         args: ['-d', ...tags],
-        suppressError: true,
+        suppressError: this.shouldSuppressError(),
         stderrToStdout: true,
       }),
     ));
@@ -550,7 +557,7 @@ export default class GitHelper {
       args: args.concat([this.getRemote(context), `${branch}:refs/heads/${branch}`]),
       quiet: this.isQuiet(),
       altCommand: `git push ${args.concat([this.getRemoteName(), `${branch}:refs/heads/${branch}`]).join(' ')}`,
-      suppressError: true,
+      suppressError: this.shouldSuppressError(),
     });
   };
 
