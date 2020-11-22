@@ -252,3 +252,7 @@ export const replaceVariables = async(string: string, variables: { key: string; 
 
   return replaced;
 };
+
+export const isDebug = (): boolean => process.env.ACTIONS_UTILS_DEBUG === 'true';
+
+export const isActionsStepDebug = (): boolean => process.env.ACTIONS_STEP_DEBUG === 'true';
