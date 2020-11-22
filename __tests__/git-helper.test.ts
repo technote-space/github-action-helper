@@ -902,13 +902,13 @@ describe('GitHelper without params', () => {
   });
 });
 
-describe('ACTIONS_STEP_DEBUG test', () => {
+describe('Debug', () => {
   testEnv();
   testChildProcess();
 
   const helper = new GitHelper(new Logger(), {token: 'token1'});
 
-  it('should add suppress error command', async() => {
+  it('should add command to suppress error and output', async() => {
     const mockExec   = spyOnSpawn();
     const mockStdout = spyOnStdout();
     mockExec.mockImplementation(() => {
@@ -929,7 +929,29 @@ describe('ACTIONS_STEP_DEBUG test', () => {
     ]);
   });
 
-  it('should not add suppress error command', async() => {
+  it('should not add command to suppress error', async() => {
+    process.env.ACTIONS_UTILS_DEBUG = 'true';
+    const mockExec                  = spyOnSpawn();
+    const mockStdout                = spyOnStdout();
+    mockExec.mockImplementation(() => {
+      const error: ExecException = new Error('test error');
+      error.code                 = 123;
+      throw error;
+    });
+
+    await expect(helper.addOrigin(workDir, context())).rejects.toThrow('command [git remote add origin] exited with code 123.');
+
+    execCalledWith(mockExec, [
+      'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' > /dev/null 2>&1',
+    ]);
+    stdoutCalledWith(mockStdout, [
+      '[command]git remote add origin',
+      'undefined',
+      '{}',
+    ]);
+  });
+
+  it('should not add command to suppress error output', async() => {
     process.env.ACTIONS_STEP_DEBUG = 'true';
     const mockExec                 = spyOnSpawn();
     const mockStdout               = spyOnStdout();
@@ -942,7 +964,7 @@ describe('ACTIONS_STEP_DEBUG test', () => {
     await expect(helper.addOrigin(workDir, context())).rejects.toThrow('command [git remote add origin] exited with code 123.');
 
     execCalledWith(mockExec, [
-      'git remote add origin \'https://octocat:token1@github.com/hello/world.git\'',
+      'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' || :',
     ]);
     stdoutCalledWith(mockStdout, [
       '[command]git remote add origin',

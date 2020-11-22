@@ -15,6 +15,7 @@ import {
   getAccessToken,
   generateNewMinorVersion,
   generateNewMajorVersion,
+  isDebug,
   isActionsStepDebug,
 } from './utils';
 import {getGitUrlWithToken} from './context-helper';
@@ -67,12 +68,12 @@ export default class GitHelper {
   /**
    * @return {boolean} should suppress error
    */
-  private shouldSuppressError = (): boolean => !isActionsStepDebug();
+  private shouldSuppressError = (): boolean => !isDebug();
 
   /**
    * @return {boolean} is quiet?
    */
-  private isQuiet = (): boolean => this.shouldSuppressError() && (!this.origin || this.quietIfNotOrigin);
+  private isQuiet = (): boolean => !isActionsStepDebug() && (!this.origin || this.quietIfNotOrigin);
 
   /**
    * @param {string} workDir work dir
