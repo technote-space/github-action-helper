@@ -930,9 +930,9 @@ describe('Debug', () => {
   });
 
   it('should not add command to suppress error', async() => {
-    process.env.ACTIONS_UTILS_DEBUG = 'true';
-    const mockExec                  = spyOnSpawn();
-    const mockStdout                = spyOnStdout();
+    process.env.INPUT_UTILS_COMMAND_DEBUG = 'true';
+    const mockExec                        = spyOnSpawn();
+    const mockStdout                      = spyOnStdout();
     mockExec.mockImplementation(() => {
       const error: ExecException = new Error('test error');
       error.code                 = 123;
@@ -952,9 +952,9 @@ describe('Debug', () => {
   });
 
   it('should not add command to suppress error output', async() => {
-    process.env.ACTIONS_STEP_DEBUG = 'true';
-    const mockExec                 = spyOnSpawn();
-    const mockStdout               = spyOnStdout();
+    process.env.INPUT_UTILS_OUTPUT_DEBUG = 'true';
+    const mockExec                       = spyOnSpawn();
+    const mockStdout                     = spyOnStdout();
     mockExec.mockImplementation(() => {
       const error: ExecException = new Error('test error');
       error.code                 = 123;
