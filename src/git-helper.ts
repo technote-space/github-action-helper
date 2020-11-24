@@ -327,6 +327,12 @@ export default class GitHelper {
       suppressError: this.shouldSuppressError(),
       stderrToStdout: true,
     });
+    await this.runCommand(workDir, {
+      command: 'git checkout',
+      args: [branch],
+      suppressError: this.shouldSuppressError(),
+      stderrToStdout: true,
+    });
   };
 
   /**
