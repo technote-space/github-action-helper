@@ -157,7 +157,7 @@ export default class GitHelper {
     await this.runCommand(workDir, {
       command: 'git remote add',
       args: [this.getRemoteName(), getGitUrlWithToken(context, this.token)],
-      quiet: this.isQuiet(),
+      stderrToStdout: this.isQuiet(),
       altCommand: `git remote add ${this.getRemoteName()}`,
       suppressError: this.shouldSuppressError(),
     });
@@ -189,7 +189,7 @@ export default class GitHelper {
     await this.runCommand(workDir, {
       command: 'git clone',
       args: [`--branch=${branch}`, this.cloneDepth, this.getRemote(context), '.'],
-      quiet: this.isQuiet(),
+      stderrToStdout: this.isQuiet(),
       altCommand: `git clone --branch=${branch}`,
       suppressError: this.shouldSuppressError(),
     });
@@ -205,7 +205,7 @@ export default class GitHelper {
       {
         command: 'git clone',
         args: [this.cloneDepth, this.getRemote(context), '.'],
-        quiet: this.isQuiet(),
+        stderrToStdout: this.isQuiet(),
         altCommand: 'git clone',
         suppressError: this.shouldSuppressError(),
       },
@@ -476,7 +476,7 @@ export default class GitHelper {
       arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTagRef), splitSize).map(tags => ({
         command: 'git push',
         args: [this.getRemote(context), '--delete', ...tags],
-        quiet: this.isQuiet(),
+        stderrToStdout: this.isQuiet(),
         altCommand: `git push ${this.getRemoteName()} --delete ${tags.join(' ')}`,
         suppressError: this.shouldSuppressError(),
       })),
@@ -501,7 +501,7 @@ export default class GitHelper {
       {
         command: 'git push',
         args: [this.getRemote(context), `refs/tags/${newTag}`],
-        quiet: this.isQuiet(),
+        stderrToStdout: this.isQuiet(),
         altCommand: `git push ${this.getRemoteName()} refs/tags/${newTag}`,
       },
     ]);
@@ -561,7 +561,7 @@ export default class GitHelper {
     await this.runCommand(workDir, {
       command: 'git push',
       args: args.concat([this.getRemote(context), `${branch}:refs/heads/${branch}`]),
-      quiet: this.isQuiet(),
+      stderrToStdout: this.isQuiet(),
       altCommand: `git push ${args.concat([this.getRemoteName(), `${branch}:refs/heads/${branch}`]).join(' ')}`,
       suppressError: this.shouldSuppressError(),
     });
