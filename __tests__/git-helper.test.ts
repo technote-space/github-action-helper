@@ -267,6 +267,7 @@ describe('GitHelper', () => {
 
       execCalledWith(mockExec, [
         'git checkout -b test-branch origin/test-branch || :',
+        'git checkout test-branch || :',
       ]);
     });
   });
@@ -814,14 +815,19 @@ describe('GitHelper', () => {
       execCalledWith(mockExec, [
         'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
         'git checkout -b abc origin/abc || :',
+        'git checkout abc || :',
         'git clone \'--branch=test\' \'--depth=3\' origin \'.\' > /dev/null 2>&1 || :',
         'git checkout -b abc origin/abc || :',
+        'git checkout abc || :',
         'git clone \'--branch=test\' \'--depth=3\' test \'.\' > /dev/null 2>&1 || :',
         'git checkout -b abc test/abc || :',
+        'git checkout abc || :',
         'git clone \'--branch=test\' \'--depth=3\' origin \'.\' || :',
         'git checkout -b abc origin/abc || :',
+        'git checkout abc || :',
         'git clone \'--branch=test\' \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'.\' > /dev/null 2>&1 || :',
         'git checkout -b abc origin/abc || :',
+        'git checkout abc || :',
       ]);
     });
   });
