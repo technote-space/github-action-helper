@@ -242,7 +242,7 @@ describe('GitHelper', () => {
       await helper.fetchBranch(workDir, 'test-branch', context());
 
       execCalledWith(mockExec, [
-        'git fetch --prune --no-recurse-submodules \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'+refs/heads/test-branch:refs/remotes/origin/test-branch\' > /dev/null 2>&1 || :',
+        'git fetch --prune --no-tags --no-recurse-submodules \'--depth=3\' \'https://octocat:token1@github.com/hello/world.git\' \'+refs/heads/test-branch:refs/remotes/origin/test-branch\' || :',
       ]);
     });
   });

@@ -299,8 +299,8 @@ export default class GitHelper {
     const branchName = getBranch(branch, false);
     await this.runCommand(workDir, {
       command: 'git fetch',
-      args: ['--prune', '--no-recurse-submodules', this.cloneDepth, this.getRemote(context), `+refs/heads/${branchName}:refs/remotes/${this.getRemoteName()}/${branchName}`],
-      quiet: this.isQuiet(),
+      args: ['--prune', '--no-tags', '--no-recurse-submodules', this.cloneDepth, this.getRemote(context), `+refs/heads/${branchName}:refs/remotes/${this.getRemoteName()}/${branchName}`],
+      stderrToStdout: this.isQuiet(),
       altCommand: `git fetch --prune --no-recurse-submodules${this.cloneDepth} ${this.getRemoteName()} +refs/heads/${branchName}:refs/remotes/${this.getRemoteName()}/${branchName}`,
       suppressError: this.shouldSuppressError(),
     });
