@@ -2,8 +2,8 @@
 import {testEnv} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug, objectGet}     = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, mask, ensureNotNull} = Utils;
+const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug, objectGet, mask}             = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, ensureNotNullValue, ensureNotNull} = Utils;
 
 jest.useFakeTimers();
 
@@ -317,6 +317,21 @@ describe('isOutputDebug', () => {
   it('should return false 4', () => {
     process.env.INPUT_UTILS_OUTPUT_DEBUG = 'abc';
     expect(isOutputDebug()).toBe(false);
+  });
+});
+
+describe('ensureNotNullValue', () => {
+  it('should return value', () => {
+    expect(ensureNotNullValue('test', '')).toBe('test');
+    expect(ensureNotNullValue(true, false)).toBe(true);
+    expect(ensureNotNullValue(1, 0)).toBe(1);
+  });
+
+  it('should return default value', () => {
+    expect(ensureNotNullValue(null, '')).toBe('');
+    expect(ensureNotNullValue(undefined, '')).toBe('');
+    expect(ensureNotNullValue(null, false)).toBe(false);
+    expect(ensureNotNullValue(undefined, 3)).toBe(3);
   });
 });
 

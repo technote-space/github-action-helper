@@ -274,4 +274,6 @@ export const objectGet = <T>(value: { [key: string]: any } | undefined, key: str
   return value[keys[0]];
 };
 
-export const ensureNotNull = (value: string | null | undefined): string => value ?? '';
+export const ensureNotNullValue = <T>(value: T | null | undefined, defaultValue: T): T => value ?? defaultValue;
+
+export const ensureNotNull = (value: string | null | undefined): string => ensureNotNullValue(value, '');
