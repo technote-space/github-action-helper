@@ -37,14 +37,14 @@
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
     "@octokit/plugin-rest-endpoint-methods": "^4.4.1",
-    "@technote-space/github-action-log-helper": "^0.1.8",
+    "@technote-space/github-action-log-helper": "^0.1.9",
     "shell-escape": "^0.2.0",
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
-    "@technote-space/github-action-test-helper": "^0.6.4",
+    "@technote-space/github-action-test-helper": "^0.6.5",
     "@types/jest": "^26.0.16",
     "@types/node": "^14.14.10",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
