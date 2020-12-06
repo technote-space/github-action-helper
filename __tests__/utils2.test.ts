@@ -2,8 +2,8 @@
 import {testEnv} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug} = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, mask} = Utils;
+const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug, objectGet}     = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, mask, ensureNotNull} = Utils;
 
 jest.useFakeTimers();
 
@@ -317,5 +317,29 @@ describe('isOutputDebug', () => {
   it('should return false 4', () => {
     process.env.INPUT_UTILS_OUTPUT_DEBUG = 'abc';
     expect(isOutputDebug()).toBe(false);
+  });
+});
+
+describe('ensureNotNull', () => {
+  it('should return value', () => {
+    expect(ensureNotNull('test')).toBe('test');
+  });
+
+  it('should return empty string', () => {
+    expect(ensureNotNull(null)).toBe('');
+    expect(ensureNotNull(undefined)).toBe('');
+  });
+});
+
+describe('objectGet', () => {
+  it('should return object value', () => {
+    expect(objectGet({test1: {test2: 123}}, 'test1')).toEqual({test2: 123});
+    expect(objectGet({test1: {test2: 123}}, 'test1.test2')).toBe(123);
+  });
+
+  it('should return undefined', () => {
+    expect(objectGet(undefined, 'test1.test2')).toBeUndefined();
+    expect(objectGet({test1: {test2: 123}}, '')).toBeUndefined();
+    expect(objectGet({test1: {test2: 123}}, 'test1.test3')).toBeUndefined();
   });
 });

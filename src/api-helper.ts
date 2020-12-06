@@ -3,23 +3,33 @@ import path from 'path';
 import {Context} from '@actions/github/lib/context';
 import {PaginateInterface} from '@octokit/plugin-paginate-rest';
 import {RestEndpointMethods} from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/method-types';
-import {
-  OctokitResponse,
-  GitGetCommitResponseData,
-  PullsGetResponseData,
-  GitCreateTreeResponseData,
-  GitCreateCommitResponseData,
-  GitGetRefResponseData,
-  PullsListResponseData,
-  PullsCreateResponseData,
-  PullsUpdateResponseData,
-  GitListMatchingRefsResponseData,
-} from '@octokit/types';
+import {OctokitResponse} from '@octokit/types';
+import {components} from '@octokit/openapi-types';
 import {exportVariable} from '@actions/core';
 import {Logger} from '@technote-space/github-action-log-helper';
-import {getRefForUpdate, isPrRef, getBranch, trimRef, versionCompare, generateNewPatchVersion, generateNewMajorVersion, generateNewMinorVersion} from './utils';
+import {
+  getRefForUpdate,
+  isPrRef,
+  getBranch,
+  trimRef,
+  versionCompare,
+  generateNewPatchVersion,
+  generateNewMajorVersion,
+  generateNewMinorVersion,
+  ensureNotNull,
+  objectGet,
+} from './utils';
 import {getSender} from './context-helper';
 import {Octokit} from './types';
+
+type GitGetCommitResponseData = components['schemas']['git-commit'];
+type PullsGetResponseData = components['schemas']['pull-request'];
+type GitCreateTreeResponseData = components['schemas']['git-tree'];
+type GitCreateCommitResponseData = components['schemas']['git-commit'];
+type GitGetRefResponseData = components['schemas']['git-ref'];
+type PullsListResponseData = components['schemas']['pull-request-simple'];
+type PullsCreateResponseData = components['schemas']['pull-request'];
+type PullsUpdateResponseData = components['schemas']['pull-request'];
 
 type PullsUpdateParams = {
   body?: string;
@@ -163,18 +173,18 @@ export default class ApiHelper {
   /**
    * @param {string} rootDir root dir
    * @param {object} files files
-   * @return {Promise<{ path: string, sha: string }[]>} blobs
+   * @return {Promise<Array<{ path: string, sha: string }>>} blobs
    */
-  public filesToBlobs = async(rootDir: string, files: Array<string>): Promise<{ path: string; sha: string }[]> => await Promise.all(Object.values(files).map(file => this.createBlob(rootDir, file)));
+  public filesToBlobs = async(rootDir: string, files: Array<string>): Promise<Array<{ path: string; sha: string }>> => await Promise.all(files.map(file => this.createBlob(rootDir, file)));
 
   /**
-   * @param {{ path: string, sha: string }[]} blobs blobs
+   * @param {Array<{ path: string, sha: string }>} blobs blobs
    * @return {Promise<GitCreateTreeResponseData>} tree
    */
-  public createTree = async(blobs: { path: string; sha: string }[]): Promise<GitCreateTreeResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).git.createTree({
+  public createTree = async(blobs: Array<{ path: string; sha: string }>): Promise<GitCreateTreeResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).git.createTree({
     ...this.context.repo,
-    'base_tree': (await this.getCommit()).tree.sha,
-    tree: Object.values(blobs).map(blob => ({
+    'base_tree': ensureNotNull(objectGet((await this.getCommit()), 'tree.sha')),
+    tree: blobs.map(blob => ({
       path: blob.path,
       type: 'blob',
       mode: '100644',
@@ -220,7 +230,7 @@ export default class ApiHelper {
       await (this.octokit as RestEndpointMethods).git.updateRef({
         ...this.context.repo,
         ref: refName,
-        sha: commit.sha,
+        sha: ensureNotNull(commit.sha),
         force,
       });
 
@@ -245,7 +255,7 @@ export default class ApiHelper {
     await (this.octokit as RestEndpointMethods).git.createRef({
       ...this.context.repo,
       ref: refName,
-      sha: commit.sha,
+      sha: ensureNotNull(commit.sha),
     });
   };
 
@@ -264,7 +274,7 @@ export default class ApiHelper {
    * @param {string} branchName branch name
    * @return {Promise<PullsListResponseData | null>} pull request
    */
-  public findPullRequest = async(branchName: string): Promise<PullsListResponseData[number] | null> => {
+  public findPullRequest = async(branchName: string): Promise<PullsListResponseData | null> => {
     const response = await (this.octokit as RestEndpointMethods).pulls.list({
       ...this.context.repo,
       head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
@@ -278,9 +288,9 @@ export default class ApiHelper {
 
   /**
    * @param {PullsListParams} params params
-   * @return {AsyncIterable<PullsListResponseData>} pull request list
+   * @return {AsyncIterable<Array<PullsListResponseData>>} pull request list
    */
-  public pullsList = (params: PullsListParams): Promise<PullsListResponseData> => (this.octokit.paginate as PaginateInterface)(
+  public pullsList = (params: PullsListParams): Promise<Array<PullsListResponseData>> => (this.octokit.paginate as PaginateInterface)(
     (this.octokit as RestEndpointMethods).pulls.list,
     Object.assign({
       sort: 'created',
@@ -403,10 +413,10 @@ export default class ApiHelper {
   private isProtectedBranchError = (error: Error): boolean => /required status checks?.* (is|are) expected/i.test(error.message);
 
   /**
-   * @param {string[]} files files
+   * @param {Array<string>} files files
    * @return {boolean} diff?
    */
-  private checkDiff = (files: string[]): boolean => {
+  private checkDiff = (files: Array<string>): boolean => {
     if (!files.length) {
       this.callLogger(logger => logger.info('There is no diff.'));
       return false;
@@ -418,10 +428,10 @@ export default class ApiHelper {
   /**
    * @param {string} rootDir root dir
    * @param {string} commitMessage commit message
-   * @param {string[]} files files
+   * @param {Array<string>} files files
    * @return {Promise<GitCreateCommitResponseData>} commit
    */
-  private prepareCommit = async(rootDir: string, commitMessage: string, files: string[]): Promise<GitCreateCommitResponseData> => {
+  private prepareCommit = async(rootDir: string, commitMessage: string, files: Array<string>): Promise<GitCreateCommitResponseData> => {
     this.callLogger(logger => logger.startProcess('Creating blobs...'));
     const blobs = await this.filesToBlobs(rootDir, files);
 
@@ -435,10 +445,10 @@ export default class ApiHelper {
   /**
    * @param {string} rootDir root dir
    * @param {string} commitMessage commit message
-   * @param {string[]} files files
+   * @param {Array<string>} files files
    * @return {Promise<boolean>} result
    */
-  public commit = async(rootDir: string, commitMessage: string, files: string[]): Promise<boolean> => {
+  public commit = async(rootDir: string, commitMessage: string, files: Array<string>): Promise<boolean> => {
     if (!this.checkDiff(files)) {
       return false;
     }
@@ -459,12 +469,12 @@ export default class ApiHelper {
   /**
    * @param {string} rootDir root dir
    * @param {string} commitMessage commit message
-   * @param {string[]} files files
+   * @param {Array<string>} files files
    * @param {string} createBranchName branch name
    * @param {PullsCreateParams} detail detail
    * @return {Promise<boolean|PullsInfo>} result
    */
-  public createPR = async(rootDir: string, commitMessage: string, files: string[], createBranchName: string, detail: PullsCreateParams): Promise<boolean | PullsInfo> => {
+  public createPR = async(rootDir: string, commitMessage: string, files: Array<string>, createBranchName: string, detail: PullsCreateParams): Promise<boolean | PullsInfo> => {
     if (!this.checkDiff(files)) {
       return false;
     }
@@ -530,8 +540,8 @@ export default class ApiHelper {
 
     return {
       login: user.login,
-      email: user.email,
-      name: user.name,
+      email: ensureNotNull(user.email),
+      name: ensureNotNull(user.name),
       id: user.id,
     };
   };
@@ -552,7 +562,7 @@ export default class ApiHelper {
       ...this.context.repo,
       ref: 'tags/',
     },
-  )).map((item): string => trimRef((item as GitListMatchingRefsResponseData[number]).ref));
+  )).map((item): string => trimRef(item.ref));
 
   /**
    * @return {Promise<string>} tag
