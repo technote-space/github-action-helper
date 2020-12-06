@@ -36,6 +36,7 @@
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
+    "@octokit/openapi-types": "^2.0.0",
     "@octokit/plugin-rest-endpoint-methods": "^4.4.1",
     "@technote-space/github-action-log-helper": "^0.1.9",
     "shell-escape": "^0.2.0",

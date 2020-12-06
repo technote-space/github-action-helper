@@ -1,8 +1,8 @@
 /* eslint-disable no-magic-numbers */
 import nock from 'nock';
 import path from 'path';
-import {Utils} from '../src';
 import {
+  getOctokit,
   disableNetConnect,
   testEnv,
   getContext,
@@ -13,9 +13,10 @@ import {
   exportVariableCalledWith,
 } from '@technote-space/github-action-test-helper';
 import {Logger} from '@technote-space/github-action-log-helper';
-import {GitCreateCommitResponseData} from '@octokit/types';
+import {components} from '@octokit/openapi-types';
 import {ApiHelper} from '../src';
 
+type GitCreateCommitResponseData = components['schemas']['git-commit'];
 const rootDir = path.resolve(__dirname, 'fixtures');
 const context = getContext({
   ref: 'refs/heads/test',
@@ -32,7 +33,7 @@ const context = getContext({
     number: 123,
   },
 });
-const octokit = Utils.getOctokit('test-token');
+const octokit = getOctokit();
 const logger  = new Logger();
 
 const createCommitResponse: GitCreateCommitResponseData = {
@@ -162,6 +163,7 @@ describe('ApiHelper', () => {
 
       const commit = await helper.createCommit('test commit message', {
         sha: 'tree-sha',
+        truncated: true,
         tree: [],
         url: '',
       });
@@ -198,6 +200,7 @@ describe('ApiHelper', () => {
       }), logger);
       const commit = await helper.createCommit('test commit message', {
         sha: 'tree-sha',
+        truncated: true,
         tree: [],
         url: '',
       });

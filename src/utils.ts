@@ -256,3 +256,5 @@ export const replaceVariables = async(string: string, variables: { key: string; 
 export const isCommandDebug = (): boolean => getInput('UTILS_COMMAND_DEBUG') === 'true';
 
 export const isOutputDebug = (): boolean => getInput('UTILS_OUTPUT_DEBUG') === 'true';
+
+export const ensureNotNull = (value: string | null | undefined): string => value ?? '';

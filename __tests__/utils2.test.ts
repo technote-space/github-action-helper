@@ -2,8 +2,8 @@
 import {testEnv} from '@technote-space/github-action-test-helper';
 import {Utils} from '../src';
 
-const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug} = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, mask} = Utils;
+const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug, mask}    = Utils;
+const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, ensureNotNull} = Utils;
 
 jest.useFakeTimers();
 
@@ -317,5 +317,16 @@ describe('isOutputDebug', () => {
   it('should return false 4', () => {
     process.env.INPUT_UTILS_OUTPUT_DEBUG = 'abc';
     expect(isOutputDebug()).toBe(false);
+  });
+});
+
+describe('ensureNotNull', () => {
+  it('should return value', () => {
+    expect(ensureNotNull('test')).toBe('test');
+  });
+
+  it('should return empty string', () => {
+    expect(ensureNotNull(null)).toBe('');
+    expect(ensureNotNull(undefined)).toBe('');
   });
 });

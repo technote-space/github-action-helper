@@ -717,7 +717,7 @@
   dependencies:
     "@octokit/types" "^6.0.1"
 
-"@octokit/plugin-rest-endpoint-methods@^4.0.0", "@octokit/plugin-rest-endpoint-methods@^4.2.1", "@octokit/plugin-rest-endpoint-methods@^4.4.1":
+"@octokit/plugin-rest-endpoint-methods@^4.0.0", "@octokit/plugin-rest-endpoint-methods@^4.4.1":
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/@octokit/plugin-rest-endpoint-methods/-/plugin-rest-endpoint-methods-4.4.1.tgz#105cf93255432155de078c9efc33bd4e14d1cd63"
   integrity sha512-+v5PcvrUcDeFXf8hv1gnNvNLdm4C0+2EiuWt9EatjjUmfriM1pTMM+r4j1lLHxeBQ9bVDmbywb11e3KjuavieA==
@@ -770,22 +770,22 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@technote-space/github-action-log-helper@^0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-log-helper/-/github-action-log-helper-0.1.8.tgz#73b8e1d90a3e81f60d122f0988d0ffc8cae04590"
-  integrity sha512-xGXMF18RWPebt92CzgE0F/dKojLJAj1GCoun+BI6OfIWYA9itu+FgGQXHeykniX24v2PvfFtuoyNfll44tKxKQ==
+"@technote-space/github-action-log-helper@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-log-helper/-/github-action-log-helper-0.1.9.tgz#dffa42319cb6aee8365bd1240edbe91b65e184dc"
+  integrity sha512-OqxsuOTYctvfZTZETf3CXPwX1/n4BPOyynlufEplTTu73kpEbl9WQDKMDEYyCQPXuSi8x9QyIk6jW/3VTGNsYw==
   dependencies:
     "@actions/core" "^1.2.6"
     sprintf-js "^1.1.2"
 
-"@technote-space/github-action-test-helper@^0.6.4":
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.6.4.tgz#dd8a97666254ba02782320d6a12dfce47d6f332e"
-  integrity sha512-WLzgkL6OjWWiU/mYRmXSj3gFQihu9emdbTWTHo7ymCGBAf+nkrWH0kn+hYeu4AQH+HkKVGSPC2aSqh/NsAJ2VA==
+"@technote-space/github-action-test-helper@^0.6.5":
+  version "0.6.5"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.6.5.tgz#cb5a938e09508edce1d5e939d42dfb16276ad895"
+  integrity sha512-yy28r9Ny0yWjKaKZcqxkoGvWPZbKrJ95tWXoG13GSLqDunCBIZqR+hjEshcaG4GL3fCyglM8aHbhTmQWlwLiMA==
   dependencies:
     "@actions/core" "^1.2.6"
     "@actions/github" "^4.0.0"
-    "@octokit/plugin-rest-endpoint-methods" "^4.2.1"
+    "@octokit/plugin-rest-endpoint-methods" "^4.4.1"
     js-yaml "^3.14.0"
 
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
@@ -1560,9 +1560,9 @@ copy-descriptor@^0.1.0:
   integrity sha1-Z29us8OZl8LuGsOpJP1hJHSPV40=
 
 core-js@^3.6.1:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.8.0.tgz#0fc2d4941cadf80538b030648bb64d230b4da0ce"
-  integrity sha512-W2VYNB0nwQQE7tKS7HzXd7r2y/y2SVJl4ga6oH/dnaLFzM0o2lB2P3zCkWj5Wc/zyMYjtgd5Hmhk0ObkQFZOIA==
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.8.1.tgz#f51523668ac8a294d1285c3b9db44025fda66d47"
+  integrity sha512-9Id2xHY1W7m8hCl8NkhQn5CufmF/WuR30BTRewvCXc1aZd3kMECwNZ69ndLbekKfakw9Rf2Xyc+QR6E7Gg+obg==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
