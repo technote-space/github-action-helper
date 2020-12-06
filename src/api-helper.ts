@@ -7,7 +7,18 @@ import {OctokitResponse} from '@octokit/types';
 import {components} from '@octokit/openapi-types';
 import {exportVariable} from '@actions/core';
 import {Logger} from '@technote-space/github-action-log-helper';
-import {getRefForUpdate, isPrRef, getBranch, trimRef, versionCompare, generateNewPatchVersion, generateNewMajorVersion, generateNewMinorVersion, ensureNotNull} from './utils';
+import {
+  getRefForUpdate,
+  isPrRef,
+  getBranch,
+  trimRef,
+  versionCompare,
+  generateNewPatchVersion,
+  generateNewMajorVersion,
+  generateNewMinorVersion,
+  ensureNotNull,
+  objectGet,
+} from './utils';
 import {getSender} from './context-helper';
 import {Octokit} from './types';
 
@@ -172,7 +183,7 @@ export default class ApiHelper {
    */
   public createTree = async(blobs: Array<{ path: string; sha: string }>): Promise<GitCreateTreeResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).git.createTree({
     ...this.context.repo,
-    'base_tree': (await this.getCommit()).tree.sha,
+    'base_tree': ensureNotNull(objectGet((await this.getCommit()), 'tree.sha')),
     tree: blobs.map(blob => ({
       path: blob.path,
       type: 'blob',
