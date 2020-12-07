@@ -357,4 +357,9 @@ describe('objectGet', () => {
     expect(objectGet({test1: {test2: 123}}, '')).toBeUndefined();
     expect(objectGet({test1: {test2: 123}}, 'test1.test3')).toBeUndefined();
   });
+
+  it('should return default value', () => {
+    expect(objectGet(undefined, 'test1.test2', 123)).toBe(123);
+    expect(objectGet({test1: {test2: 123}}, '', false)).toBe(false);
+  });
 });
