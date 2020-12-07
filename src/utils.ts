@@ -258,17 +258,17 @@ export const isCommandDebug = (): boolean => getInput('UTILS_COMMAND_DEBUG') ===
 export const isOutputDebug = (): boolean => getInput('UTILS_OUTPUT_DEBUG') === 'true';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const objectGet = <T>(value: { [key: string]: any } | undefined, key: string): T | undefined => {
+export const objectGet = <T>(value: { [key: string]: any } | undefined | null, key: string, defaultValue?: T): T | undefined => {
   const keys = key.split('.');
 
   if (!keys.length || !value || !(keys[0] in value)) {
-    return undefined;
+    return defaultValue;
   }
 
   // eslint-disable-next-line no-magic-numbers
   if (keys.length > 1) {
     // eslint-disable-next-line no-magic-numbers
-    return objectGet(value[keys[0]], keys.slice(1).join('.'));
+    return objectGet(value[keys[0]], keys.slice(1).join('.'), defaultValue);
   }
 
   return value[keys[0]];
