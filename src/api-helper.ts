@@ -320,7 +320,6 @@ export default class ApiHelper {
   public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<PullsUpdateResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).pulls.update({
     ...this.context.repo,
     'pull_number': number,
-    base: (await this.getRefForUpdate(false)).replace(/^heads\//, ''),
     state: 'open',
     ...detail,
   }));
@@ -508,7 +507,6 @@ export default class ApiHelper {
 
       await this.pullsUpdate(pullRequest.number, {
         state: 'closed',
-        base: undefined,
       });
     } else {
       this.callLogger(logger => logger.info('There is no PullRequest named [%s]', branchName));
