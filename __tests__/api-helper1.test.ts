@@ -62,6 +62,7 @@ const createCommitResponse: GitCreateCommitResponseData = {
     signature: '',
     verified: true,
   },
+  'html_url': '',
 };
 
 describe('ApiHelper', () => {
