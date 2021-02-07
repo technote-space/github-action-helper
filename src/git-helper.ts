@@ -563,7 +563,6 @@ export default class GitHelper {
       args: args.concat([this.getRemote(context), `${branch}:refs/heads/${branch}`]),
       stderrToStdout: this.isQuiet(),
       altCommand: `git push ${args.concat([this.getRemoteName(), `${branch}:refs/heads/${branch}`]).join(' ')}`,
-      suppressError: this.shouldSuppressError(),
     });
   };
 

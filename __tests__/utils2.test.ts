@@ -267,8 +267,13 @@ describe('replaceVariables', () => {
 describe('isCommandDebug', () => {
   testEnv();
 
-  it('should return true', () => {
+  it('should return true 1', () => {
     process.env.INPUT_UTILS_COMMAND_DEBUG = 'true';
+    expect(isCommandDebug()).toBe(true);
+  });
+
+  it('should return true 2', () => {
+    process.env.UTILS_COMMAND_DEBUG = 'true';
     expect(isCommandDebug()).toBe(true);
   });
 
@@ -288,6 +293,11 @@ describe('isCommandDebug', () => {
 
   it('should return false 4', () => {
     process.env.INPUT_UTILS_COMMAND_DEBUG = 'abc';
+    expect(isCommandDebug()).toBe(false);
+  });
+
+  it('should return false 5', () => {
+    process.env.UTILS_COMMAND_DEBUG = '';
     expect(isCommandDebug()).toBe(false);
   });
 });
