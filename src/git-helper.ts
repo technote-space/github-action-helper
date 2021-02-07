@@ -337,30 +337,34 @@ export default class GitHelper {
 
   /**
    * @param {string} workDir work dir
-   * @param {string} name name
-   * @param {string} email email
-   * @param {string} defaultBranch default branch
+   * @param {object} config config
    * @return {Promise<void>} void
    */
-  public config = async(workDir: string, name: string, email: string, defaultBranch?: string): Promise<void> => {
-    if (defaultBranch) {
+  public config = async(workDir: string, config: { name?: string, email?: string, defaultBranch?: string }): Promise<void> => {
+    if (config.defaultBranch) {
       await this.runCommand(workDir, [
         {
           command: 'git config',
-          args: ['--global', 'init.defaultBranch', defaultBranch],
+          args: ['--global', 'init.defaultBranch', config.defaultBranch],
         },
       ]);
     }
-    await this.runCommand(workDir, [
-      {
-        command: 'git config',
-        args: ['user.name', name],
-      },
-      {
-        command: 'git config',
-        args: ['user.email', email],
-      },
-    ]);
+    if (config.name) {
+      await this.runCommand(workDir, [
+        {
+          command: 'git config',
+          args: ['user.name', config.name],
+        },
+      ]);
+    }
+    if (config.email) {
+      await this.runCommand(workDir, [
+        {
+          command: 'git config',
+          args: ['user.email', config.email],
+        },
+      ]);
+    }
   };
 
   /**
