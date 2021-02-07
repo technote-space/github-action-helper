@@ -339,9 +339,18 @@ export default class GitHelper {
    * @param {string} workDir work dir
    * @param {string} name name
    * @param {string} email email
+   * @param {string} defaultBranch default branch
    * @return {Promise<void>} void
    */
-  public config = async(workDir: string, name: string, email: string): Promise<void> => {
+  public config = async(workDir: string, name: string, email: string, defaultBranch?: string): Promise<void> => {
+    if (defaultBranch) {
+      await this.runCommand(workDir, [
+        {
+          command: 'git config',
+          args: ['init.defaultBranch', defaultBranch],
+        },
+      ]);
+    }
     await this.runCommand(workDir, [
       {
         command: 'git config',

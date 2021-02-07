@@ -163,6 +163,14 @@ describe('execAsync', () => {
     })).rejects.toThrow('command exited with code 123.');
   });
 
+  it('should catch error 5', async() => {
+    setChildProcessParams({stderr: 'error message', code: 123});
+
+    await expect(command.execAsync({
+      command: 'test',
+    })).rejects.toThrow('command [test] exited with code 123. message: error message');
+  });
+
   it('should suppress stdout', async() => {
     const mockExec   = spyOnSpawn();
     const mockStdout = spyOnStdout();
