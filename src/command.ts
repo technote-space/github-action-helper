@@ -3,6 +3,19 @@ import escape from 'shell-escape';
 import {Logger} from '@technote-space/github-action-log-helper';
 
 /**
+ * class CommandError
+ */
+class CommandError extends Error {
+  /**
+   * @param {string} message message
+   * @param {number} code code
+   */
+  constructor(message: string, public code: number) {
+    super(message);
+  }
+}
+
+/**
  * Command
  */
 export default class Command {
@@ -141,7 +154,11 @@ export default class Command {
       subProcess.on('error', (err) => {
         reject(err);
       });
-      subProcess.on('close', () => {
+      subProcess.on('close', (code) => {
+        if (code) {
+          reject(new CommandError(stderr, code));
+        }
+
         resolve({stdout, stderr});
       });
     });
