@@ -283,6 +283,18 @@ describe('GitHelper', () => {
         'git config \'user.email\' test-email',
       ]);
     });
+
+    it('should run git config', async() => {
+      const mockExec = spyOnSpawn();
+
+      await helper.config(workDir, 'test-name', 'test-email', 'main');
+
+      execCalledWith(mockExec, [
+        'git config \'init.defaultBranch\' main',
+        'git config \'user.name\' test-name',
+        'git config \'user.email\' test-email',
+      ]);
+    });
   });
 
   describe('runCommand', () => {
