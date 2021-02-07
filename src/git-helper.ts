@@ -347,7 +347,7 @@ export default class GitHelper {
       await this.runCommand(workDir, [
         {
           command: 'git config',
-          args: ['init.defaultBranch', defaultBranch],
+          args: ['--global', 'init.defaultBranch', defaultBranch],
         },
       ]);
     }

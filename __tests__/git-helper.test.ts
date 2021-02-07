@@ -290,7 +290,7 @@ describe('GitHelper', () => {
       await helper.config(workDir, 'test-name', 'test-email', 'main');
 
       execCalledWith(mockExec, [
-        'git config \'init.defaultBranch\' main',
+        'git config --global \'init.defaultBranch\' main',
         'git config \'user.name\' test-name',
         'git config \'user.email\' test-email',
       ]);
