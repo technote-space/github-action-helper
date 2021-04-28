@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import {Context} from '@actions/github/lib/context';
 import {PaginateInterface} from '@octokit/plugin-paginate-rest';
-import {RestEndpointMethods} from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/method-types';
 import {OctokitResponse} from '@octokit/types';
 import {components} from '@octokit/openapi-types';
 import {exportVariable} from '@actions/core';
@@ -72,7 +71,7 @@ export default class ApiHelper {
   private prCache: { [key: number]: PullsGetResponseData } = {};
 
   /**
-   * @param {RestEndpointMethods} octokit octokit
+   * @param {Octokit} octokit octokit
    * @param {Context} context context
    * @param {Logger} logger logger
    * @param {object} options options
@@ -130,7 +129,7 @@ export default class ApiHelper {
    * @return {Promise<{ path: string, sha: string }>} blob
    */
   private createBlob = async(rootDir: string, filepath: string): Promise<{ path: string; sha: string }> => {
-    const blob = await (this.octokit as RestEndpointMethods).git.createBlob({
+    const blob = await this.octokit.git.createBlob({
       ...this.context.repo,
       content: Buffer.from(fs.readFileSync(path.resolve(rootDir, filepath), 'utf8')).toString('base64'),
       encoding: 'base64',
@@ -150,7 +149,7 @@ export default class ApiHelper {
   /**
    * @return {Promise<GitGetCommitResponseData>} commit
    */
-  private getCommit = async(): Promise<GitGetCommitResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).git.getCommit({
+  private getCommit = async(): Promise<GitGetCommitResponseData> => this.getResponseData(this.octokit.git.getCommit({
     ...this.context.repo,
     'commit_sha': this.getCommitSha(),
   }));
@@ -161,7 +160,7 @@ export default class ApiHelper {
   private getPR = async(): Promise<PullsGetResponseData> => {
     const key = parseInt(this.context.payload.number, 10);
     if (!(key in this.prCache)) {
-      this.prCache[key] = await this.getResponseData((this.octokit as RestEndpointMethods).pulls.get({
+      this.prCache[key] = await this.getResponseData(this.octokit.pulls.get({
         ...this.context.repo,
         'pull_number': this.context.payload.number,
       }));
@@ -181,7 +180,7 @@ export default class ApiHelper {
    * @param {Array<{ path: string, sha: string }>} blobs blobs
    * @return {Promise<GitCreateTreeResponseData>} tree
    */
-  public createTree = async(blobs: Array<{ path: string; sha: string }>): Promise<GitCreateTreeResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).git.createTree({
+  public createTree = async(blobs: Array<{ path: string; sha: string }>): Promise<GitCreateTreeResponseData> => this.getResponseData(this.octokit.git.createTree({
     ...this.context.repo,
     'base_tree': ensureNotNull(objectGet((await this.getCommit()), 'tree.sha')),
     tree: blobs.map(blob => ({
@@ -197,7 +196,7 @@ export default class ApiHelper {
    * @param {GitCreateTreeResponseData} tree tree
    * @return {Promise<GitCreateCommitResponseData>} commit
    */
-  public createCommit = async(commitMessage: string, tree: GitCreateTreeResponseData): Promise<GitCreateCommitResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).git.createCommit({
+  public createCommit = async(commitMessage: string, tree: GitCreateTreeResponseData): Promise<GitCreateCommitResponseData> => this.getResponseData(this.octokit.git.createCommit({
     ...this.context.repo,
     tree: tree.sha,
     parents: [this.getCommitSha()],
@@ -210,7 +209,7 @@ export default class ApiHelper {
    */
   private getRef = async(refName: string): Promise<GitGetRefResponseData | null> => {
     try {
-      return await this.getResponseData((this.octokit as RestEndpointMethods).git.getRef({
+      return await this.getResponseData(this.octokit.git.getRef({
         ...this.context.repo,
         ref: refName,
       }));
@@ -227,7 +226,7 @@ export default class ApiHelper {
    */
   public updateRef = async(commit: GitCreateCommitResponseData, refName: string, force: boolean): Promise<boolean> => {
     try {
-      await (this.octokit as RestEndpointMethods).git.updateRef({
+      await this.octokit.git.updateRef({
         ...this.context.repo,
         ref: refName,
         sha: ensureNotNull(commit.sha),
@@ -252,7 +251,7 @@ export default class ApiHelper {
    * @return {Promise<void>} void
    */
   public createRef = async(commit: GitCreateCommitResponseData, refName: string): Promise<void> => {
-    await (this.octokit as RestEndpointMethods).git.createRef({
+    await this.octokit.git.createRef({
       ...this.context.repo,
       ref: refName,
       sha: ensureNotNull(commit.sha),
@@ -264,7 +263,7 @@ export default class ApiHelper {
    * @return {Promise<void>} void
    */
   public deleteRef = async(refName: string): Promise<void> => {
-    await (this.octokit as RestEndpointMethods).git.deleteRef({
+    await this.octokit.git.deleteRef({
       ...this.context.repo,
       ref: refName,
     });
@@ -275,7 +274,7 @@ export default class ApiHelper {
    * @return {Promise<PullsListResponseData | null>} pull request
    */
   public findPullRequest = async(branchName: string): Promise<PullsListResponseData | null> => {
-    const response = await (this.octokit as RestEndpointMethods).pulls.list({
+    const response = await this.octokit.pulls.list({
       ...this.context.repo,
       head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
     });
@@ -291,7 +290,7 @@ export default class ApiHelper {
    * @return {AsyncIterable<Array<PullsListResponseData>>} pull request list
    */
   public pullsList = (params: PullsListParams): Promise<Array<PullsListResponseData>> => (this.octokit.paginate as PaginateInterface)(
-    (this.octokit as RestEndpointMethods).pulls.list,
+    this.octokit.pulls.list,
     Object.assign({
       sort: 'created',
       direction: 'asc',
@@ -305,7 +304,7 @@ export default class ApiHelper {
    * @param {PullsCreateParams} detail detail
    * @return {Promise<PullsCreateResponseData>} pull
    */
-  public pullsCreate = async(branchName: string, detail: PullsCreateParams): Promise<PullsCreateResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).pulls.create({
+  public pullsCreate = async(branchName: string, detail: PullsCreateParams): Promise<PullsCreateResponseData> => this.getResponseData(this.octokit.pulls.create({
     ...this.context.repo,
     head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
     base: (await this.getRefForUpdate(false)).replace(/^heads\//, ''),
@@ -317,7 +316,7 @@ export default class ApiHelper {
    * @param {PullsUpdateParams} detail detail
    * @return {Promise<PullsUpdateResponseData>} pull
    */
-  public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<PullsUpdateResponseData> => this.getResponseData((this.octokit as RestEndpointMethods).pulls.update({
+  public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<PullsUpdateResponseData> => this.getResponseData(this.octokit.pulls.update({
     ...this.context.repo,
     'pull_number': number,
     state: 'open',
@@ -396,7 +395,7 @@ export default class ApiHelper {
       return false;
     }
 
-    await (this.octokit as RestEndpointMethods).issues.createComment({
+    await this.octokit.issues.createComment({
       ...this.context.repo,
       'issue_number': pullRequest.number,
       body,
@@ -532,7 +531,7 @@ export default class ApiHelper {
       throw new Error('Sender is not valid.');
     }
 
-    const {data: user} = await (this.octokit as RestEndpointMethods).users.getByUsername({
+    const {data: user} = await this.octokit.users.getByUsername({
       username: sender,
     });
 
@@ -547,7 +546,7 @@ export default class ApiHelper {
   /**
    * @return {Promise<string>} default branch
    */
-  public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await (this.octokit as RestEndpointMethods).repos.get({ // eslint-disable-line camelcase
+  public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await this.octokit.repos.get({ // eslint-disable-line camelcase
     ...this.context.repo,
   })).data.default_branch;
 
@@ -555,7 +554,7 @@ export default class ApiHelper {
    * @return {Promise<Array<string>>} tags
    */
   public getTags = async(): Promise<Array<string>> => (await (this.octokit.paginate as PaginateInterface)(
-    (this.octokit as RestEndpointMethods).git.listMatchingRefs,
+    this.octokit.git.listMatchingRefs,
     {
       ...this.context.repo,
       ref: 'tags/',
