@@ -140,7 +140,7 @@ export const getRefspec = (ref: string | RefObject, origin = 'origin'): string =
 
 export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
 
-export const getOctokit = (token?: string): Octokit => getOctokitInstance(token ?? getAccessToken(true), {});
+export const getOctokit = (token?: string): Octokit => getOctokitInstance(token ?? getAccessToken(true), {}) as Octokit;
 
 export const getActor = (): string => process.env.GITHUB_ACTOR || '';
 
