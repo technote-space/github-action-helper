@@ -31,7 +31,10 @@
     "lint": "eslint 'src/**/*.ts' '__tests__/**/*.ts' --cache",
     "lint:fix": "eslint --fix 'src/**/*.ts' '__tests__/**/*.ts'",
     "test": "yarn lint && yarn cover",
-    "update": "npm_config_yes=true npx npm-check-updates -u --timeout 100000 && yarn install && yarn upgrade && yarn audit"
+    "update": "npm_config_yes=true npx npm-check-updates -u --timeout 100000 && yarn install && yarn upgrade && yarn audit",
+    "postinstall": "[ -n \"$CI\" ] || [ ! -f node_modules/.bin/husky ] || husky install",
+    "prepublishOnly": "[ -n \"$CI\" ] || [ ! -f node_modules/.bin/pinst ] || pinst --disable",
+    "postpublish": "[ -n \"$CI\" ] || [ ! -f node_modules/.bin/pinst ] || pinst --enable"
   },
   "dependencies": {
     "@actions/core": "^1.2.7",
