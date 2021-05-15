@@ -129,7 +129,7 @@ export default class ApiHelper {
    * @return {Promise<{ path: string, sha: string }>} blob
    */
   private createBlob = async(rootDir: string, filepath: string): Promise<{ path: string; sha: string }> => {
-    const blob = await this.octokit.git.createBlob({
+    const blob = await this.octokit.rest.git.createBlob({
       ...this.context.repo,
       content: Buffer.from(fs.readFileSync(path.resolve(rootDir, filepath), 'utf8')).toString('base64'),
       encoding: 'base64',
@@ -149,7 +149,7 @@ export default class ApiHelper {
   /**
    * @return {Promise<GitGetCommitResponseData>} commit
    */
-  private getCommit = async(): Promise<GitGetCommitResponseData> => this.getResponseData(this.octokit.git.getCommit({
+  private getCommit = async(): Promise<GitGetCommitResponseData> => this.getResponseData(this.octokit.rest.git.getCommit({
     ...this.context.repo,
     'commit_sha': this.getCommitSha(),
   }));
@@ -160,7 +160,7 @@ export default class ApiHelper {
   private getPR = async(): Promise<PullsGetResponseData> => {
     const key = parseInt(this.context.payload.number, 10);
     if (!(key in this.prCache)) {
-      this.prCache[key] = await this.getResponseData(this.octokit.pulls.get({
+      this.prCache[key] = await this.getResponseData(this.octokit.rest.pulls.get({
         ...this.context.repo,
         'pull_number': this.context.payload.number,
       }));
@@ -180,7 +180,7 @@ export default class ApiHelper {
    * @param {Array<{ path: string, sha: string }>} blobs blobs
    * @return {Promise<GitCreateTreeResponseData>} tree
    */
-  public createTree = async(blobs: Array<{ path: string; sha: string }>): Promise<GitCreateTreeResponseData> => this.getResponseData(this.octokit.git.createTree({
+  public createTree = async(blobs: Array<{ path: string; sha: string }>): Promise<GitCreateTreeResponseData> => this.getResponseData(this.octokit.rest.git.createTree({
     ...this.context.repo,
     'base_tree': ensureNotNull(objectGet((await this.getCommit()), 'tree.sha')),
     tree: blobs.map(blob => ({
@@ -196,7 +196,7 @@ export default class ApiHelper {
    * @param {GitCreateTreeResponseData} tree tree
    * @return {Promise<GitCreateCommitResponseData>} commit
    */
-  public createCommit = async(commitMessage: string, tree: GitCreateTreeResponseData): Promise<GitCreateCommitResponseData> => this.getResponseData(this.octokit.git.createCommit({
+  public createCommit = async(commitMessage: string, tree: GitCreateTreeResponseData): Promise<GitCreateCommitResponseData> => this.getResponseData(this.octokit.rest.git.createCommit({
     ...this.context.repo,
     tree: tree.sha,
     parents: [this.getCommitSha()],
@@ -209,7 +209,7 @@ export default class ApiHelper {
    */
   private getRef = async(refName: string): Promise<GitGetRefResponseData | null> => {
     try {
-      return await this.getResponseData(this.octokit.git.getRef({
+      return await this.getResponseData(this.octokit.rest.git.getRef({
         ...this.context.repo,
         ref: refName,
       }));
@@ -226,7 +226,7 @@ export default class ApiHelper {
    */
   public updateRef = async(commit: GitCreateCommitResponseData, refName: string, force: boolean): Promise<boolean> => {
     try {
-      await this.octokit.git.updateRef({
+      await this.octokit.rest.git.updateRef({
         ...this.context.repo,
         ref: refName,
         sha: ensureNotNull(commit.sha),
@@ -251,7 +251,7 @@ export default class ApiHelper {
    * @return {Promise<void>} void
    */
   public createRef = async(commit: GitCreateCommitResponseData, refName: string): Promise<void> => {
-    await this.octokit.git.createRef({
+    await this.octokit.rest.git.createRef({
       ...this.context.repo,
       ref: refName,
       sha: ensureNotNull(commit.sha),
@@ -263,7 +263,7 @@ export default class ApiHelper {
    * @return {Promise<void>} void
    */
   public deleteRef = async(refName: string): Promise<void> => {
-    await this.octokit.git.deleteRef({
+    await this.octokit.rest.git.deleteRef({
       ...this.context.repo,
       ref: refName,
     });
@@ -274,7 +274,7 @@ export default class ApiHelper {
    * @return {Promise<PullsListResponseData | null>} pull request
    */
   public findPullRequest = async(branchName: string): Promise<PullsListResponseData | null> => {
-    const response = await this.octokit.pulls.list({
+    const response = await this.octokit.rest.pulls.list({
       ...this.context.repo,
       head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
     });
@@ -290,7 +290,7 @@ export default class ApiHelper {
    * @return {AsyncIterable<Array<PullsListResponseData>>} pull request list
    */
   public pullsList = (params: PullsListParams): Promise<Array<PullsListResponseData>> => (this.octokit.paginate as PaginateInterface)(
-    this.octokit.pulls.list,
+    this.octokit.rest.pulls.list,
     Object.assign({
       sort: 'created',
       direction: 'asc',
@@ -304,7 +304,7 @@ export default class ApiHelper {
    * @param {PullsCreateParams} detail detail
    * @return {Promise<PullsCreateResponseData>} pull
    */
-  public pullsCreate = async(branchName: string, detail: PullsCreateParams): Promise<PullsCreateResponseData> => this.getResponseData(this.octokit.pulls.create({
+  public pullsCreate = async(branchName: string, detail: PullsCreateParams): Promise<PullsCreateResponseData> => this.getResponseData(this.octokit.rest.pulls.create({
     ...this.context.repo,
     head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
     base: (await this.getRefForUpdate(false)).replace(/^heads\//, ''),
@@ -316,7 +316,7 @@ export default class ApiHelper {
    * @param {PullsUpdateParams} detail detail
    * @return {Promise<PullsUpdateResponseData>} pull
    */
-  public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<PullsUpdateResponseData> => this.getResponseData(this.octokit.pulls.update({
+  public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<PullsUpdateResponseData> => this.getResponseData(this.octokit.rest.pulls.update({
     ...this.context.repo,
     'pull_number': number,
     state: 'open',
@@ -395,7 +395,7 @@ export default class ApiHelper {
       return false;
     }
 
-    await this.octokit.issues.createComment({
+    await this.octokit.rest.issues.createComment({
       ...this.context.repo,
       'issue_number': pullRequest.number,
       body,
@@ -531,7 +531,7 @@ export default class ApiHelper {
       throw new Error('Sender is not valid.');
     }
 
-    const {data: user} = await this.octokit.users.getByUsername({
+    const {data: user} = await this.octokit.rest.users.getByUsername({
       username: sender,
     });
 
@@ -546,7 +546,7 @@ export default class ApiHelper {
   /**
    * @return {Promise<string>} default branch
    */
-  public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await this.octokit.repos.get({ // eslint-disable-line camelcase
+  public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await this.octokit.rest.repos.get({ // eslint-disable-line camelcase
     ...this.context.repo,
   })).data.default_branch;
 
@@ -554,7 +554,7 @@ export default class ApiHelper {
    * @return {Promise<Array<string>>} tags
    */
   public getTags = async(): Promise<Array<string>> => (await (this.octokit.paginate as PaginateInterface)(
-    this.octokit.git.listMatchingRefs,
+    this.octokit.rest.git.listMatchingRefs,
     {
       ...this.context.repo,
       ref: 'tags/',
