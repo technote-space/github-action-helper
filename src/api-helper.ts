@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import {Context} from '@actions/github/lib/context';
-import {PaginateInterface} from '@octokit/plugin-paginate-rest';
 import {OctokitResponse} from '@octokit/types';
 import {components} from '@octokit/openapi-types';
 import {exportVariable} from '@actions/core';
@@ -289,7 +288,7 @@ export default class ApiHelper {
    * @param {PullsListParams} params params
    * @return {AsyncIterable<Array<PullsListResponseData>>} pull request list
    */
-  public pullsList = (params: PullsListParams): Promise<Array<PullsListResponseData>> => (this.octokit.paginate as PaginateInterface)(
+  public pullsList = (params: PullsListParams): Promise<Array<PullsListResponseData>> => this.octokit.paginate(
     this.octokit.rest.pulls.list,
     Object.assign({
       sort: 'created',
@@ -553,7 +552,7 @@ export default class ApiHelper {
   /**
    * @return {Promise<Array<string>>} tags
    */
-  public getTags = async(): Promise<Array<string>> => (await (this.octokit.paginate as PaginateInterface)(
+  public getTags = async(): Promise<Array<string>> => (await this.octokit.paginate(
     this.octokit.rest.git.listMatchingRefs,
     {
       ...this.context.repo,

@@ -508,7 +508,7 @@ describe('sleep', () => {
     });
 
     expect(fn).not.toBeCalled();
-    jest.runTimersToTime(1500);
+    jest.advanceTimersByTime(1500);
   });
 });
 
