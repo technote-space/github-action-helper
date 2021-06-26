@@ -39,16 +39,16 @@
   "dependencies": {
     "@actions/core": "^1.4.0",
     "@actions/github": "^5.0.0",
-    "@octokit/openapi-types": "^7.3.4",
-    "@octokit/plugin-rest-endpoint-methods": "^5.3.3",
-    "@technote-space/github-action-log-helper": "^0.1.28",
+    "@octokit/openapi-types": "^7.3.5",
+    "@octokit/plugin-rest-endpoint-methods": "^5.3.4",
+    "@technote-space/github-action-log-helper": "^0.1.29",
     "shell-escape": "^0.2.0",
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
-    "@technote-space/github-action-test-helper": "^0.7.13",
+    "@technote-space/github-action-test-helper": "^0.7.14",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.12.4",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
