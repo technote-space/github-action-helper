@@ -1,6 +1,6 @@
 {
   "name": "@technote-space/github-action-helper",
-  "version": "5.2.11",
+  "version": "5.2.12",
   "description": "Helper for GitHub Action.",
   "keywords": [
     "github",
