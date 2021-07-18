@@ -28,6 +28,7 @@ type GitGetRefResponseData = components['schemas']['git-ref'];
 type PullsListResponseData = components['schemas']['pull-request-simple'];
 type PullsCreateResponseData = components['schemas']['pull-request'];
 type PullsUpdateResponseData = components['schemas']['pull-request'];
+type UserResponseData = components['schemas']['public-user'];
 
 type PullsUpdateParams = {
   body?: string;
@@ -530,9 +531,10 @@ export default class ApiHelper {
       throw new Error('Sender is not valid.');
     }
 
-    const {data: user} = await this.octokit.rest.users.getByUsername({
+    const {data} = await this.octokit.rest.users.getByUsername({
       username: sender,
     });
+    const user = data as UserResponseData;
 
     return {
       login: user.login,
