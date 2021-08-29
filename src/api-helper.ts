@@ -235,7 +235,7 @@ export default class ApiHelper {
 
       return true;
     } catch (error) {
-      if (this.suppressBPError === true && this.isProtectedBranchError(error)) {
+      if (this.suppressBPError === true && this.isProtectedBranchError(error as Error)) {
         this.callLogger(logger => logger.warn('Branch is protected.'));
       } else {
         throw error;
