@@ -255,7 +255,7 @@ export default class Command {
         const {stdout, stderr} = await this.execCommand(this.getCommand(commandWithArgs, quiet, suppressError), quiet, suppressOutput, stderrToStdout, cwd);
         return this.getCommandResult(commandWithArgs, altCommand, stderrToStdout, stdout, stderr);
       } catch (error) {
-        throw new Error(this.getRejectedErrorMessage(command, altCommand, quiet, error));
+        throw new Error(this.getRejectedErrorMessage(command, altCommand, quiet, error as ExecException));
       }
     }
   };
