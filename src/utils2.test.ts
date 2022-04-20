@@ -1,11 +1,12 @@
 /* eslint-disable no-magic-numbers */
-import {testEnv} from '@technote-space/github-action-test-helper';
-import {Utils} from '../src';
+import { testEnv } from '@technote-space/github-action-test-helper';
+import { describe, expect, it, vi } from 'vitest';
+import { Utils } from '../src';
 
-const {generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug, objectGet, mask}             = Utils;
-const {isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, ensureNotNullValue, ensureNotNull} = Utils;
+const { generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug, objectGet, mask }             = Utils;
+const { isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, ensureNotNullValue, ensureNotNull } = Utils;
 
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe('generateNewPatchVersion', () => {
   it('should generate new patch tag', () => {
@@ -256,10 +257,10 @@ describe('replaceVariables', () => {
   it('should replace variables', async() => {
     expect(await replaceVariables('', [])).toBe('');
     expect(await replaceVariables('${test1}/${test2}/${test3}/${test4}', [
-      {key: 'test1', replace: '1'},
-      {key: 'test2', replace: (): string => '2'},
-      {key: 'test3', replace: (): Promise<string> => Promise.resolve('3')},
-      {key: 'test5', replace: '5'},
+      { key: 'test1', replace: '1' },
+      { key: 'test2', replace: (): string => '2' },
+      { key: 'test3', replace: (): Promise<string> => Promise.resolve('3') },
+      { key: 'test5', replace: '5' },
     ])).toBe('1/2/3/${test4}');
   });
 });
@@ -358,18 +359,18 @@ describe('ensureNotNull', () => {
 
 describe('objectGet', () => {
   it('should return object value', () => {
-    expect(objectGet({test1: {test2: 123}}, 'test1')).toEqual({test2: 123});
-    expect(objectGet({test1: {test2: 123}}, 'test1.test2')).toBe(123);
+    expect(objectGet({ test1: { test2: 123 } }, 'test1')).toEqual({ test2: 123 });
+    expect(objectGet({ test1: { test2: 123 } }, 'test1.test2')).toBe(123);
   });
 
   it('should return undefined', () => {
     expect(objectGet(undefined, 'test1.test2')).toBeUndefined();
-    expect(objectGet({test1: {test2: 123}}, '')).toBeUndefined();
-    expect(objectGet({test1: {test2: 123}}, 'test1.test3')).toBeUndefined();
+    expect(objectGet({ test1: { test2: 123 } }, '')).toBeUndefined();
+    expect(objectGet({ test1: { test2: 123 } }, 'test1.test3')).toBeUndefined();
   });
 
   it('should return default value', () => {
     expect(objectGet(undefined, 'test1.test2', 123)).toBe(123);
-    expect(objectGet({test1: {test2: 123}}, '', false)).toBe(false);
+    expect(objectGet({ test1: { test2: 123 } }, '', false)).toBe(false);
   });
 });

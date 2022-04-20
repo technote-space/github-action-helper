@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
-import nock from 'nock';
 import path from 'path';
+import { components } from '@octokit/openapi-types';
+import { Logger } from '@technote-space/github-action-log-helper';
 import {
   getOctokit,
   disableNetConnect,
@@ -10,9 +11,9 @@ import {
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import {Logger} from '@technote-space/github-action-log-helper';
-import {components} from '@octokit/openapi-types';
-import {ApiHelper} from '../src';
+import nock from 'nock';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApiHelper } from '../src';
 
 type GitCreateCommitResponseData = components['schemas']['git-commit'];
 const rootDir = path.resolve(__dirname, 'fixtures');
@@ -73,7 +74,7 @@ describe('ApiHelper with params', () => {
     Logger.resetForTesting();
   });
 
-  const helper = new ApiHelper(octokit, context, logger, {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
+  const helper = new ApiHelper(octokit, context, logger, { sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true });
 
   describe('updateRef', () => {
     it('should output warning 1', async() => {
@@ -128,8 +129,8 @@ describe('ApiHelper with params', () => {
 
   describe('commit', () => {
     it('should commit without update ref', async() => {
-      const fn1        = jest.fn();
-      const fn2        = jest.fn();
+      const fn1        = vi.fn();
+      const fn2        = vi.fn();
       const mockStdout = spyOnStdout();
       nock('https://api.github.com')
         .persist()
@@ -151,7 +152,7 @@ describe('ApiHelper with params', () => {
         .patch('/repos/hello/world/git/refs/' + encodeURIComponent('test-ref'))
         .reply(403, () => {
           fn2();
-          return {'message': 'Required status check "Test" is expected.'};
+          return { 'message': 'Required status check "Test" is expected.' };
         });
 
       expect(await helper.commit(rootDir, 'test commit message', ['build1.json', 'build2.json'])).toBe(true);
@@ -173,8 +174,8 @@ describe('ApiHelper with params', () => {
 
   describe('getUser', () => {
     it('should get user', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
       nock('https://api.github.com')
         .persist()
         .get('/users/octocat')
@@ -200,7 +201,7 @@ describe('ApiHelper with params', () => {
 
   describe('getDefaultBranch', () => {
     it('should get default branch from repo info', async() => {
-      const fn = jest.fn();
+      const fn = vi.fn();
       nock('https://api.github.com')
         .persist()
         .get('/repos/hello/world')
@@ -324,7 +325,7 @@ describe('ApiHelper without logger', () => {
   disableNetConnect(nock);
   testEnv();
 
-  const helper = new ApiHelper(octokit, context, undefined, {branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true});
+  const helper = new ApiHelper(octokit, context, undefined, { sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true });
 
   describe('updateRef', () => {
     it('should not output warning', async() => {

@@ -1,9 +1,9 @@
+import type { Octokit } from './types';
+import type { Context } from '@actions/github/lib/context';
 import fs from 'fs';
 import path from 'path';
-import {getInput} from '@actions/core' ;
-import {Context} from '@actions/github/lib/context';
-import {getOctokit as getOctokitInstance} from '@actions/github';
-import {Octokit} from './types';
+import { getInput } from '@actions/core' ;
+import { getOctokit as getOctokitInstance } from '@actions/github';
 
 type RefObject = { ref: string }
 const getRef = (ref: string | RefObject): string => typeof ref === 'string' ? ref : ref.ref;
@@ -76,7 +76,7 @@ export const normalizeVersion = <T>(version: string, options?: { fill?: boolean;
   return parsed.core + (parsed.preRelease ? `-${parsed.preRelease}` : '') + (parsed.build ? `+${parsed.build}` : '');
 };
 
-export const isValidSemanticVersioning = (version: string, strict?: boolean): boolean => parseVersion(version, {strict}) !== undefined;
+export const isValidSemanticVersioning = (version: string, strict?: boolean): boolean => parseVersion(version, { strict }) !== undefined;
 
 /* istanbul ignore next */
 /*
@@ -138,7 +138,7 @@ export const getLocalRefspec = (ref: string | RefObject, origin = 'origin'): str
 //  refs/tags/v1.2.3:refs/tags/v1.2.3
 export const getRefspec = (ref: string | RefObject, origin = 'origin'): string => `${getRemoteRefspec(ref)}:refs/${getLocalRefspec(ref, `remotes/${origin}`)}`;
 
-export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', {required});
+export const getAccessToken = (required: boolean): string => getInput('GITHUB_TOKEN', { required });
 
 export const getOctokit = (token?: string): Octokit => getOctokitInstance(token ?? getAccessToken(true), {}) as Octokit;
 
@@ -161,7 +161,7 @@ export const getWorkspace = (): string => process.env.GITHUB_WORKSPACE || '';
 export const split = (value: string, separator: string | RegExp = /\r?\n/, limit?: number): string[] => value.length ? value.split(separator, limit) : [];
 
 export const getArrayInput = (name: string, required = false, separator = ',', unique = true): string[] => {
-  const arrayInput = getInput(name, {required}).split(/\r?\n/).reduce<string[]>(
+  const arrayInput = getInput(name, { required }).split(/\r?\n/).reduce<string[]>(
     (acc, line) => acc.concat(separator ? line.split(separator) : line).filter(item => item).map(item => item.trim()),
     [],
   );

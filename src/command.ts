@@ -1,47 +1,20 @@
-import {exec, spawn, ExecException} from 'child_process';
+import type { Logger } from '@technote-space/github-action-log-helper';
+import type { ExecException } from 'child_process';
+import { exec, spawn } from 'child_process';
 import escape from 'shell-escape';
-import {Logger} from '@technote-space/github-action-log-helper';
 
-/**
- * class CommandError
- */
 class CommandError extends Error {
-  /**
-   * @param {string} message message
-   * @param {number} code code
-   */
   constructor(message: string, public code: number) {
     super(message);
   }
 }
 
-/**
- * Command
- */
 export default class Command {
-
-  /**
-   * @param {Logger} logger logger
-   * @param {boolean} useExec use exec?
-   */
-  constructor(private logger: Logger, private useExec = false) {
+  constructor(private readonly logger: Logger, private readonly useExec = false) {
   }
 
-  /**
-   * @param {string} command command
-   * @param {boolean} quiet quiet?
-   * @param {boolean} suppressError suppress error?
-   * @return {string} command
-   */
   private getCommand = (command: string, quiet: boolean, suppressError: boolean): string => command + (quiet ? ' > /dev/null 2>&1' : '') + (suppressError ? ' || :' : '');
 
-  /**
-   * @param {string} command command
-   * @param {string} altCommand alt command
-   * @param {boolean} quiet quiet?
-   * @param {ExecException} error error
-   * @return {string} message
-   */
   private getRejectedErrorMessage = (command: string, altCommand: string | undefined, quiet: boolean, error: ExecException): string => {
     if ('string' === typeof altCommand) {
       if (!quiet) {
@@ -55,14 +28,6 @@ export default class Command {
     return `command exited with code ${error.code}.`;
   };
 
-  /**
-   * @param {string} command command
-   * @param {string|undefined} altCommand alt command
-   * @param {boolean} stderrToStdout output to stdout instead of stderr
-   * @param {string} stdout stdout
-   * @param {string} stderr stderr
-   * @return {object} command result
-   */
   private getCommandResult = (
     command: string,
     altCommand: string | undefined,
@@ -77,14 +42,9 @@ export default class Command {
       trimmedStderr = '';
     }
 
-    return {stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command};
+    return { stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command };
   };
 
-  /**
-   * @param {string} stdout stdout
-   * @param {boolean} quiet quiet?
-   * @param {boolean} suppressOutput suppress output?
-   */
   private outputStdout = (
     stdout: string,
     quiet: boolean,
@@ -98,12 +58,6 @@ export default class Command {
     }
   };
 
-  /**
-   * @param {string} stderr stderr
-   * @param {boolean} quiet quiet?
-   * @param {boolean} suppressOutput suppress output?
-   * @param {boolean} stderrToStdout output to stdout instead of stderr
-   */
   private outputStderr = (
     stderr: string,
     quiet: boolean,
@@ -122,14 +76,6 @@ export default class Command {
     }
   };
 
-  /**
-   * @param {string} command command
-   * @param {boolean} quiet quiet?
-   * @param {boolean} suppressOutput suppress output?
-   * @param {boolean} stderrToStdout output to stdout instead of stderr
-   * @param {string|undefined} cwd cwd
-   * @return {Promise<object>} output
-   */
   private execCommand = (
     command: string,
     quiet: boolean,
@@ -138,7 +84,7 @@ export default class Command {
     cwd?: string,
   ): Promise<{ stdout: string; stderr: string }> => {
     return new Promise((resolve, reject) => {
-      const subProcess = spawn(command, [], {shell: true, cwd, stdio: [process.stdin, 'pipe', 'pipe']});
+      const subProcess = spawn(command, [], { shell: true, cwd, stdio: [process.stdin, 'pipe', 'pipe'] });
       let stdout       = '';
       let stderr       = '';
       subProcess.stdout.on('data', (data) => {
@@ -159,21 +105,11 @@ export default class Command {
           reject(new CommandError(stderr, code));
         }
 
-        resolve({stdout, stderr});
+        resolve({ stdout, stderr });
       });
     });
   };
 
-  /**
-   * @param {string} command command
-   * @param {string|undefined} altCommand alt command
-   * @param {boolean} quiet quiet?
-   * @param {boolean} suppressOutput suppress output?
-   * @param {boolean} stderrToStdout output to stdout instead of stderr
-   * @param {function} resolve resolve
-   * @param {function} reject reject
-   * @return {void} void
-   */
   private execCallback = (
     command: string,
     altCommand: string | undefined,
@@ -204,22 +140,10 @@ export default class Command {
           }
         }
       }
-      resolve({stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command});
+      resolve({ stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command });
     }
   };
 
-  /**
-   * @param {object} options options
-   * @param {string} options.command command
-   * @param {string[]|undefined} options.args command
-   * @param {string|undefined} options.cwd cwd
-   * @param {boolean|undefined} options.quiet quiet?
-   * @param {string|undefined} options.altCommand alt command
-   * @param {boolean|undefined} options.suppressError suppress error?
-   * @param {boolean|undefined} options.suppressOutput suppress output?
-   * @param {boolean|undefined} options.stderrToStdout output to stdout instead of stderr
-   * @return {Promise<object>} output
-   */
   public execAsync = async(options: {
     command: string;
     args?: string[];
@@ -230,7 +154,7 @@ export default class Command {
     suppressOutput?: boolean;
     stderrToStdout?: boolean;
   }): Promise<{ stdout: string; stderr: string; command: string }> | never => {
-    const {command, args, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false} = options;
+    const { command, args, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false } = options;
 
     const commandArgs     = undefined === args ? '' : escape(args.map(item => item.trim()).filter(item => item.length));
     const commandWithArgs = command + (commandArgs.length ? ' ' + commandArgs : '');
@@ -247,12 +171,12 @@ export default class Command {
         if (typeof cwd === 'undefined') {
           exec(this.getCommand(commandWithArgs, quiet, suppressError), this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
         } else {
-          exec(this.getCommand(commandWithArgs, quiet, suppressError), {cwd}, this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+          exec(this.getCommand(commandWithArgs, quiet, suppressError), { cwd }, this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
         }
       });
     } else {
       try {
-        const {stdout, stderr} = await this.execCommand(this.getCommand(commandWithArgs, quiet, suppressError), quiet, suppressOutput, stderrToStdout, cwd);
+        const { stdout, stderr } = await this.execCommand(this.getCommand(commandWithArgs, quiet, suppressError), quiet, suppressOutput, stderrToStdout, cwd);
         return this.getCommandResult(commandWithArgs, altCommand, stderrToStdout, stdout, stderr);
       } catch (error) {
         throw new Error(this.getRejectedErrorMessage(command, altCommand, quiet, error as ExecException));

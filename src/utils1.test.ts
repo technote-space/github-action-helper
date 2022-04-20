@@ -1,13 +1,14 @@
 /* eslint-disable no-magic-numbers */
 import path from 'path';
-import {testEnv, getContext, testFs} from '@technote-space/github-action-test-helper';
-import {Utils} from '../src';
+import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
+import { describe, expect, it, vi } from 'vitest';
+import { Utils } from '../src';
 
-const {getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef} = Utils;
-const {parseVersion, normalizeVersion, isValidSemanticVersioning, isPrRef, getPrMergeRef, replaceAll, sleep}         = Utils;
-const {getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, getBoolValue}            = Utils;
+const { getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef } = Utils;
+const { parseVersion, normalizeVersion, isValidSemanticVersioning, isPrRef, getPrMergeRef, replaceAll, sleep }         = Utils;
+const { getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, getBoolValue }            = Utils;
 
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe('getWorkspace', () => {
   testEnv();
@@ -92,7 +93,7 @@ describe('parseVersion', () => {
   });
 
   it('should parse version 2', () => {
-    const result = parseVersion('V1', {fill: false});
+    const result = parseVersion('V1', { fill: false });
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('1');
     expect(result?.preRelease).toBe(undefined);
@@ -100,7 +101,7 @@ describe('parseVersion', () => {
   });
 
   it('should parse version 3', () => {
-    const result = parseVersion('v1', {cut: false});
+    const result = parseVersion('v1', { cut: false });
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('1.0.0');
     expect(result?.preRelease).toBe(undefined);
@@ -124,7 +125,7 @@ describe('parseVersion', () => {
   });
 
   it('should parse version 6', () => {
-    const result = parseVersion('v1.2.3.4', {cut: false});
+    const result = parseVersion('v1.2.3.4', { cut: false });
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('1.2.3.4');
     expect(result?.preRelease).toBe(undefined);
@@ -132,7 +133,7 @@ describe('parseVersion', () => {
   });
 
   it('should parse version 7', () => {
-    const result = parseVersion('v1.2.3.4', {slice: 2});
+    const result = parseVersion('v1.2.3.4', { slice: 2 });
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('1.2');
     expect(result?.preRelease).toBe(undefined);
@@ -172,7 +173,7 @@ describe('parseVersion', () => {
   });
 
   it('should parse version 12', () => {
-    const result = parseVersion('v1.2.3-beta+exp.sha.5114f85', {slice: 4});
+    const result = parseVersion('v1.2.3-beta+exp.sha.5114f85', { slice: 4 });
     expect(result).not.toBeUndefined();
     expect(result?.core).toBe('1.2.3.0');
     expect(result?.preRelease).toBe('beta');
@@ -191,21 +192,21 @@ describe('normalizeVersion', () => {
     expect(normalizeVersion('v1.2')).toBe('1.2.0');
     expect(normalizeVersion('v1.2.3')).toBe('1.2.3');
     expect(normalizeVersion('v1.2.3.4')).toBe('1.2.3');
-    expect(normalizeVersion('v1.2.3.4', {length: 5})).toBe('1.2.3.4.0');
-    expect(normalizeVersion('v1.2.3.4', {cut: false})).toBe('1.2.3.4');
-    expect(normalizeVersion('v1.2.3.4.5.6.7.8.9', {slice: 2})).toBe('1.2');
-    expect(normalizeVersion('v1.2.3.4.5.6.7.8.9', {slice: -1})).toBe('1.2.3.4.5.6.7.8');
-    expect(normalizeVersion('v1', {slice: -1})).toBe('1.0');
-    expect(normalizeVersion('v1', {slice: -1, length: 5})).toBe('1.0.0.0');
-    expect(normalizeVersion('v1', {slice: 0})).toBe('');
-    expect(normalizeVersion('1', {fill: false})).toBe('1');
+    expect(normalizeVersion('v1.2.3.4', { length: 5 })).toBe('1.2.3.4.0');
+    expect(normalizeVersion('v1.2.3.4', { cut: false })).toBe('1.2.3.4');
+    expect(normalizeVersion('v1.2.3.4.5.6.7.8.9', { slice: 2 })).toBe('1.2');
+    expect(normalizeVersion('v1.2.3.4.5.6.7.8.9', { slice: -1 })).toBe('1.2.3.4.5.6.7.8');
+    expect(normalizeVersion('v1', { slice: -1 })).toBe('1.0');
+    expect(normalizeVersion('v1', { slice: -1, length: 5 })).toBe('1.0.0.0');
+    expect(normalizeVersion('v1', { slice: 0 })).toBe('');
+    expect(normalizeVersion('1', { fill: false })).toBe('1');
     expect(normalizeVersion('1.0.0.123-rc.1')).toBe('1.0.0-rc.1');
     expect(normalizeVersion('v2.0-alpha01')).toBe('2.0.0-alpha01');
     expect(normalizeVersion('v3.0.0+f2eed76')).toBe('3.0.0+f2eed76');
     expect(normalizeVersion('v1-beta+exp.sha.5114f85')).toBe('1.0.0-beta+exp.sha.5114f85');
-    expect(normalizeVersion('v1-beta+exp.sha.5114f85', {onlyCore: true})).toBe('1.0.0');
-    expect(normalizeVersion('v1-beta+exp.sha.5114f85', {slice: 2})).toBe('1.0-beta+exp.sha.5114f85');
-    expect(normalizeVersion('v1-beta+exp.sha.5114f85', {slice: 2, onlyCore: true})).toBe('1.0');
+    expect(normalizeVersion('v1-beta+exp.sha.5114f85', { onlyCore: true })).toBe('1.0.0');
+    expect(normalizeVersion('v1-beta+exp.sha.5114f85', { slice: 2 })).toBe('1.0-beta+exp.sha.5114f85');
+    expect(normalizeVersion('v1-beta+exp.sha.5114f85', { slice: 2, onlyCore: true })).toBe('1.0');
   });
 
   it('should return undefined', () => {
@@ -216,10 +217,10 @@ describe('normalizeVersion', () => {
   });
 
   it('should return fallback', () => {
-    expect(normalizeVersion('', {fallback: ''})).toBe('');
-    expect(normalizeVersion('', {fallback: null})).toBe(null);
-    expect(normalizeVersion('', {fallback: 'abc'})).toBe('abc');
-    expect(normalizeVersion('', {fallback: 123})).toBe(123);
+    expect(normalizeVersion('', { fallback: '' })).toBe('');
+    expect(normalizeVersion('', { fallback: null })).toBe(null);
+    expect(normalizeVersion('', { fallback: 'abc' })).toBe('abc');
+    expect(normalizeVersion('', { fallback: 123 })).toBe(123);
   });
 });
 
@@ -500,7 +501,7 @@ describe('getArrayInput', () => {
 
 describe('sleep', () => {
   it('should sleep', done => {
-    const fn = jest.fn();
+    const fn = vi.fn();
 
     sleep(1000).then(() => {
       fn();
@@ -508,7 +509,7 @@ describe('sleep', () => {
     });
 
     expect(fn).not.toBeCalled();
-    jest.advanceTimersByTime(1500);
+    vi.advanceTimersByTime(1500);
   });
 });
 

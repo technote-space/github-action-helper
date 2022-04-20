@@ -1,5 +1,7 @@
 /* eslint-disable no-magic-numbers */
-import {Context} from '@actions/github/lib/context';
+import { ExecException } from 'child_process';
+import { Context } from '@actions/github/lib/context';
+import { Logger } from '@technote-space/github-action-log-helper';
 import {
   testEnv,
   getContext,
@@ -11,9 +13,8 @@ import {
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import {Logger} from '@technote-space/github-action-log-helper';
-import {ExecException} from 'child_process';
-import {GitHelper} from '../src';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { GitHelper } from '../src';
 
 beforeEach(() => {
   Logger.resetForTesting();
@@ -34,7 +35,7 @@ describe('GitHelper', () => {
   testEnv();
   testChildProcess();
 
-  const helper = new GitHelper(new Logger(), {token: 'token1'});
+  const helper = new GitHelper(new Logger(), { token: 'token1' });
 
   describe('getCurrentBranchName', () => {
     it('should return empty 1', async() => {
@@ -43,12 +44,12 @@ describe('GitHelper', () => {
     });
 
     it('should return empty 2', async() => {
-      setChildProcessParams({stdout: ''});
+      setChildProcessParams({ stdout: '' });
       expect(await helper.getCurrentBranchName(workDir)).toBe('');
     });
 
     it('should get current branch name', async() => {
-      setChildProcessParams({stdout: 'test-branch'});
+      setChildProcessParams({ stdout: 'test-branch' });
       expect(await helper.getCurrentBranchName(workDir)).toBe('test-branch');
     });
   });
@@ -127,7 +128,7 @@ describe('GitHelper', () => {
     it('should run checkout merge ref', async() => {
       const mockExec = spyOnSpawn();
 
-      await helper.checkout(workDir, context({ref: 'refs/pull/123/merge'}));
+      await helper.checkout(workDir, context({ ref: 'refs/pull/123/merge' }));
 
       execCalledWith(mockExec, [
         'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' || :',
@@ -139,7 +140,7 @@ describe('GitHelper', () => {
     it('should run checkout tag', async() => {
       const mockExec = spyOnSpawn();
 
-      await helper.checkout(workDir, context({ref: 'refs/tags/v1.2.3'}));
+      await helper.checkout(workDir, context({ ref: 'refs/tags/v1.2.3' }));
 
       execCalledWith(mockExec, [
         'git remote add origin \'https://octocat:token1@github.com/hello/world.git\' || :',
@@ -284,7 +285,7 @@ describe('GitHelper', () => {
     it('should run git config', async() => {
       const mockExec = spyOnSpawn();
 
-      await helper.config(workDir, {name: 'test-name', email: 'test-email', defaultBranch: 'main'});
+      await helper.config(workDir, { name: 'test-name', email: 'test-email', defaultBranch: 'main' });
 
       execCalledWith(mockExec, [
         'git config --global \'init.defaultBranch\' main',
@@ -301,7 +302,7 @@ describe('GitHelper', () => {
       await helper.runCommand(workDir, [
         'command1',
         'command2',
-        {command: 'command3'},
+        { command: 'command3' },
       ]);
 
       execCalledWith(mockExec, [
@@ -313,12 +314,12 @@ describe('GitHelper', () => {
 
     it('should return stdout', async() => {
       const mockExec = spyOnSpawn();
-      setChildProcessParams({stdout: 'test1\ntest2'});
+      setChildProcessParams({ stdout: 'test1\ntest2' });
 
       expect(await helper.runCommand(workDir, [
         'command1',
         'command2',
-        {command: 'command3', quiet: true},
+        { command: 'command3', quiet: true },
       ])).toEqual([
         {
           command: 'command1',
@@ -361,23 +362,23 @@ describe('GitHelper', () => {
         /**
          * @return {void}
          */
-        public displayStdout = (): void => {
+        public override displayStdout = (): void => {
           throw new Error('test');
         };
       }
 
-      const helper = new GitHelper(new ThrowErrorLogger(), {token: 'token'});
+      const helper = new GitHelper(new ThrowErrorLogger(), { token: 'token' });
       await expect(helper.runCommand(workDir, [
         'command1',
         'command2',
-        {command: 'command3'},
+        { command: 'command3' },
       ])).rejects.toThrow();
     });
   });
 
   describe('getDiff', () => {
     it('should get diff', async() => {
-      setChildProcessParams({stdout: 'M  file1\nA  file2\nD  file3\n   file4\n\nB  file5\n'});
+      setChildProcessParams({ stdout: 'M  file1\nA  file2\nD  file3\n   file4\n\nB  file5\n' });
       expect(await helper.getDiff(workDir)).toEqual([
         'file1',
         'file2',
@@ -389,7 +390,7 @@ describe('GitHelper', () => {
   describe('getRefDiff', () => {
     it('should get diff', async() => {
       const mockExec = spyOnSpawn();
-      setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
+      setChildProcessParams({ stdout: 'file1\nfile2\nfile3\n' });
 
       expect(await helper.getRefDiff(workDir, 'master', 'refs/pull/123/merge')).toEqual([
         'file1',
@@ -403,7 +404,7 @@ describe('GitHelper', () => {
 
     it('should get diff with diffFilter', async() => {
       const mockExec = spyOnSpawn();
-      setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
+      setChildProcessParams({ stdout: 'file1\nfile2\nfile3\n' });
 
       expect(await helper.getRefDiff(workDir, 'master', 'refs/pull/123/merge', 'AM')).toEqual([
         'file1',
@@ -418,7 +419,7 @@ describe('GitHelper', () => {
 
     it('should get diff with 2 dots', async() => {
       const mockExec = spyOnSpawn();
-      setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
+      setChildProcessParams({ stdout: 'file1\nfile2\nfile3\n' });
 
       expect(await helper.getRefDiff(workDir, 'master', 'refs/pull/123/merge', undefined, '..')).toEqual([
         'file1',
@@ -433,7 +434,7 @@ describe('GitHelper', () => {
 
     it('should get HEAD diff', async() => {
       const mockExec = spyOnSpawn();
-      setChildProcessParams({stdout: 'file1\nfile2\nfile3\n'});
+      setChildProcessParams({ stdout: 'file1\nfile2\nfile3\n' });
 
       expect(await helper.getRefDiff(workDir, 'HEAD', 'refs/pull/123/merge')).toEqual([
         'file1',
@@ -449,12 +450,12 @@ describe('GitHelper', () => {
 
   describe('checkDiff', () => {
     it('should return true', async() => {
-      setChildProcessParams({stdout: 'M  file1\nA  file2\nD  file3\n   file4\n\nB  file5\n'});
+      setChildProcessParams({ stdout: 'M  file1\nA  file2\nD  file3\n   file4\n\nB  file5\n' });
       expect(await helper.checkDiff(workDir)).toBe(true);
     });
 
     it('should return false', async() => {
-      setChildProcessParams({stdout: '   file1\n\nB  file2\n'});
+      setChildProcessParams({ stdout: '   file1\n\nB  file2\n' });
       expect(await helper.checkDiff(workDir)).toBe(false);
     });
   });
@@ -472,7 +473,7 @@ describe('GitHelper', () => {
     });
 
     it('should run git commit', async() => {
-      setChildProcessParams({stdout: 'M  file1\n\nM  file2\n'});
+      setChildProcessParams({ stdout: 'M  file1\n\nM  file2\n' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.commit(workDir, 'hello! how are you doing $USER "double" \'single\'')).toBe(true);
@@ -486,7 +487,7 @@ describe('GitHelper', () => {
     });
 
     it('should run git commit with options', async() => {
-      setChildProcessParams({stdout: 'M  file1\n\nM  file2\n'});
+      setChildProcessParams({ stdout: 'M  file1\n\nM  file2\n' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.commit(workDir, 'test', {
@@ -505,7 +506,7 @@ describe('GitHelper', () => {
 
   describe('fetchTags', () => {
     it('should run fetch tags 1', async() => {
-      setChildProcessParams({stdout: 'v1.2.3\nv1.2.4\nv1.2.5\nv1.2.6'});
+      setChildProcessParams({ stdout: 'v1.2.3\nv1.2.4\nv1.2.5\nv1.2.6' });
       const mockExec = spyOnSpawn();
 
       await helper.fetchTags(workDir, context());
@@ -518,7 +519,7 @@ describe('GitHelper', () => {
     });
 
     it('should run fetch tags 2', async() => {
-      setChildProcessParams({stdout: 'v1.2.3\nv1.2.4\nv1.2.5\nv1.2.6'});
+      setChildProcessParams({ stdout: 'v1.2.3\nv1.2.4\nv1.2.5\nv1.2.6' });
       const mockExec = spyOnSpawn();
 
       await helper.fetchTags(workDir, context(), 3);
@@ -659,7 +660,7 @@ describe('GitHelper', () => {
     it('should run push', async() => {
       const mockExec = spyOnSpawn();
 
-      await helper.push(workDir, 'test-branch', context(), {withTag: true, args: ['--prune', '--verbose']});
+      await helper.push(workDir, 'test-branch', context(), { withTag: true, args: ['--prune', '--verbose'] });
 
       execCalledWith(mockExec, [
         'git push --tags --prune --verbose \'https://octocat:token1@github.com/hello/world.git\' \'test-branch:refs/heads/test-branch\'',
@@ -691,7 +692,7 @@ describe('GitHelper', () => {
 
   describe('getLastTag', () => {
     it('should get last tag 1', async() => {
-      setChildProcessParams({stdout: 'v1.2.3\ntest\nv1.2.5\ndevelop\n1.2.4\nmaster'});
+      setChildProcessParams({ stdout: 'v1.2.3\ntest\nv1.2.5\ndevelop\n1.2.4\nmaster' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.getLastTag(workDir)).toBe('v1.2.5');
@@ -702,7 +703,7 @@ describe('GitHelper', () => {
     });
 
     it('should get last tag 2', async() => {
-      setChildProcessParams({stdout: 'v1\nv1.2.3\n1.2'});
+      setChildProcessParams({ stdout: 'v1\nv1.2.3\n1.2' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.getLastTag(workDir)).toBe('v1.2.3');
@@ -713,7 +714,7 @@ describe('GitHelper', () => {
     });
 
     it('should get last tag 3', async() => {
-      setChildProcessParams({stdout: 'v1\n1.0.0\n1.0'});
+      setChildProcessParams({ stdout: 'v1\n1.0.0\n1.0' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.getLastTag(workDir)).toBe('v1.0.0');
@@ -724,7 +725,7 @@ describe('GitHelper', () => {
     });
 
     it('should get last tag 4', async() => {
-      setChildProcessParams({stdout: 'v1.0.9\nv1.0.11\nv1.0.10.1'});
+      setChildProcessParams({ stdout: 'v1.0.9\nv1.0.11\nv1.0.10.1' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.getLastTag(workDir)).toBe('v1.0.11');
@@ -735,7 +736,7 @@ describe('GitHelper', () => {
     });
 
     it('should get initial tag', async() => {
-      setChildProcessParams({stdout: ''});
+      setChildProcessParams({ stdout: '' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.getLastTag(workDir)).toBe('v0.0.0');
@@ -754,7 +755,7 @@ describe('GitHelper', () => {
 
   describe('getNewPatchVersion', () => {
     it('should get new patch tag', async() => {
-      setChildProcessParams({stdout: '1.2.3'});
+      setChildProcessParams({ stdout: '1.2.3' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.getNewPatchVersion(workDir)).toBe('v1.2.4');
@@ -767,7 +768,7 @@ describe('GitHelper', () => {
 
   describe('getNewMinorVersion', () => {
     it('should get new patch tag', async() => {
-      setChildProcessParams({stdout: '1.2.3'});
+      setChildProcessParams({ stdout: '1.2.3' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.getNewMinorVersion(workDir)).toBe('v1.3.0');
@@ -780,7 +781,7 @@ describe('GitHelper', () => {
 
   describe('getNewMajorVersion', () => {
     it('should get new patch tag', async() => {
-      setChildProcessParams({stdout: '1.2.3'});
+      setChildProcessParams({ stdout: '1.2.3' });
       const mockExec = spyOnSpawn();
 
       expect(await helper.getNewMajorVersion(workDir)).toBe('v2.0.0');
@@ -846,7 +847,7 @@ describe('GitHelper with params 1', () => {
   testEnv();
   testChildProcess();
 
-  const helper = new GitHelper(new Logger(), {depth: 1, filter: (line: string): boolean => line.endsWith('.md'), token: 'token2'});
+  const helper = new GitHelper(new Logger(), { depth: 1, filter: (line: string): boolean => line.endsWith('.md'), token: 'token2' });
 
   describe('clone', () => {
     it('should run git clone', async() => {
@@ -865,7 +866,7 @@ describe('GitHelper with params 1', () => {
 
   describe('getDiff', () => {
     it('should get diff', async() => {
-      setChildProcessParams({stdout: 'M  file1\nA  file2.md\nD  file3\n   file4\n\nB  file5\n'});
+      setChildProcessParams({ stdout: 'M  file1\nA  file2.md\nD  file3\n   file4\n\nB  file5\n' });
       expect(await helper.getDiff(workDir)).toEqual([
         'file2.md',
       ]);
@@ -880,7 +881,7 @@ describe('GitHelper with params 2', () => {
   describe('clone', () => {
     it('should run git clone', async() => {
       process.env.INPUT_GITHUB_TOKEN = 'token3';
-      const helper                   = new GitHelper(new Logger(), {depth: -1});
+      const helper                   = new GitHelper(new Logger(), { depth: -1 });
       setExists(false);
       const mockExec = spyOnSpawn();
 
@@ -921,7 +922,7 @@ describe('Debug', () => {
   testEnv();
   testChildProcess();
 
-  const helper = new GitHelper(new Logger(), {token: 'token1'});
+  const helper = new GitHelper(new Logger(), { token: 'token1' });
 
   it('should add command to suppress error and output', async() => {
     const mockExec   = spyOnSpawn();
