@@ -122,7 +122,7 @@ export default class ApiHelper {
       }));
     }
 
-    return this.prCache[key];
+    return this.prCache[key]!;
   };
 
   public filesToBlobs = async(rootDir: string, files: Array<string>): Promise<Array<{ path: string; sha: string }>> => await Promise.all(files.map(file => this.createBlob(rootDir, file)));
@@ -198,7 +198,7 @@ export default class ApiHelper {
       head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
     });
     if (response.data.length) {
-      return response.data[0];
+      return response.data[0]!;
     }
 
     return null;

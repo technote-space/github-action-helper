@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
-import { ExecException } from 'child_process';
-import { Context } from '@actions/github/lib/context';
+import type { Context } from '@actions/github/lib/context';
+import type { ExecException } from 'child_process';
 import { Logger } from '@technote-space/github-action-log-helper';
 import {
   testEnv,
