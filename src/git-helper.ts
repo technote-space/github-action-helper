@@ -1,6 +1,7 @@
 import type { Context } from '@actions/github/lib/context';
 import type { Logger } from '@technote-space/github-action-log-helper';
 import fs from 'fs';
+import Command from './command';
 import { getGitUrlWithToken } from './context-helper';
 import {
   getBranch,
@@ -18,7 +19,6 @@ import {
   isCommandDebug,
   isOutputDebug,
 } from './utils';
-import { Command } from './index';
 
 type CommandType = string | {
   command: string;
