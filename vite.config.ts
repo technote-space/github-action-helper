@@ -9,7 +9,7 @@ export default defineConfig({
     mockReset: true,
     restoreMocks: true,
     coverage: {
-      reporter: ['html', 'lcov'],
+      reporter: ['html', 'lcov', 'text'],
     },
     deps: {
       inline: [/github-action-test-helper/]
