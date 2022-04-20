@@ -9,4 +9,5 @@ export default {
   plugins: [
     pluginTypescript(),
   ],
+  external: ['fs', 'path', '@actions/core', 'child_process', 'shell-escape', '@actions/github'],
 };
