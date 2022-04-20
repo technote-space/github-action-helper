@@ -130,7 +130,7 @@ export default class GitHelper {
       args: ['--abbrev-ref', 'HEAD'],
       suppressError: this.shouldSuppressError(),
       stderrToStdout: true,
-    }))[0].stdout[0]?.trim() ?? '';
+    }))[0]!.stdout[0]?.trim() ?? '';
   };
 
   public cloneBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
@@ -271,7 +271,7 @@ export default class GitHelper {
     command: 'git status',
     args: ['--short', '-uno'],
     suppressOutput: true,
-  }))[0].stdout.filter(line => line.match(/^[MDA]\s+/)).filter(this.filter).map(line => line.replace(/^[MDA]\s+/, ''));
+  }))[0]!.stdout.filter(line => line.match(/^[MDA]\s+/)).filter(this.filter).map(line => line.replace(/^[MDA]\s+/, ''));
 
   public getRefDiff = async(workDir: string, baseRef: string, compareRef: string, diffFilter?: string, dot?: '..' | '...'): Promise<string[]> => {
     const toDiffRef = (ref: string): string =>
@@ -282,7 +282,7 @@ export default class GitHelper {
       command: 'git diff',
       args: [`${toDiffRef(baseRef)}${dot ?? '...'}${toDiffRef(compareRef)}`, '--name-only', diffFilter ? `--diff-filter=${diffFilter}` : ''],
       suppressOutput: true,
-    }))[0].stdout.filter(item => !!item.trim());
+    }))[0]!.stdout.filter(item => !!item.trim());
   };
 
   public checkDiff = async(workDir: string): Promise<boolean> => !!(await this.getDiff(workDir)).length;
@@ -320,7 +320,7 @@ export default class GitHelper {
     command: 'git tag',
     suppressOutput: options?.suppressOutput || options?.quiet,
     altCommand: options?.quiet ? '' : undefined,
-  }))[0].stdout;
+  }))[0]!.stdout;
 
   public fetchTags = async(workDir: string, context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
     await this.runCommand(workDir, [

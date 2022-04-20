@@ -46,7 +46,7 @@ export const parseVersion = (version: string, options?: { fill?: boolean; cut?: 
     return undefined;
   }
 
-  const fragments = split(matches[1], '.');
+  const fragments = split(matches[1]!, '.');
   // eslint-disable-next-line no-magic-numbers
   const length    = options?.slice && options.slice < 0 ? (options.length ?? 3) : (options?.slice ?? options?.length ?? 3);
   // eslint-disable-next-line no-magic-numbers
@@ -220,7 +220,7 @@ export const versionCompare = (version1: string, version2: string, checkDifferen
     const val1 = version1[num] ?? (checkDifferentLevel ? 0 : version2[num]);
     // eslint-disable-next-line no-magic-numbers
     const val2 = version2[num] ?? (checkDifferentLevel ? 0 : version1[num]);
-    return val1 === val2 ? compare(version1, version2, ++num) : Math.sign(val1 - val2);
+    return val1 === val2 ? compare(version1, version2, ++num) : Math.sign(val1! - val2!);
   };
   return compare(splitVersion(version1.replace(/^v/, '')), splitVersion(version2.replace(/^v/, '')));
 };
@@ -261,17 +261,17 @@ export const isOutputDebug = (): boolean => getInput('UTILS_OUTPUT_DEBUG') === '
 export const objectGet = <T>(value: Record<string, any> | undefined | null, key: string, defaultValue?: T): T | undefined => {
   const keys = key.split('.');
 
-  if (!keys.length || !value || !(keys[0] in value)) {
+  if (!keys.length || !value || !(keys[0]! in value)) {
     return defaultValue;
   }
 
   // eslint-disable-next-line no-magic-numbers
   if (keys.length > 1) {
     // eslint-disable-next-line no-magic-numbers
-    return objectGet(value[keys[0]], keys.slice(1).join('.'), defaultValue);
+    return objectGet(value[keys[0]!], keys.slice(1).join('.'), defaultValue);
   }
 
-  return value[keys[0]];
+  return value[keys[0]!];
 };
 
 export const ensureNotNullValue = <T>(value: T | null | undefined, defaultValue: T): T => value ?? defaultValue;
