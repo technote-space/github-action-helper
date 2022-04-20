@@ -258,7 +258,7 @@ export const isCommandDebug = (): boolean => getInput('UTILS_COMMAND_DEBUG') ===
 export const isOutputDebug = (): boolean => getInput('UTILS_OUTPUT_DEBUG') === 'true' || process.env.UTILS_OUTPUT_DEBUG === 'true';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const objectGet = <T>(value: { [key: string]: any } | undefined | null, key: string, defaultValue?: T): T | undefined => {
+export const objectGet = <T>(value: Record<string, any> | undefined | null, key: string, defaultValue?: T): T | undefined => {
   const keys = key.split('.');
 
   if (!keys.length || !value || !(keys[0] in value)) {
