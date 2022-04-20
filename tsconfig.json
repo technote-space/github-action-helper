@@ -71,7 +71,7 @@
   "exclude": [
     "node_modules",
     "__tests__",
-    "jest.setup.ts",
+    "vite.config.ts",
     "dist/**/*"
   ]
 }

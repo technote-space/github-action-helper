@@ -1,15 +1,16 @@
 /* eslint-disable no-magic-numbers */
+import { beforeEach, describe, expect, it } from 'vitest';
 import path from 'path';
 import {
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import {testEnv, getContext} from '@technote-space/github-action-test-helper';
-import {Logger} from '@technote-space/github-action-log-helper';
-import {ContextHelper} from '../src';
+import { testEnv, getContext } from '@technote-space/github-action-test-helper';
+import { Logger } from '@technote-space/github-action-log-helper';
+import { ContextHelper } from '../src';
 
-const {isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isManualEvent, isWorkflowRun, isCreateTag} = ContextHelper;
-const {getGitUrl, getRepository, getTagName, getSender, showActionInfo}                                    = ContextHelper;
+const { isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isManualEvent, isWorkflowRun, isCreateTag } = ContextHelper;
+const { getGitUrl, getRepository, getTagName, getSender, showActionInfo }                                    = ContextHelper;
 
 describe('isRelease', () => {
   it('should return true', () => {
@@ -394,8 +395,8 @@ describe('showActionInfo', () => {
         action: 'opened',
         issue: {
           labels: [
-            {name: 'Issue Label1'},
-            {name: 'Issue Label2'},
+            { name: 'Issue Label1' },
+            { name: 'Issue Label2' },
           ],
         },
       },
@@ -442,8 +443,8 @@ describe('showActionInfo', () => {
         action: 'opened',
         'pull_request': {
           labels: [
-            {name: 'PR Label1'},
-            {name: 'PR Label2'},
+            { name: 'PR Label1' },
+            { name: 'PR Label2' },
           ],
         },
       },

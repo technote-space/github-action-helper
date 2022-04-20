@@ -1,4 +1,5 @@
 /* eslint-disable no-magic-numbers */
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import nock from 'nock';
 import path from 'path';
 import {
@@ -12,9 +13,9 @@ import {
   spyOnExportVariable,
   exportVariableCalledWith,
 } from '@technote-space/github-action-test-helper';
-import {Logger} from '@technote-space/github-action-log-helper';
-import {components} from '@octokit/openapi-types';
-import {ApiHelper} from '../src';
+import { Logger } from '@technote-space/github-action-log-helper';
+import { components } from '@octokit/openapi-types';
+import { ApiHelper } from '../src';
 
 type GitCreateCommitResponseData = components['schemas']['git-commit'];
 const rootDir = path.resolve(__dirname, 'fixtures');
@@ -80,8 +81,8 @@ describe('ApiHelper', () => {
     });
 
     it('should return blobs', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
       nock('https://api.github.com')
         .persist()
         .post('/repos/hello/world/git/blobs', body => {
@@ -104,9 +105,9 @@ describe('ApiHelper', () => {
 
   describe('createTree', () => {
     it('should create tree', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
-      const fn3 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
+      const fn3 = vi.fn();
       nock('https://api.github.com')
         .persist()
         .get('/repos/hello/world/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd')
@@ -147,8 +148,8 @@ describe('ApiHelper', () => {
 
   describe('createCommit', () => {
     it('should create commit', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
       nock('https://api.github.com')
         .post('/repos/hello/world/git/commits', body => {
           fn1();
@@ -178,7 +179,7 @@ describe('ApiHelper', () => {
     });
 
     it('should create PR commit', async() => {
-      const fn = jest.fn();
+      const fn = vi.fn();
       nock('https://api.github.com')
         .post('/repos/hello/world/git/commits', body => {
           expect(body.parents).toEqual(['test-head-sha']);
@@ -216,8 +217,8 @@ describe('ApiHelper', () => {
 
   describe('updateRef', () => {
     it('should update ref', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
       nock('https://api.github.com')
         .patch(`/repos/hello/world/git/refs/${encodeURIComponent('heads/test')}`, body => {
           fn1();
@@ -236,9 +237,9 @@ describe('ApiHelper', () => {
     });
 
     it('should update PR ref', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
-      const fn3 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
+      const fn3 = vi.fn();
       nock('https://api.github.com')
         .patch(`/repos/hello/world/git/refs/${encodeURIComponent('heads/new-topic')}`, body => {
           fn1();
@@ -267,7 +268,7 @@ describe('ApiHelper', () => {
     });
 
     it('should cache PR get api', async() => {
-      const fn = jest.fn();
+      const fn = vi.fn();
       nock('https://api.github.com')
         .patch(`/repos/hello/world/git/refs/${encodeURIComponent('heads/new-topic')}`)
         .reply(200, () => {
@@ -306,8 +307,8 @@ describe('ApiHelper', () => {
 
   describe('createRef', () => {
     it('should create ref', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
       nock('https://api.github.com')
         .post('/repos/hello/world/git/refs', body => {
           fn1();
@@ -330,7 +331,7 @@ describe('ApiHelper', () => {
 
   describe('deleteRef', () => {
     it('should create ref', async() => {
-      const fn = jest.fn();
+      const fn = vi.fn();
       nock('https://api.github.com')
         .delete('/repos/hello/world/git/refs/' + encodeURIComponent('heads/featureA'))
         .reply(204, () => {
@@ -388,8 +389,8 @@ describe('ApiHelper', () => {
 
   describe('pullsCreate', () => {
     it('should create pull request', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
       nock('https://api.github.com')
         .post('/repos/hello/world/pulls', body => {
           fn1();
@@ -424,8 +425,8 @@ describe('ApiHelper', () => {
 
   describe('pullsUpdate', () => {
     it('should update pull request', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
       nock('https://api.github.com')
         .patch('/repos/hello/world/pulls/1347', body => {
           fn1();
@@ -456,8 +457,8 @@ describe('ApiHelper', () => {
     });
 
     it('should close pull request', async() => {
-      const fn1 = jest.fn();
-      const fn2 = jest.fn();
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
       nock('https://api.github.com')
         .patch('/repos/hello/world/pulls/1347', body => {
           fn1();
@@ -601,7 +602,7 @@ describe('ApiHelper', () => {
         '::endgroup::',
       ]);
       exportVariableCalledWith(mockEnv, [
-        {name: 'GITHUB_SHA', val: '7638417db6d59f3c431d3e1f261cc637155684cd'},
+        { name: 'GITHUB_SHA', val: '7638417db6d59f3c431d3e1f261cc637155684cd' },
       ]);
       expect(process.env.GITHUB_SHA).toBe('7638417db6d59f3c431d3e1f261cc637155684cd');
     });
@@ -815,7 +816,7 @@ describe('ApiHelper', () => {
 
   describe('getUser', () => {
     it('should throw error 1', async() => {
-      const fn1 = jest.fn();
+      const fn1 = vi.fn();
       nock('https://api.github.com')
         .persist()
         .get('/users/octocat')
@@ -830,7 +831,7 @@ describe('ApiHelper', () => {
     });
 
     it('should throw error 2', async() => {
-      const fn1 = jest.fn();
+      const fn1 = vi.fn();
       nock('https://api.github.com')
         .persist()
         .get('/users/octocat')
@@ -844,7 +845,7 @@ describe('ApiHelper', () => {
     });
 
     it('should get user', async() => {
-      const fn1 = jest.fn();
+      const fn1 = vi.fn();
       nock('https://api.github.com')
         .persist()
         .get('/users/octocat')
@@ -864,7 +865,7 @@ describe('ApiHelper', () => {
 
   describe('getDefaultBranch', () => {
     it('should get default branch from api', async() => {
-      const fn = jest.fn();
+      const fn = vi.fn();
       nock('https://api.github.com')
         .persist()
         .get('/repos/hello/world')

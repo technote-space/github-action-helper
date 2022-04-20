@@ -1,10 +1,11 @@
+import type { Context } from '@actions/github/lib/context';
+import type { OctokitResponse } from '@octokit/types';
+import type { components } from '@octokit/openapi-types';
+import type { Logger } from '@technote-space/github-action-log-helper';
+import type { Octokit } from './types';
 import fs from 'fs';
 import path from 'path';
-import {Context} from '@actions/github/lib/context';
-import {OctokitResponse} from '@octokit/types';
-import {components} from '@octokit/openapi-types';
-import {exportVariable} from '@actions/core';
-import {Logger} from '@technote-space/github-action-log-helper';
+import { exportVariable } from '@actions/core';
 import {
   getRefForUpdate,
   isPrRef,
@@ -17,8 +18,7 @@ import {
   ensureNotNull,
   objectGet,
 } from './utils';
-import {getSender} from './context-helper';
-import {Octokit} from './types';
+import { getSender } from './context-helper';
 
 type GitGetCommitResponseData = components['schemas']['git-commit'];
 type PullsGetResponseData = components['schemas']['pull-request'];
@@ -331,7 +331,7 @@ export default class ApiHelper {
     const branchName = getBranch(branch, false);
     const headName   = `heads/${branchName}`;
     const refName    = `refs/${headName}`;
-    return {branchName, headName, refName};
+    return { branchName, headName, refName };
   };
 
   /**
@@ -343,7 +343,7 @@ export default class ApiHelper {
     this.callLogger(async logger => logger.startProcess('Creating PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false)));
     const created = await this.pullsCreate(createBranchName, detail);
     this.callLogger(logger => logger.endProcess());
-    return Object.assign({isPrCreated: true}, created);
+    return Object.assign({ isPrCreated: true }, created);
   };
 
   /**
@@ -357,7 +357,7 @@ export default class ApiHelper {
       this.callLogger(async logger => logger.startProcess('Updating PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false)));
       const updated = await this.pullsUpdate(pullRequest.number, detail);
       this.callLogger(logger => logger.endProcess());
-      return Object.assign({isPrCreated: false}, updated);
+      return Object.assign({ isPrCreated: false }, updated);
     }
 
     return this.createPulls(createBranchName, detail);
@@ -374,7 +374,7 @@ export default class ApiHelper {
       this.callLogger(async logger => logger.startProcess('Creating comment to PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false)));
       await this.createCommentToPr(createBranchName, detail.body);
       this.callLogger(logger => logger.endProcess());
-      return Object.assign({isPrCreated: false}, pullRequest);
+      return Object.assign({ isPrCreated: false }, pullRequest);
     }
 
     return this.createPulls(createBranchName, detail);
@@ -477,9 +477,9 @@ export default class ApiHelper {
       return false;
     }
 
-    const {branchName, headName, refName} = this.getBranchInfo(createBranchName);
-    const commit                          = await this.prepareCommit(rootDir, commitMessage, files);
-    const ref                             = await this.getRef(headName);
+    const { branchName, headName, refName } = this.getBranchInfo(createBranchName);
+    const commit                            = await this.prepareCommit(rootDir, commitMessage, files);
+    const ref                               = await this.getRef(headName);
     if (null === ref) {
       this.callLogger(logger => logger.startProcess('Creating reference... [%s] [%s]', refName, commit.sha));
       await this.createRef(commit, refName);
@@ -496,8 +496,8 @@ export default class ApiHelper {
    * @param {string} message message
    */
   public closePR = async(createBranchName: string, message?: string): Promise<void> => {
-    const {branchName, headName, refName} = this.getBranchInfo(createBranchName);
-    const pullRequest                     = await this.findPullRequest(branchName);
+    const { branchName, headName, refName } = this.getBranchInfo(createBranchName);
+    const pullRequest                       = await this.findPullRequest(branchName);
     if (pullRequest) {
       this.callLogger(logger => logger.startProcess('Closing PullRequest... [%s]', branchName));
       if (message) {
@@ -531,10 +531,10 @@ export default class ApiHelper {
       throw new Error('Sender is not valid.');
     }
 
-    const {data} = await this.octokit.rest.users.getByUsername({
+    const { data } = await this.octokit.rest.users.getByUsername({
       username: sender,
     });
-    const user = data as UserResponseData;
+    const user     = data as UserResponseData;
 
     return {
       login: user.login,

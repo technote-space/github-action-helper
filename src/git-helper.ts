@@ -1,7 +1,7 @@
+import type { Context } from '@actions/github/lib/context';
+import type { Logger } from '@technote-space/github-action-log-helper';
 import fs from 'fs';
-import {Context} from '@actions/github/lib/context';
-import {Logger} from '@technote-space/github-action-log-helper';
-import {Command} from './index';
+import { Command } from './index';
 import {
   getBranch,
   isBranch,
@@ -18,7 +18,7 @@ import {
   isCommandDebug,
   isOutputDebug,
 } from './utils';
-import {getGitUrlWithToken} from './context-helper';
+import { getGitUrlWithToken } from './context-helper';
 
 type CommandType = string | {
   command: string;
@@ -85,14 +85,14 @@ export default class GitHelper {
     try {
       for (const command of (Array.isArray(commands) ? commands : [commands])) {
         if (typeof command === 'string') {
-          const output = (await this.command.execAsync({command, cwd: workDir}));
+          const output = (await this.command.execAsync({ command, cwd: workDir }));
           result.push({
             command: output.command,
             stdout: split(output.stdout),
             stderr: split(output.stderr),
           });
         } else {
-          const output = (await this.command.execAsync({cwd: workDir, ...command}));
+          const output = (await this.command.execAsync({ cwd: workDir, ...command }));
           result.push({
             command: output.command,
             stdout: split(output.stdout),
@@ -119,10 +119,10 @@ export default class GitHelper {
     }
 
     if (fs.existsSync(workDir)) {
-      await this.runCommand(workDir, {command: 'rm', args: ['-rdf', workDir]});
+      await this.runCommand(workDir, { command: 'rm', args: ['-rdf', workDir] });
     }
-    fs.mkdirSync(workDir, {recursive: true});
-    await this.runCommand(workDir, {command: 'git init', args: ['.']});
+    fs.mkdirSync(workDir, { recursive: true });
+    await this.runCommand(workDir, { command: 'git init', args: ['.'] });
   };
 
   /**
@@ -249,7 +249,7 @@ export default class GitHelper {
    */
   public gitInit = async(workDir: string, branch: string): Promise<void> => {
     await this.initialize(workDir);
-    await this.runCommand(workDir, {command: 'git checkout', args: ['--orphan', branch], stderrToStdout: true});
+    await this.runCommand(workDir, { command: 'git checkout', args: ['--orphan', branch], stderrToStdout: true });
   };
 
   /**
@@ -312,7 +312,7 @@ export default class GitHelper {
    * @return {Promise<void>} void
    */
   public createBranch = async(workDir: string, branch: string): Promise<void> => {
-    await this.runCommand(workDir, {command: 'git checkout', args: ['-b', branch], stderrToStdout: true});
+    await this.runCommand(workDir, { command: 'git checkout', args: ['-b', branch], stderrToStdout: true });
   };
 
   /**
@@ -409,7 +409,7 @@ export default class GitHelper {
    * @param {object} options options
    */
   public commit = async(workDir: string, message: string, options?: { count?: number; allowEmpty?: boolean; args?: Array<string> }): Promise<boolean> => {
-    await this.runCommand(workDir, {command: 'git add', args: ['--all']});
+    await this.runCommand(workDir, { command: 'git add', args: ['--all'] });
 
     if (!options?.allowEmpty && !await this.checkDiff(workDir)) {
       this.logger.info('There is no diff.');
@@ -462,7 +462,7 @@ export default class GitHelper {
    */
   public fetchTags = async(workDir: string, context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
     await this.runCommand(workDir, [
-      ...arrayChunk(await this.getTags(workDir, {quiet: true}), splitSize).map(tags => ({
+      ...arrayChunk(await this.getTags(workDir, { quiet: true }), splitSize).map(tags => ({
         command: 'git tag',
         args: ['-d', ...tags],
         quiet: true,
@@ -545,7 +545,7 @@ export default class GitHelper {
    */
   public addLocalTag = async(workDir: string, tags: string | string[]): Promise<void> => {
     if ('string' === typeof tags) {
-      await this.runCommand(workDir, {command: 'git tag', args: [tags]});
+      await this.runCommand(workDir, { command: 'git tag', args: [tags] });
     } else {
       for (const tag of tags) {
         await this.addLocalTag(workDir, tag);
@@ -585,7 +585,7 @@ export default class GitHelper {
    * @param {Context} context context
    * @return {Promise<void>} void
    */
-  public forcePush = async(workDir: string, branch: string, context: Context): Promise<void> => this.push(workDir, branch, context, {force: true});
+  public forcePush = async(workDir: string, branch: string, context: Context): Promise<void> => this.push(workDir, branch, context, { force: true });
 
   /**
    * @param {string} workDir work dir

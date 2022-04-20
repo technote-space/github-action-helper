@@ -1,6 +1,7 @@
-import {exec, spawn, ExecException} from 'child_process';
+import type { ExecException } from 'child_process';
+import type { Logger } from '@technote-space/github-action-log-helper';
+import { exec, spawn } from 'child_process';
 import escape from 'shell-escape';
-import {Logger} from '@technote-space/github-action-log-helper';
 
 /**
  * class CommandError
@@ -77,7 +78,7 @@ export default class Command {
       trimmedStderr = '';
     }
 
-    return {stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command};
+    return { stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command };
   };
 
   /**
@@ -138,7 +139,7 @@ export default class Command {
     cwd?: string,
   ): Promise<{ stdout: string; stderr: string }> => {
     return new Promise((resolve, reject) => {
-      const subProcess = spawn(command, [], {shell: true, cwd, stdio: [process.stdin, 'pipe', 'pipe']});
+      const subProcess = spawn(command, [], { shell: true, cwd, stdio: [process.stdin, 'pipe', 'pipe'] });
       let stdout       = '';
       let stderr       = '';
       subProcess.stdout.on('data', (data) => {
@@ -159,7 +160,7 @@ export default class Command {
           reject(new CommandError(stderr, code));
         }
 
-        resolve({stdout, stderr});
+        resolve({ stdout, stderr });
       });
     });
   };
@@ -204,7 +205,7 @@ export default class Command {
           }
         }
       }
-      resolve({stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command});
+      resolve({ stdout: trimmedStdout, stderr: trimmedStderr, command: 'string' === typeof altCommand ? altCommand : command });
     }
   };
 
@@ -230,7 +231,7 @@ export default class Command {
     suppressOutput?: boolean;
     stderrToStdout?: boolean;
   }): Promise<{ stdout: string; stderr: string; command: string }> | never => {
-    const {command, args, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false} = options;
+    const { command, args, cwd, altCommand, quiet = false, suppressError = false, suppressOutput = false, stderrToStdout = false } = options;
 
     const commandArgs     = undefined === args ? '' : escape(args.map(item => item.trim()).filter(item => item.length));
     const commandWithArgs = command + (commandArgs.length ? ' ' + commandArgs : '');
@@ -247,12 +248,12 @@ export default class Command {
         if (typeof cwd === 'undefined') {
           exec(this.getCommand(commandWithArgs, quiet, suppressError), this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
         } else {
-          exec(this.getCommand(commandWithArgs, quiet, suppressError), {cwd}, this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
+          exec(this.getCommand(commandWithArgs, quiet, suppressError), { cwd }, this.execCallback(commandWithArgs, altCommand, quiet, suppressOutput, stderrToStdout, resolve, reject));
         }
       });
     } else {
       try {
-        const {stdout, stderr} = await this.execCommand(this.getCommand(commandWithArgs, quiet, suppressError), quiet, suppressOutput, stderrToStdout, cwd);
+        const { stdout, stderr } = await this.execCommand(this.getCommand(commandWithArgs, quiet, suppressError), quiet, suppressOutput, stderrToStdout, cwd);
         return this.getCommandResult(commandWithArgs, altCommand, stderrToStdout, stdout, stderr);
       } catch (error) {
         throw new Error(this.getRejectedErrorMessage(command, altCommand, quiet, error as ExecException));
