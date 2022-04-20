@@ -74,7 +74,7 @@ describe('ApiHelper with params', () => {
     Logger.resetForTesting();
   });
 
-  const helper = new ApiHelper(octokit, context, logger, { branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true });
+  const helper = new ApiHelper(octokit, context, logger, { sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true });
 
   describe('updateRef', () => {
     it('should output warning 1', async() => {
@@ -325,7 +325,7 @@ describe('ApiHelper without logger', () => {
   disableNetConnect(nock);
   testEnv();
 
-  const helper = new ApiHelper(octokit, context, undefined, { branch: 'test-branch', sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true });
+  const helper = new ApiHelper(octokit, context, undefined, { sender: 'test-sender', refForUpdate: 'test-ref', suppressBPError: true });
 
   describe('updateRef', () => {
     it('should not output warning', async() => {

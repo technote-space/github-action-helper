@@ -362,7 +362,7 @@ describe('GitHelper', () => {
         /**
          * @return {void}
          */
-        public displayStdout = (): void => {
+        public override displayStdout = (): void => {
           throw new Error('test');
         };
       }

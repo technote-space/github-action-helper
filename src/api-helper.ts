@@ -63,8 +63,6 @@ type PullsListParams = {
  * API Helper
  */
 export default class ApiHelper {
-
-  private readonly branch?: string | undefined             = undefined;
   private readonly sender?: string | undefined             = undefined;
   private readonly suppressBPError?: boolean | undefined   = undefined;
   private readonly refForUpdate?: string | undefined       = undefined;
@@ -84,9 +82,8 @@ export default class ApiHelper {
     private readonly octokit: Octokit,
     private readonly context: Context,
     private readonly logger?: Logger,
-    options?: { branch?: string; sender?: string; refForUpdate?: string; suppressBPError?: boolean },
+    options?: { sender?: string; refForUpdate?: string; suppressBPError?: boolean },
   ) {
-    this.branch          = options?.branch;
     this.sender          = options?.sender;
     this.refForUpdate    = options?.refForUpdate;
     this.suppressBPError = options?.suppressBPError;
