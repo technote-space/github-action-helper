@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
-import { beforeEach, describe, expect, it } from 'vitest';
+import { ExecException } from 'child_process';
 import { Context } from '@actions/github/lib/context';
+import { Logger } from '@technote-space/github-action-log-helper';
 import {
   testEnv,
   getContext,
@@ -12,8 +13,7 @@ import {
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import { Logger } from '@technote-space/github-action-log-helper';
-import { ExecException } from 'child_process';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { GitHelper } from '../src';
 
 beforeEach(() => {

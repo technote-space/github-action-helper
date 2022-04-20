@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { beforeEach, describe, expect, it } from 'vitest';
+import { Logger } from '@technote-space/github-action-log-helper';
 import {
   testChildProcess,
   setChildProcessParams,
@@ -8,7 +8,7 @@ import {
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import { Logger } from '@technote-space/github-action-log-helper';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { Command } from '../src';
 
 describe('execAsync', () => {

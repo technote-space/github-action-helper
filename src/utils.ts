@@ -1,5 +1,5 @@
-import type { Context } from '@actions/github/lib/context';
 import type { Octokit } from './types';
+import type { Context } from '@actions/github/lib/context';
 import fs from 'fs';
 import path from 'path';
 import { getInput } from '@actions/core' ;

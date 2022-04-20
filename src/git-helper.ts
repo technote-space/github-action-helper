@@ -1,7 +1,7 @@
 import type { Context } from '@actions/github/lib/context';
 import type { Logger } from '@technote-space/github-action-log-helper';
 import fs from 'fs';
-import { Command } from './index';
+import { getGitUrlWithToken } from './context-helper';
 import {
   getBranch,
   isBranch,
@@ -18,7 +18,7 @@ import {
   isCommandDebug,
   isOutputDebug,
 } from './utils';
-import { getGitUrlWithToken } from './context-helper';
+import { Command } from './index';
 
 type CommandType = string | {
   command: string;
@@ -30,11 +30,7 @@ type CommandType = string | {
   stderrToStdout?: boolean;
 };
 
-/**
- * Git Helper
- */
 export default class GitHelper {
-
   private readonly command: Command;
   private readonly cloneDepth: string;
   private readonly filter: (string) => boolean;
@@ -42,12 +38,6 @@ export default class GitHelper {
   private origin?: string  = undefined;
   private quietIfNotOrigin = true;
 
-  /**
-   * @param {Logger} logger logger
-   * @param {object} options options
-   * @param {number|undefined} options.depth depth
-   * @param {function|undefined} options.filter filter
-   */
   constructor(private readonly logger: Logger, options?: { depth?: number; filter?: (string: string) => boolean; token?: string }) {
     this.command = new Command(logger);
     this.token   = options?.token ?? getAccessToken(true);
@@ -65,21 +55,10 @@ export default class GitHelper {
     }
   }
 
-  /**
-   * @return {boolean} should suppress error
-   */
   private shouldSuppressError = (): boolean => !isCommandDebug();
 
-  /**
-   * @return {boolean} is quiet?
-   */
   private isQuiet = (): boolean => !isOutputDebug() && (!this.origin || this.quietIfNotOrigin);
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string[]} commands commands
-   * @return {Promise<{}[]>} void
-   */
   public runCommand = async(workDir: string, commands: CommandType | CommandType[]): Promise<{ command: string; stdout: string[]; stderr: string[] }[]> => {
     const result: { command: string; stdout: string[]; stderr: string[] }[] = [];
     try {
@@ -108,11 +87,6 @@ export default class GitHelper {
     }
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {boolean} refresh refresh?
-   * @return {Promise<void>} void
-   */
   private initialize = async(workDir: string, refresh = true): Promise<void> => {
     if (isCloned(workDir) && !refresh) {
       return;
@@ -125,10 +99,6 @@ export default class GitHelper {
     await this.runCommand(workDir, { command: 'git init', args: ['.'] });
   };
 
-  /**
-   * @param {string|boolean} origin origin
-   * @param {boolean} quiet quiet?
-   */
   public useOrigin = (origin: string | boolean, quiet?: boolean): void => {
     this.origin = typeof origin === 'boolean' ? (origin ? 'origin' : undefined) : origin;
     if (quiet !== undefined) {
@@ -136,22 +106,10 @@ export default class GitHelper {
     }
   };
 
-  /**
-   * @return {string} origin name
-   */
   public getRemoteName = (): string | never => this.origin ?? 'origin';
 
-  /**
-   * @param {Context} context context
-   * @return {string} origin
-   */
   private getRemote = (context: Context): string => this.origin ?? getGitUrlWithToken(context, this.token);
 
-  /**
-   * @param {string} workDir work dir
-   * @param {Context} context context
-   * @return {Promise<void>} void
-   */
   public addOrigin = async(workDir: string, context: Context): Promise<void> => {
     await this.initialize(workDir, false);
     await this.runCommand(workDir, {
@@ -163,10 +121,6 @@ export default class GitHelper {
     });
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @return {Promise<string>} branch name
-   */
   public getCurrentBranchName = async(workDir: string): Promise<string> => {
     if (!isCloned(workDir)) {
       return '';
@@ -179,12 +133,6 @@ export default class GitHelper {
     }))[0].stdout[0]?.trim() ?? '';
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} branch branch
-   * @param {Context} context context
-   * @return {Promise<void>} void
-   */
   public cloneBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
     await this.runCommand(workDir, {
       command: 'git clone',
@@ -195,11 +143,6 @@ export default class GitHelper {
     });
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {Context} context context
-   * @return {Promise<void>} void
-   */
   private clonePR = async(workDir: string, context: Context): Promise<void> => {
     await this.runCommand(workDir, [
       {
@@ -223,11 +166,6 @@ export default class GitHelper {
     ]);
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {Context} context context
-   * @return {Promise<void>} void
-   */
   public clone = async(workDir: string, context: Context): Promise<void> => {
     if (isCloned(workDir)) {
       return;
@@ -242,23 +180,11 @@ export default class GitHelper {
     }
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} branch branch
-   * @return {Promise<void>} void
-   */
   public gitInit = async(workDir: string, branch: string): Promise<void> => {
     await this.initialize(workDir);
     await this.runCommand(workDir, { command: 'git checkout', args: ['--orphan', branch], stderrToStdout: true });
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {Context} context context
-   * @param {string[]} options options
-   * @param {string[]} refspec refspec
-   * @return {Promise<void>} void
-   */
   public fetchOrigin = async(workDir: string, context: Context, options?: string[], refspec?: string[]): Promise<void> => {
     await this.addOrigin(workDir, context);
     await this.runCommand(workDir, {
@@ -273,11 +199,6 @@ export default class GitHelper {
     });
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {Context} context context
-   * @return {Promise<void>} void
-   */
   public checkout = async(workDir: string, context: Context): Promise<void> => {
     await this.fetchOrigin(workDir, context, ['--no-tags'], [getRefspec(context)]);
     await this.runCommand(workDir, [
@@ -289,12 +210,6 @@ export default class GitHelper {
     ]);
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} branch branch
-   * @param {Context} context context
-   * @return {Promise<void>} void
-   */
   public fetchBranch = async(workDir: string, branch: string, context: Context): Promise<void> => {
     const branchName = getBranch(branch, false);
     await this.runCommand(workDir, {
@@ -306,20 +221,10 @@ export default class GitHelper {
     });
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} branch branch
-   * @return {Promise<void>} void
-   */
   public createBranch = async(workDir: string, branch: string): Promise<void> => {
     await this.runCommand(workDir, { command: 'git checkout', args: ['-b', branch], stderrToStdout: true });
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} branch branch
-   * @return {Promise<void>} void
-   */
   public switchBranch = async(workDir: string, branch: string): Promise<void> => {
     await this.runCommand(workDir, {
       command: 'git checkout',
@@ -335,11 +240,6 @@ export default class GitHelper {
     });
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {object} config config
-   * @return {Promise<void>} void
-   */
   public config = async(workDir: string, config: { name?: string, email?: string, defaultBranch?: string }): Promise<void> => {
     if (config.defaultBranch) {
       await this.runCommand(workDir, [
@@ -367,24 +267,12 @@ export default class GitHelper {
     }
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @return {Promise<string[]>} diff
-   */
   public getDiff = async(workDir: string): Promise<string[]> => (await this.runCommand(workDir, {
     command: 'git status',
     args: ['--short', '-uno'],
     suppressOutput: true,
   }))[0].stdout.filter(line => line.match(/^[MDA]\s+/)).filter(this.filter).map(line => line.replace(/^[MDA]\s+/, ''));
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} baseRef base ref
-   * @param {string} compareRef compare ref
-   * @param {string} diffFilter diff filter
-   * @param {string} dot dot
-   * @return {Promise<string[]>} diff
-   */
   public getRefDiff = async(workDir: string, baseRef: string, compareRef: string, diffFilter?: string, dot?: '..' | '...'): Promise<string[]> => {
     const toDiffRef = (ref: string): string =>
       'HEAD' === ref ? 'HEAD' : (
@@ -397,17 +285,8 @@ export default class GitHelper {
     }))[0].stdout.filter(item => !!item.trim());
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @return {Promise<boolean>} result
-   */
   public checkDiff = async(workDir: string): Promise<boolean> => !!(await this.getDiff(workDir)).length;
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} message message
-   * @param {object} options options
-   */
   public commit = async(workDir: string, message: string, options?: { count?: number; allowEmpty?: boolean; args?: Array<string> }): Promise<boolean> => {
     await this.runCommand(workDir, { command: 'git add', args: ['--all'] });
 
@@ -420,11 +299,6 @@ export default class GitHelper {
     return true;
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} message message
-   * @param {object} options options
-   */
   public makeCommit = async(workDir: string, message: string, options?: { count?: number; allowEmpty?: boolean; args?: Array<string> }): Promise<void> => {
     const count      = options?.count ?? 10; // eslint-disable-line no-magic-numbers
     const allowEmpty = options?.allowEmpty ?? false;
@@ -442,24 +316,12 @@ export default class GitHelper {
     ]);
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {object} options options
-   * @return {Promise<string[]>} tags
-   */
   public getTags = async(workDir: string, options?: { quiet?: boolean; suppressOutput?: boolean }): Promise<string[]> => (await this.runCommand(workDir, {
     command: 'git tag',
     suppressOutput: options?.suppressOutput || options?.quiet,
     altCommand: options?.quiet ? '' : undefined,
   }))[0].stdout;
 
-  /**
-   * @param {string} workDir work dir
-   * @param {Context} context context
-   * @param {number} splitSize split size
-   * @return {Promise<void>} void
-   * @see https://qiita.com/ngyuki/items/ca7bed067d7e538fd0cd
-   */
   public fetchTags = async(workDir: string, context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
     await this.runCommand(workDir, [
       ...arrayChunk(await this.getTags(workDir, { quiet: true }), splitSize).map(tags => ({
@@ -476,13 +338,6 @@ export default class GitHelper {
     ]);
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string|string[]} tags tags
-   * @param {Context} context context
-   * @param {number} splitSize split size
-   * @return {Promise<void>} void
-   */
   public deleteTag = async(workDir: string, tags: string | string[], context: Context, splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
     const getTagRef = (tag: string): string => /^(refs\/)?tags\//.test(tag) ? tag : `tags/${tag}`;
     await this.runCommand(workDir,
@@ -497,13 +352,6 @@ export default class GitHelper {
     await this.deleteLocalTag(workDir, tags, splitSize);
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} newTag new tag
-   * @param {string} fromTag from tag
-   * @param {Context} context context
-   * @return {Promise<void>} void
-   */
   public copyTag = async(workDir: string, newTag: string, fromTag: string, context: Context): Promise<void> => {
     await this.deleteTag(workDir, newTag, context);
     await this.runCommand(workDir, [
@@ -520,12 +368,6 @@ export default class GitHelper {
     ]);
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string|string[]} tags tags
-   * @param {number} splitSize split size
-   * @return {Promise<void>} void
-   */
   public deleteLocalTag = async(workDir: string, tags: string | string[], splitSize = 20): Promise<void> => { // eslint-disable-line no-magic-numbers
     const getTag = (tag: string): string => tag.replace(/^(refs\/)?tags\//, '');
     await this.runCommand(workDir, arrayChunk((typeof tags === 'string' ? [tags] : tags).map(getTag), splitSize).map(
@@ -538,11 +380,6 @@ export default class GitHelper {
     ));
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string|string[]} tags tags
-   * @return {Promise<void>} void
-   */
   public addLocalTag = async(workDir: string, tags: string | string[]): Promise<void> => {
     if ('string' === typeof tags) {
       await this.runCommand(workDir, { command: 'git tag', args: [tags] });
@@ -553,13 +390,6 @@ export default class GitHelper {
     }
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} branch branch
-   * @param {Context} context context
-   * @param {object} options options
-   * @return {Promise<void>} void
-   */
   public push = async(workDir: string, branch: string, context: Context, options?: { withTag?: boolean; force?: boolean; args?: Array<string> }): Promise<void> => {
     const args: Array<string> = [];
     if (options?.withTag) {
@@ -579,18 +409,8 @@ export default class GitHelper {
     });
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @param {string} branch branch
-   * @param {Context} context context
-   * @return {Promise<void>} void
-   */
   public forcePush = async(workDir: string, branch: string, context: Context): Promise<void> => this.push(workDir, branch, context, { force: true });
 
-  /**
-   * @param {string} workDir work dir
-   * @return {string} tag
-   */
   public getLastTag = async(workDir: string): Promise<string> => {
     if (!isCloned(workDir)) {
       throw new Error('Not a git repository');
@@ -599,21 +419,9 @@ export default class GitHelper {
     return 'v' + ((await this.getTags(workDir)).filter(tag => /^v?\d+(\.\d+)*$/.test(tag)).sort(versionCompare).reverse()[0]?.replace(/^v/, '') ?? '0.0.0');
   };
 
-  /**
-   * @param {string} workDir work dir
-   * @return {string} tag
-   */
   public getNewPatchVersion = async(workDir: string): Promise<string> => generateNewPatchVersion(await this.getLastTag(workDir));
 
-  /**
-   * @param {string} workDir work dir
-   * @return {string} tag
-   */
   public getNewMinorVersion = async(workDir: string): Promise<string> => generateNewMinorVersion(await this.getLastTag(workDir));
 
-  /**
-   * @param {string} workDir work dir
-   * @return {string} tag
-   */
   public getNewMajorVersion = async(workDir: string): Promise<string> => generateNewMajorVersion(await this.getLastTag(workDir));
 }

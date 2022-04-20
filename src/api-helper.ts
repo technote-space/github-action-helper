@@ -1,11 +1,12 @@
-import type { Context } from '@actions/github/lib/context';
-import type { OctokitResponse } from '@octokit/types';
-import type { components } from '@octokit/openapi-types';
-import type { Logger } from '@technote-space/github-action-log-helper';
 import type { Octokit } from './types';
+import type { Context } from '@actions/github/lib/context';
+import type { components } from '@octokit/openapi-types';
+import type { OctokitResponse } from '@octokit/types';
+import type { Logger } from '@technote-space/github-action-log-helper';
 import fs from 'fs';
 import path from 'path';
 import { exportVariable } from '@actions/core';
+import { getSender } from './context-helper';
 import {
   getRefForUpdate,
   isPrRef,
@@ -18,7 +19,6 @@ import {
   ensureNotNull,
   objectGet,
 } from './utils';
-import { getSender } from './context-helper';
 
 type GitGetCommitResponseData = components['schemas']['git-commit'];
 type PullsGetResponseData = components['schemas']['pull-request'];
@@ -59,25 +59,12 @@ type PullsListParams = {
   state?: 'open' | 'closed' | 'all';
 }
 
-/**
- * API Helper
- */
 export default class ApiHelper {
   private readonly sender?: string | undefined             = undefined;
   private readonly suppressBPError?: boolean | undefined   = undefined;
   private readonly refForUpdate?: string | undefined       = undefined;
   private prCache: { [key: number]: PullsGetResponseData } = {};
 
-  /**
-   * @param {Octokit} octokit octokit
-   * @param {Context} context context
-   * @param {Logger} logger logger
-   * @param {object} options options
-   * @param {string|undefined} options.branch branch
-   * @param {string|undefined} options.sender sender
-   * @param {string|undefined} options.refForUpdate ref for update
-   * @param {boolean|undefined} options.suppressBPError suppress branch protection error?
-   */
   constructor(
     private readonly octokit: Octokit,
     private readonly context: Context,
@@ -89,30 +76,16 @@ export default class ApiHelper {
     this.suppressBPError = options?.suppressBPError;
   }
 
-  /**
-   * @param {OctokitResponse} response response
-   * @return {any} data
-   */
   private getResponseData = async <T>(response: Promise<OctokitResponse<T>>): Promise<T> => (await response).data;
 
-  /**
-   * @param {function} caller caller
-   */
   private callLogger = (caller: (logger: Logger) => void): void => {
     if (this.logger) {
       caller(this.logger);
     }
   };
 
-  /**
-   * @return {string|boolean} sender
-   */
   private getSender = (): string | false => this.sender ? this.sender : getSender(this.context);
 
-  /**
-   * @param {boolean} encode encode?
-   * @return {string} ref for update
-   */
   public getRefForUpdate = async(encode: boolean): Promise<string> => {
     const ref = this.refForUpdate ? this.refForUpdate : (
       isPrRef(this.context) ? ('heads/' + (await this.getPR()).head.ref) : getRefForUpdate(this.context)
@@ -120,11 +93,6 @@ export default class ApiHelper {
     return encode ? encodeURIComponent(ref) : ref;
   };
 
-  /**
-   * @param {string} rootDir root dir
-   * @param {string} filepath filepath
-   * @return {Promise<{ path: string, sha: string }>} blob
-   */
   private createBlob = async(rootDir: string, filepath: string): Promise<{ path: string; sha: string }> => {
     const blob = await this.octokit.rest.git.createBlob({
       ...this.context.repo,
@@ -138,22 +106,13 @@ export default class ApiHelper {
     };
   };
 
-  /**
-   * @return {string} commit sha
-   */
   private getCommitSha = (): string => this.context.payload.pull_request ? this.context.payload.pull_request.head.sha : this.context.sha;
 
-  /**
-   * @return {Promise<GitGetCommitResponseData>} commit
-   */
   private getCommit = async(): Promise<GitGetCommitResponseData> => this.getResponseData(this.octokit.rest.git.getCommit({
     ...this.context.repo,
     'commit_sha': this.getCommitSha(),
   }));
 
-  /**
-   * @return {Promise<PullsGetResponseData>} commit
-   */
   private getPR = async(): Promise<PullsGetResponseData> => {
     const key = parseInt(this.context.payload.number, 10);
     if (!(key in this.prCache)) {
@@ -166,17 +125,8 @@ export default class ApiHelper {
     return this.prCache[key];
   };
 
-  /**
-   * @param {string} rootDir root dir
-   * @param {object} files files
-   * @return {Promise<Array<{ path: string, sha: string }>>} blobs
-   */
   public filesToBlobs = async(rootDir: string, files: Array<string>): Promise<Array<{ path: string; sha: string }>> => await Promise.all(files.map(file => this.createBlob(rootDir, file)));
 
-  /**
-   * @param {Array<{ path: string, sha: string }>} blobs blobs
-   * @return {Promise<GitCreateTreeResponseData>} tree
-   */
   public createTree = async(blobs: Array<{ path: string; sha: string }>): Promise<GitCreateTreeResponseData> => this.getResponseData(this.octokit.rest.git.createTree({
     ...this.context.repo,
     'base_tree': ensureNotNull(objectGet((await this.getCommit()), 'tree.sha')),
@@ -188,11 +138,6 @@ export default class ApiHelper {
     })),
   }));
 
-  /**
-   * @param {string} commitMessage commit message
-   * @param {GitCreateTreeResponseData} tree tree
-   * @return {Promise<GitCreateCommitResponseData>} commit
-   */
   public createCommit = async(commitMessage: string, tree: GitCreateTreeResponseData): Promise<GitCreateCommitResponseData> => this.getResponseData(this.octokit.rest.git.createCommit({
     ...this.context.repo,
     tree: tree.sha,
@@ -200,10 +145,6 @@ export default class ApiHelper {
     message: commitMessage,
   }));
 
-  /**
-   * @param {string} refName refName
-   * @return {Promise<GitGetRefResponseData|null>} refName
-   */
   private getRef = async(refName: string): Promise<GitGetRefResponseData | null> => {
     try {
       return await this.getResponseData(this.octokit.rest.git.getRef({
@@ -215,12 +156,6 @@ export default class ApiHelper {
     }
   };
 
-  /**
-   * @param {GitCreateCommitResponseData} commit commit
-   * @param {string} refName refName
-   * @param {boolean} force force
-   * @return {Promise<boolean>} updated?
-   */
   public updateRef = async(commit: GitCreateCommitResponseData, refName: string, force: boolean): Promise<boolean> => {
     try {
       await this.octokit.rest.git.updateRef({
@@ -242,11 +177,6 @@ export default class ApiHelper {
     }
   };
 
-  /**
-   * @param {GitCreateCommitResponseData} commit commit
-   * @param {string} refName refName
-   * @return {Promise<void>} void
-   */
   public createRef = async(commit: GitCreateCommitResponseData, refName: string): Promise<void> => {
     await this.octokit.rest.git.createRef({
       ...this.context.repo,
@@ -255,10 +185,6 @@ export default class ApiHelper {
     });
   };
 
-  /**
-   * @param {string} refName refName
-   * @return {Promise<void>} void
-   */
   public deleteRef = async(refName: string): Promise<void> => {
     await this.octokit.rest.git.deleteRef({
       ...this.context.repo,
@@ -266,10 +192,6 @@ export default class ApiHelper {
     });
   };
 
-  /**
-   * @param {string} branchName branch name
-   * @return {Promise<PullsListResponseData | null>} pull request
-   */
   public findPullRequest = async(branchName: string): Promise<PullsListResponseData | null> => {
     const response = await this.octokit.rest.pulls.list({
       ...this.context.repo,
@@ -282,10 +204,6 @@ export default class ApiHelper {
     return null;
   };
 
-  /**
-   * @param {PullsListParams} params params
-   * @return {AsyncIterable<Array<PullsListResponseData>>} pull request list
-   */
   public pullsList = (params: PullsListParams): Promise<Array<PullsListResponseData>> => this.octokit.paginate(
     this.octokit.rest.pulls.list,
     Object.assign({
@@ -296,11 +214,6 @@ export default class ApiHelper {
     }),
   );
 
-  /**
-   * @param {string} branchName branch name
-   * @param {PullsCreateParams} detail detail
-   * @return {Promise<PullsCreateResponseData>} pull
-   */
   public pullsCreate = async(branchName: string, detail: PullsCreateParams): Promise<PullsCreateResponseData> => this.getResponseData(this.octokit.rest.pulls.create({
     ...this.context.repo,
     head: `${this.context.repo.owner}:${getBranch(branchName, false)}`,
@@ -308,11 +221,6 @@ export default class ApiHelper {
     ...detail,
   }));
 
-  /**
-   * @param {number} number pull number
-   * @param {PullsUpdateParams} detail detail
-   * @return {Promise<PullsUpdateResponseData>} pull
-   */
   public pullsUpdate = async(number: number, detail: PullsUpdateParams): Promise<PullsUpdateResponseData> => this.getResponseData(this.octokit.rest.pulls.update({
     ...this.context.repo,
     'pull_number': number,
@@ -320,10 +228,6 @@ export default class ApiHelper {
     ...detail,
   }));
 
-  /**
-   * @param {string} branch branch
-   * @return {object} branch info
-   */
   public getBranchInfo = (branch: string): { branchName: string; headName: string; refName: string } => {
     const branchName = getBranch(branch, false);
     const headName   = `heads/${branchName}`;
@@ -331,11 +235,6 @@ export default class ApiHelper {
     return { branchName, headName, refName };
   };
 
-  /**
-   * @param {string} createBranchName branch name
-   * @param {PullsCreateParams} detail detail
-   * @return {Promise<PullsInfo>} info
-   */
   private createPulls = async(createBranchName: string, detail: PullsCreateParams): Promise<PullsInfo> => {
     this.callLogger(async logger => logger.startProcess('Creating PullRequest... [%s] -> [%s]', getBranch(createBranchName, false), await this.getRefForUpdate(false)));
     const created = await this.pullsCreate(createBranchName, detail);
@@ -343,11 +242,6 @@ export default class ApiHelper {
     return Object.assign({ isPrCreated: true }, created);
   };
 
-  /**
-   * @param {string} createBranchName branch name
-   * @param {PullsCreateParams} detail detail
-   * @return {Promise<PullsInfo>} info
-   */
   public pullsCreateOrUpdate = async(createBranchName: string, detail: PullsCreateParams): Promise<PullsInfo> => {
     const pullRequest = await this.findPullRequest(createBranchName);
     if (pullRequest) {
@@ -360,11 +254,6 @@ export default class ApiHelper {
     return this.createPulls(createBranchName, detail);
   };
 
-  /**
-   * @param {string} createBranchName branch name
-   * @param {PullsCreateParams} detail detail
-   * @return {Promise<PullsInfo>} info
-   */
   public pullsCreateOrComment = async(createBranchName: string, detail: PullsCreateParams): Promise<PullsInfo> => {
     const pullRequest = await this.findPullRequest(createBranchName);
     if (pullRequest) {
@@ -377,11 +266,6 @@ export default class ApiHelper {
     return this.createPulls(createBranchName, detail);
   };
 
-  /**
-   * @param {string} branch branch
-   * @param {string} body body
-   * @return {Promise<boolean>} result
-   */
   public createCommentToPr = async(branch: string, body: string | undefined): Promise<boolean> => {
     if (!body) {
       return false;
@@ -401,16 +285,8 @@ export default class ApiHelper {
     return true;
   };
 
-  /**
-   * @param {Error} error error
-   * @return {boolean} result
-   */
   private isProtectedBranchError = (error: Error): boolean => /required status checks?.* (is|are) expected/i.test(error.message);
 
-  /**
-   * @param {Array<string>} files files
-   * @return {boolean} diff?
-   */
   private checkDiff = (files: Array<string>): boolean => {
     if (!files.length) {
       this.callLogger(logger => logger.info('There is no diff.'));
@@ -420,12 +296,6 @@ export default class ApiHelper {
     return true;
   };
 
-  /**
-   * @param {string} rootDir root dir
-   * @param {string} commitMessage commit message
-   * @param {Array<string>} files files
-   * @return {Promise<GitCreateCommitResponseData>} commit
-   */
   private prepareCommit = async(rootDir: string, commitMessage: string, files: Array<string>): Promise<GitCreateCommitResponseData> => {
     this.callLogger(logger => logger.startProcess('Creating blobs...'));
     const blobs = await this.filesToBlobs(rootDir, files);
@@ -437,12 +307,6 @@ export default class ApiHelper {
     return this.createCommit(commitMessage, tree);
   };
 
-  /**
-   * @param {string} rootDir root dir
-   * @param {string} commitMessage commit message
-   * @param {Array<string>} files files
-   * @return {Promise<boolean>} result
-   */
   public commit = async(rootDir: string, commitMessage: string, files: Array<string>): Promise<boolean> => {
     if (!this.checkDiff(files)) {
       return false;
@@ -461,14 +325,6 @@ export default class ApiHelper {
     return true;
   };
 
-  /**
-   * @param {string} rootDir root dir
-   * @param {string} commitMessage commit message
-   * @param {Array<string>} files files
-   * @param {string} createBranchName branch name
-   * @param {PullsCreateParams} detail detail
-   * @return {Promise<boolean|PullsInfo>} result
-   */
   public createPR = async(rootDir: string, commitMessage: string, files: Array<string>, createBranchName: string, detail: PullsCreateParams): Promise<boolean | PullsInfo> => {
     if (!this.checkDiff(files)) {
       return false;
@@ -488,10 +344,6 @@ export default class ApiHelper {
     return this.pullsCreateOrUpdate(branchName, detail);
   };
 
-  /**
-   * @param {string} createBranchName branch name
-   * @param {string} message message
-   */
   public closePR = async(createBranchName: string, message?: string): Promise<void> => {
     const { branchName, headName, refName } = this.getBranchInfo(createBranchName);
     const pullRequest                       = await this.findPullRequest(branchName);
@@ -519,9 +371,6 @@ export default class ApiHelper {
     this.callLogger(logger => logger.endProcess());
   };
 
-  /**
-   * @return {Promise<{ login: string, email: string, name: string, id: number }>} user
-   */
   public getUser = async(): Promise<{ login: string; email: string; name: string; id: number }> => {
     const sender = this.getSender();
     if (false === sender) {
@@ -541,16 +390,10 @@ export default class ApiHelper {
     };
   };
 
-  /**
-   * @return {Promise<string>} default branch
-   */
   public getDefaultBranch = async(): Promise<string> => this.context.payload.repository?.default_branch ?? (await this.octokit.rest.repos.get({ // eslint-disable-line camelcase
     ...this.context.repo,
   })).data.default_branch;
 
-  /**
-   * @return {Promise<Array<string>>} tags
-   */
   public getTags = async(): Promise<Array<string>> => (await this.octokit.paginate(
     this.octokit.rest.git.listMatchingRefs,
     {
@@ -559,23 +402,11 @@ export default class ApiHelper {
     },
   )).map((item): string => trimRef(item.ref));
 
-  /**
-   * @return {Promise<string>} tag
-   */
   public getLastTag = async(): Promise<string> => 'v' + ((await this.getTags()).filter(tag => /^v?\d+(\.\d+)*$/.test(tag)).sort(versionCompare).reverse()[0]?.replace(/^v/, '') ?? '0.0.0');
 
-  /**
-   * @return {Promise<string>} tag
-   */
   public getNewPatchVersion = async(): Promise<string> => generateNewPatchVersion(await this.getLastTag());
 
-  /**
-   * @return {Promise<string>} tag
-   */
   public getNewMinorVersion = async(): Promise<string> => generateNewMinorVersion(await this.getLastTag());
 
-  /**
-   * @return {Promise<string>} tag
-   */
   public getNewMajorVersion = async(): Promise<string> => generateNewMajorVersion(await this.getLastTag());
 }

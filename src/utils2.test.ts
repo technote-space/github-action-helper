@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
-import { describe, expect, it, vi } from 'vitest';
 import { testEnv } from '@technote-space/github-action-test-helper';
+import { describe, expect, it, vi } from 'vitest';
 import { Utils } from '../src';
 
 const { generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug, objectGet, mask }             = Utils;

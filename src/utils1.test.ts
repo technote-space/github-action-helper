@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
-import { describe, expect, it, vi } from 'vitest';
 import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
+import { describe, expect, it, vi } from 'vitest';
 import { Utils } from '../src';
 
 const { getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef } = Utils;

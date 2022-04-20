@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import nock from 'nock';
 import path from 'path';
+import { components } from '@octokit/openapi-types';
+import { Logger } from '@technote-space/github-action-log-helper';
 import {
   getOctokit,
   disableNetConnect,
@@ -11,8 +11,8 @@ import {
   spyOnStdout,
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
-import { Logger } from '@technote-space/github-action-log-helper';
-import { components } from '@octokit/openapi-types';
+import nock from 'nock';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiHelper } from '../src';
 
 type GitCreateCommitResponseData = components['schemas']['git-commit'];
