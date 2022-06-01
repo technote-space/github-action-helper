@@ -2,7 +2,7 @@
 import path from 'path';
 import { testEnv, getContext, testFs } from '@technote-space/github-action-test-helper';
 import { describe, expect, it, vi } from 'vitest';
-import { Utils } from '../src';
+import { Utils } from '../src/index.js';
 
 const { getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuffixRegExp, getPrBranch, getPrHeadRef } = Utils;
 const { parseVersion, normalizeVersion, isValidSemanticVersioning, isPrRef, getPrMergeRef, replaceAll, sleep }         = Utils;

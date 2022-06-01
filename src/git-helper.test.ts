@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import type { Context } from '@actions/github/lib/context';
+import type { Context } from '@actions/github/lib/context.js';
 import type { ExecException } from 'child_process';
 import { Logger } from '@technote-space/github-action-log-helper';
 import {
@@ -14,7 +14,7 @@ import {
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { GitHelper } from '../src';
+import { GitHelper } from '../src/index.js';
 
 beforeEach(() => {
   Logger.resetForTesting();

@@ -9,7 +9,7 @@ import {
   stdoutCalledWith,
 } from '@technote-space/github-action-test-helper';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { Command } from '../src';
+import { Command } from '../src/index.js';
 
 describe('execAsync', () => {
   testChildProcess();

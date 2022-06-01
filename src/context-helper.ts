@@ -1,7 +1,7 @@
-import type { Context } from '@actions/github/lib/context';
+import type { Context } from '@actions/github/lib/context.js';
 import type { Logger } from '@technote-space/github-action-log-helper';
 import path from 'path';
-import { getAccessToken, getActor, getBuildInfo, mask } from './utils';
+import { getAccessToken, getActor, getBuildInfo, mask } from './utils.js';
 
 export const isRelease = (context: Context): boolean => 'release' === context.eventName;
 
