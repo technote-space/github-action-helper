@@ -8,8 +8,6 @@ const { getWorkspace, getActor, escapeRegExp, getRegExp, getPrefixRegExp, getSuf
 const { parseVersion, normalizeVersion, isValidSemanticVersioning, isPrRef, getPrMergeRef, replaceAll, sleep }         = Utils;
 const { getBranch, getRefForUpdate, uniqueArray, getBuildInfo, split, getArrayInput, useNpm, getBoolValue }            = Utils;
 
-vi.useFakeTimers();
-
 describe('getWorkspace', () => {
   testEnv();
 
@@ -500,16 +498,23 @@ describe('getArrayInput', () => {
 });
 
 describe('sleep', () => {
-  it('should sleep', done => {
-    const fn = vi.fn();
+  it('should sleep', async() => {
+    vi.useFakeTimers();
+    try {
+      const fn = vi.fn();
 
-    sleep(1000).then(() => {
-      fn();
-      done();
-    });
+      const promise = sleep(1000).then(() => {
+        fn();
+      });
 
-    expect(fn).not.toBeCalled();
-    vi.advanceTimersByTime(1500);
+      expect(fn).not.toBeCalled();
+
+      vi.advanceTimersByTime(1100);
+      await promise;
+      expect(fn).toBeCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
