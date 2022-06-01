@@ -31,7 +31,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && rm -f dist/*.js && rollup -c",
+    "build": "tsc --emitDeclarationOnly && rollup -c",
     "cover": "vitest run --coverage",
     "postinstall": "[ -n \"$CI\" ] || [ ! -f node_modules/.bin/husky ] || husky install",
     "lint": "eslint 'src/**/*.ts' --cache",
