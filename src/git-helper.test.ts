@@ -355,13 +355,9 @@ describe('GitHelper', () => {
     });
 
     it('should throw error', async() => {
-      /**
-       * Logger
-       */
       class ThrowErrorLogger extends Logger {
-        /**
-         * @return {void}
-         */
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         public override displayStdout = (): void => {
           throw new Error('test');
         };
