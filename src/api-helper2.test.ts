@@ -13,7 +13,7 @@ import {
 } from '@technote-space/github-action-test-helper';
 import nock from 'nock';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiHelper } from '../src';
+import { ApiHelper } from '../src/index.js';
 
 type GitCreateCommitResponseData = components['schemas']['git-commit'];
 const rootDir = path.resolve(__dirname, 'fixtures');

@@ -1,12 +1,12 @@
-import type { Octokit } from './types';
-import type { Context } from '@actions/github/lib/context';
+import type { Octokit } from './types.js';
+import type { Context } from '@actions/github/lib/context.js';
 import type { components } from '@octokit/openapi-types';
 import type { OctokitResponse } from '@octokit/types';
 import type { Logger } from '@technote-space/github-action-log-helper';
 import fs from 'fs';
 import path from 'path';
 import { exportVariable } from '@actions/core';
-import { getSender } from './context-helper';
+import { getSender } from './context-helper.js';
 import {
   getRefForUpdate,
   isPrRef,
@@ -18,7 +18,7 @@ import {
   generateNewMinorVersion,
   ensureNotNull,
   objectGet,
-} from './utils';
+} from './utils.js';
 
 type GitGetCommitResponseData = components['schemas']['git-commit'];
 type PullsGetResponseData = components['schemas']['pull-request'];

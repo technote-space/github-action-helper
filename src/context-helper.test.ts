@@ -7,7 +7,7 @@ import {
 } from '@technote-space/github-action-test-helper';
 import { testEnv, getContext } from '@technote-space/github-action-test-helper';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ContextHelper } from '../src';
+import { ContextHelper } from '../src/index.js';
 
 const { isRelease, isPush, isPr, isIssue, isCron, isCustomEvent, isManualEvent, isWorkflowRun, isCreateTag } = ContextHelper;
 const { getGitUrl, getRepository, getTagName, getSender, showActionInfo }                                    = ContextHelper;

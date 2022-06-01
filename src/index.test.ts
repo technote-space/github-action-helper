@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { Command, ApiHelper, GitHelper, Types, Utils, ContextHelper } from '.';
+import { Command, ApiHelper, GitHelper, Types, Utils, ContextHelper } from './index.js';
 
 it('helpers can be imported', () => {
   expect(Command).not.toBeFalsy();

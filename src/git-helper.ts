@@ -1,8 +1,8 @@
-import type { Context } from '@actions/github/lib/context';
+import type { Context } from '@actions/github/lib/context.js';
 import type { Logger } from '@technote-space/github-action-log-helper';
 import fs from 'fs';
-import Command from './command';
-import { getGitUrlWithToken } from './context-helper';
+import Command from './command.js';
+import { getGitUrlWithToken } from './context-helper.js';
 import {
   getBranch,
   isBranch,
@@ -18,7 +18,7 @@ import {
   generateNewMajorVersion,
   isCommandDebug,
   isOutputDebug,
-} from './utils';
+} from './utils.js';
 
 type CommandType = string | {
   command: string;

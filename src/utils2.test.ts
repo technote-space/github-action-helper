@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import { testEnv } from '@technote-space/github-action-test-helper';
 import { describe, expect, it, vi } from 'vitest';
-import { Utils } from '../src';
+import { Utils } from '../src/index.js';
 
 const { generateNewPatchVersion, generateNewMinorVersion, generateNewMajorVersion, arrayChunk, versionCompare, isCommandDebug, isOutputDebug, objectGet, mask }             = Utils;
 const { isBranch, isTagRef, normalizeRef, trimRef, getTag, getRefspec, getRemoteRefspec, getLocalRefspec, getOctokit, replaceVariables, ensureNotNullValue, ensureNotNull } = Utils;
