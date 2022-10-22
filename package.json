@@ -54,7 +54,7 @@
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
     "@commitlint/config-conventional": "^17.1.0",
-    "@rollup/plugin-typescript": "^9.0.1",
+    "@rollup/plugin-typescript": "^9.0.2",
     "@sindresorhus/tsconfig": "^3.0.1",
     "@technote-space/github-action-test-helper": "^0.11.0",
     "@types/node": "^18.11.3",
@@ -62,7 +62,7 @@
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
     "c8": "^7.12.0",
-    "eslint": "^8.25.0",
+    "eslint": "^8.26.0",
     "eslint-plugin-import": "^2.26.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
