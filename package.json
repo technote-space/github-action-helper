@@ -52,24 +52,24 @@
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.1.2",
-    "@commitlint/config-conventional": "^17.1.0",
+    "@commitlint/cli": "^17.2.0",
+    "@commitlint/config-conventional": "^17.2.0",
     "@rollup/plugin-typescript": "^9.0.2",
     "@sindresorhus/tsconfig": "^3.0.1",
     "@technote-space/github-action-test-helper": "^0.11.0",
-    "@types/node": "^18.11.8",
+    "@types/node": "^18.11.9",
     "@types/shell-escape": "^0.2.1",
-    "@typescript-eslint/eslint-plugin": "^5.41.0",
-    "@typescript-eslint/parser": "^5.41.0",
-    "@vitest/coverage-c8": "^0.24.4",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "@vitest/coverage-c8": "^0.24.5",
     "eslint": "^8.26.0",
     "eslint-plugin-import": "^2.26.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
     "nock": "^13.2.9",
-    "rollup": "^3.2.3",
+    "rollup": "^3.2.5",
     "typescript": "^4.8.4",
-    "vitest": "^0.24.4"
+    "vitest": "^0.24.5"
   },
   "publishConfig": {
     "access": "public"
