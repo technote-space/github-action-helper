@@ -1,6 +1,6 @@
 {
   "name": "@technote-space/github-action-helper",
-  "version": "5.3.9",
+  "version": "5.3.10",
   "description": "Helper for GitHub Action.",
   "keywords": [
     "github",
@@ -47,29 +47,29 @@
     "@actions/github": "^5.1.1",
     "@octokit/openapi-types": "^14.0.0",
     "@octokit/plugin-rest-endpoint-methods": "^6.7.0",
-    "@technote-space/github-action-log-helper": "^0.2.8",
+    "@technote-space/github-action-log-helper": "^0.2.9",
     "shell-escape": "^0.2.0",
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.1.2",
-    "@commitlint/config-conventional": "^17.1.0",
-    "@rollup/plugin-typescript": "^9.0.2",
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0",
+    "@rollup/plugin-typescript": "^10.0.1",
     "@sindresorhus/tsconfig": "^3.0.1",
-    "@technote-space/github-action-test-helper": "^0.11.0",
-    "@types/node": "^18.11.8",
+    "@technote-space/github-action-test-helper": "^0.11.1",
+    "@types/node": "^18.11.9",
     "@types/shell-escape": "^0.2.1",
-    "@typescript-eslint/eslint-plugin": "^5.41.0",
-    "@typescript-eslint/parser": "^5.41.0",
-    "@vitest/coverage-c8": "^0.24.4",
-    "eslint": "^8.26.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "@vitest/coverage-c8": "^0.25.3",
+    "eslint": "^8.28.0",
     "eslint-plugin-import": "^2.26.0",
-    "husky": "^8.0.1",
-    "lint-staged": "^13.0.3",
+    "husky": "^8.0.2",
+    "lint-staged": "^13.0.4",
     "nock": "^13.2.9",
-    "rollup": "^3.2.3",
-    "typescript": "^4.8.4",
-    "vitest": "^0.24.4"
+    "rollup": "^3.5.0",
+    "typescript": "^4.9.3",
+    "vitest": "^0.25.3"
   },
   "publishConfig": {
     "access": "public"
