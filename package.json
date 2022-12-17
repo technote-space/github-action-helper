@@ -57,19 +57,19 @@
     "@rollup/plugin-typescript": "^10.0.1",
     "@sindresorhus/tsconfig": "^3.0.1",
     "@technote-space/github-action-test-helper": "^0.11.1",
-    "@types/node": "^18.11.12",
+    "@types/node": "^18.11.16",
     "@types/shell-escape": "^0.2.1",
-    "@typescript-eslint/eslint-plugin": "^5.46.0",
-    "@typescript-eslint/parser": "^5.46.0",
-    "@vitest/coverage-c8": "^0.25.6",
-    "eslint": "^8.29.0",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "@vitest/coverage-c8": "^0.25.8",
+    "eslint": "^8.30.0",
     "eslint-plugin-import": "^2.26.0",
     "husky": "^8.0.2",
     "lint-staged": "^13.1.0",
     "nock": "^13.2.9",
-    "rollup": "^3.7.2",
+    "rollup": "^3.7.5",
     "typescript": "^4.9.4",
-    "vitest": "^0.25.6"
+    "vitest": "^0.25.8"
   },
   "publishConfig": {
     "access": "public"
