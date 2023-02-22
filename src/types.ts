@@ -4,3 +4,5 @@ import type { RestEndpointMethods } from '@octokit/plugin-rest-endpoint-methods/
 export type Octokit = InstanceType<typeof GitHub> & {
   rest: RestEndpointMethods;
 };
+
+export type { components } from '@octokit/openapi-types';
