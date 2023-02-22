@@ -1,6 +1,5 @@
-import type { Octokit } from './types.js';
+import type { Octokit, components } from './types.js';
 import type { Context } from '@actions/github/lib/context.js';
-import type { components } from '@octokit/openapi-types';
 import type { OctokitResponse } from '@octokit/types';
 import type { Logger } from '@technote-space/github-action-log-helper';
 import fs from 'fs';
