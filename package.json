@@ -54,7 +54,7 @@
     "@commitlint/config-conventional": "^17.4.4",
     "@rollup/plugin-typescript": "^11.0.0",
     "@sindresorhus/tsconfig": "^3.0.1",
-    "@technote-space/github-action-test-helper": "^0.11.2",
+    "@technote-space/github-action-test-helper": "^0.11.3",
     "@types/node": "^18.14.0",
     "@types/shell-escape": "^0.2.1",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
