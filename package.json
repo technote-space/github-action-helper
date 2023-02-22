@@ -1,6 +1,6 @@
 {
   "name": "@technote-space/github-action-helper",
-  "version": "5.3.12",
+  "version": "5.3.13",
   "description": "Helper for GitHub Action.",
   "keywords": [
     "github",
@@ -45,7 +45,7 @@
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",
-    "@technote-space/github-action-log-helper": "^0.2.10",
+    "@technote-space/github-action-log-helper": "^0.2.11",
     "shell-escape": "^0.2.0",
     "sprintf-js": "^1.1.2"
   },
