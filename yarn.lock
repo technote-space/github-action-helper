@@ -582,10 +582,10 @@
     "@actions/core" "^1.10.0"
     sprintf-js "^1.1.2"
 
-"@technote-space/github-action-test-helper@^0.11.13":
-  version "0.11.13"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.11.13.tgz#120093579da3f2ac153481b82fcb437348804f1f"
-  integrity sha512-dS6/is4Oma+wNtbtZgt5ZgfjZRxm/EAErki75BwJQIM71lopfHd3iB0lnjzw2QePciCkgAUmUXmIp3WwoCq2cg==
+"@technote-space/github-action-test-helper@^0.11.14":
+  version "0.11.14"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.11.14.tgz#225cf9c2937d2fe4c193543cd30d95eb0503d5fe"
+  integrity sha512-YS1xiVqQNF5+oIfC3Q7sBOjpXoFy3rQTFAXAVwpX3GInjluMnfSytUezUXixp/3S7IcrOR17MY+BaWWCj9kLQg==
   dependencies:
     js-yaml "4.1.0"
 
