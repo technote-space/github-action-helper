@@ -574,20 +574,23 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/tsconfig/-/tsconfig-3.0.1.tgz#e2eaebda42aa7a755b11bdfbea847446652e1ac4"
   integrity sha512-0/gtPNTY3++0J2BZM5nHHULg0BIMw886gqdn8vWN+Av6bgF5ZU2qIcHubAn+Z9KNvJhO8WFE+9kDOU3n6OcKtA==
 
-"@technote-space/github-action-log-helper@^0.2.17":
-  version "0.2.17"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-log-helper/-/github-action-log-helper-0.2.17.tgz#d86dc9a01514f48570d955924f32b731193e50a6"
-  integrity sha512-zVXLXNQP9cZwfjvOVPzqwDrWhXFooJ/7SasTSrbCtbIXiuLvDPDaVGR9c5hdDqyYEOAr1X1T5kLDKXnJ1HrCGg==
+"@technote-space/github-action-log-helper@^0.2.18":
+  version "0.2.18"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-log-helper/-/github-action-log-helper-0.2.18.tgz#3d716faf2b82deb80f22402ebf669adef806723d"
+  integrity sha512-37UczJB83YAAbC99fhCmfQ0uAP0FVUgnajNRc/1Ra0hBeHFR2UBlZl75nD/PIhLHWBE9qwW9aGV7QWnmkCSQJA==
   dependencies:
     "@actions/core" "^1.10.0"
     sprintf-js "^1.1.2"
 
-"@technote-space/github-action-test-helper@^0.11.14":
-  version "0.11.14"
-  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.11.14.tgz#225cf9c2937d2fe4c193543cd30d95eb0503d5fe"
-  integrity sha512-YS1xiVqQNF5+oIfC3Q7sBOjpXoFy3rQTFAXAVwpX3GInjluMnfSytUezUXixp/3S7IcrOR17MY+BaWWCj9kLQg==
+"@technote-space/github-action-test-helper@^0.11.15":
+  version "0.11.15"
+  resolved "https://registry.yarnpkg.com/@technote-space/github-action-test-helper/-/github-action-test-helper-0.11.15.tgz#915a700cc489265a48b0ff99ed0081d89909d565"
+  integrity sha512-eCWdWACijBwKAOnpdjNHTWxAtvUKh+W0Vhm4zI+sqciPyeDhmvtXaMXnhUJSguazUWnt47yHJiW/b77LP6CUfg==
   dependencies:
+    "@actions/core" "^1.10.0"
+    "@actions/github" "^5.1.1"
     js-yaml "4.1.0"
+    vitest "^0.31.1"
 
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
